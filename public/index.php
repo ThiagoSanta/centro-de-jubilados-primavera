@@ -1,7 +1,11 @@
 <?php
 
+session_start();
+
 use CJP\Shared\Router;
 use CJP\Shared\Helpers\ResponseHelper;
+use CJP\Modules\Auth\AuthController;
+use CJP\Shared\AuthMiddleware;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -23,11 +27,17 @@ $router = new Router();
 
 // Define base routes
 $router->get('/api/ping', function () {
+    AuthMiddleware::requireAuth();
     ResponseHelper::json([
         'success' => true,
         'message' => 'CJP API funcionando'
     ]);
 });
+
+// Authentication routes
+$router->post('/api/auth/login', [AuthController::class, 'login']);
+$router->post('/api/auth/logout', [AuthController::class, 'logout']);
+$router->get('/api/auth/me', [AuthController::class, 'me']);
 
 // Dispatch request
 $router->dispatch();
