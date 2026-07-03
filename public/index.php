@@ -6,6 +6,7 @@ use CJP\Shared\Router;
 use CJP\Shared\Helpers\ResponseHelper;
 use CJP\Modules\Auth\AuthController;
 use CJP\Shared\AuthMiddleware;
+use CJP\Modules\Zonas\ZonaController;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -38,6 +39,10 @@ $router->get('/api/ping', function () {
 $router->post('/api/auth/login', [AuthController::class, 'login']);
 $router->post('/api/auth/logout', [AuthController::class, 'logout']);
 $router->get('/api/auth/me', [AuthController::class, 'me']);
+
+// Zonas routes
+$router->get('/api/zonas', [ZonaController::class, 'index']);
+$router->post('/api/zonas/calcular', [ZonaController::class, 'calcular']);
 
 // Dispatch request
 $router->dispatch();
