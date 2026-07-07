@@ -7,6 +7,7 @@ use CJP\Shared\Helpers\ResponseHelper;
 use CJP\Modules\Auth\AuthController;
 use CJP\Shared\AuthMiddleware;
 use CJP\Modules\Zonas\ZonaController;
+use CJP\Modules\Socios\SocioController;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -43,6 +44,19 @@ $router->get('/api/auth/me', [AuthController::class, 'me']);
 // Zonas routes
 $router->get('/api/zonas', [ZonaController::class, 'index']);
 $router->post('/api/zonas/calcular', [ZonaController::class, 'calcular']);
+
+// Socios routes (order is critical: static before parameterized)
+$router->post('/api/socios/importar', [SocioController::class, 'importarCSV']);
+$router->get('/api/socios', [SocioController::class, 'index']);
+$router->post('/api/socios', [SocioController::class, 'create']);
+$router->get('/api/socios/{id}', [SocioController::class, 'show']);
+$router->put('/api/socios/{id}', [SocioController::class, 'update']);
+$router->delete('/api/socios/{id}', [SocioController::class, 'delete']);
+$router->post('/api/socios/{id}/suspender', [SocioController::class, 'suspend']);
+$router->post('/api/socios/{id}/reactivar', [SocioController::class, 'reactivate']);
+$router->post('/api/socios/{id}/revertir', [SocioController::class, 'revertDelete']);
+$router->post('/api/socios/{id}/geolocalizacion', [SocioController::class, 'corregirGeo']);
+$router->get('/api/socios/{id}/qr', [SocioController::class, 'getQR']);
 
 // Dispatch request
 $router->dispatch();
