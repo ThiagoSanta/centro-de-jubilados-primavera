@@ -9,6 +9,7 @@ use CJP\Shared\AuthMiddleware;
 use CJP\Modules\Zonas\ZonaController;
 use CJP\Modules\Socios\SocioController;
 use CJP\Modules\Deuda\DeudaController;
+use CJP\Modules\Pagos\PagoController;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -68,6 +69,14 @@ $router->post('/api/deuda/anterior', [DeudaController::class, 'cargarAnterior'])
 $router->get('/api/deuda/socio/{socioId}/pendientes', [DeudaController::class, 'getPendientesBySocio']);
 $router->get('/api/deuda/socio/{socioId}', [DeudaController::class, 'getBySocio']);
 $router->post('/api/deuda/{id}/exonerar', [DeudaController::class, 'exonerar']);
+
+// Pagos routes (order is critical: static before parameterized)
+$router->get('/api/pagos/socio/{socioId}', [PagoController::class, 'getBySocio']);
+$router->get('/api/pagos', [PagoController::class, 'getAll']);
+$router->post('/api/pagos', [PagoController::class, 'registrar']);
+$router->get('/api/pagos/{id}/comprobante', [PagoController::class, 'getComprobante']);
+$router->post('/api/pagos/{id}/anular', [PagoController::class, 'anular']);
+$router->get('/api/pagos/{id}', [PagoController::class, 'getOne']);
 
 // Dispatch request
 $router->dispatch();

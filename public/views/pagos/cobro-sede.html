@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cobro en Sede - Centro de Jubilados Primavera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+        .socio-card {
+            display: none;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color, #0d6efd);
+        }
+        .deudas-container {
+            display: none;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .deuda-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        .deuda-item:last-child {
+            border-bottom: none;
+        }
+        .deuda-checkbox {
+            width: 20px;
+            height: 20px;
+            margin-right: 15px;
+        }
+        .total-box {
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-align: right;
+            padding: 1rem 0;
+            margin-top: 1rem;
+            border-top: 2px solid #eee;
+        }
+        .payment-form {
+            margin-top: 2rem;
+        }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .result-actions {
+            display: none;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+        .btn-whatsapp {
+            background-color: #25D366;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/dashboard" class="sidebar-nav-item">Dashboard</a>
+                <a href="/views/pagos/listado.html" class="sidebar-nav-item">Listado de Pagos</a>
+                <a href="/views/pagos/cobro-sede.html" class="sidebar-nav-item sidebar-nav-item--active">Cobro en Sede</a>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <div class="content__header">
+                <div>
+                    <h1 class="content__title">Cobro en Sede</h1>
+                    <p class="content__subtitle">Registro de pagos presenciales</p>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div class="search-container">
+                <input type="text" id="inputDni" class="form-control" placeholder="Ingrese DNI del socio..." onkeypress="if(event.key === 'Enter') buscarSocio()">
+                <button type="button" class="btn btn--primary" onclick="buscarSocio()">Buscar Socio</button>
+            </div>
+
+            <div class="socio-card" id="socioCard">
+                <h3 id="socioNombre">Nombre del Socio</h3>
+                <p><strong>Número:</strong> <span id="socioNumero"></span> | <strong>Estado:</strong> <span id="socioEstado"></span> | <strong>Zona:</strong> <span id="socioZona"></span></p>
+            </div>
+
+            <div class="deudas-container" id="deudasContainer">
+                <h3>Deudas Pendientes</h3>
+                <p style="color: #666; font-size: 0.9rem;">Debe seleccionar los períodos en orden cronológico.</p>
+                
+                <div id="listaDeudas"></div>
+                
+                <div class="total-box">
+                    Total a Pagar: $<span id="montoTotal">0.00</span>
+                </div>
+
+                <div class="payment-form">
+                    <div class="form-group">
+                        <label class="form-label" for="metodoPago">Método de Pago</label>
+                        <select id="metodoPago" class="form-control">
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="observacion">Observaciones (Opcional)</label>
+                        <input type="text" id="observacion" class="form-control">
+                    </div>
+                    <button type="button" class="btn btn--primary" style="width: 100%;" onclick="abrirModalConfirmacion()" id="btnConfirmar" disabled>Registrar Pago</button>
+                </div>
+            </div>
+
+            <div class="result-actions" id="resultActions">
+                <a href="#" target="_blank" class="btn btn--secondary" id="linkComprobante">Ver Comprobante (PDF)</a>
+                <a href="#" target="_blank" class="btn-whatsapp" id="linkWhatsapp">Enviar por WhatsApp</a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal-overlay" id="modalConfirmacion">
+        <div class="modal">
+            <h2 style="margin-top: 0;">Confirmar Pago</h2>
+            <p>Por favor, revise los datos del pago antes de confirmar.</p>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                <p><strong>Socio:</strong> <span id="modalSocio"></span></p>
+                <p><strong>Total:</strong> $<span id="modalTotal"></span></p>
+                <p><strong>Método:</strong> <span id="modalMetodo"></span></p>
+                <p><strong>Períodos:</strong> <span id="modalPeriodos"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" onclick="cerrarModal()">Cancelar</button>
+                <button type="button" class="btn btn--primary" onclick="registrarPago()">Confirmar Pago</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socioActual = null;
+        let deudasPendientes = [];
+        let deudasSeleccionadas = [];
+
+        async function buscarSocio() {
+            const dni = document.getElementById('inputDni').value.trim();
+            if (!dni) return mostrarAlerta('Ingrese un DNI', 'error');
+
+            try {
+                // Assuming we can search by exact DNI matching or similar via /api/socios
+                // Actually the API is GET /api/socios?busqueda={dni}
+                const res = await fetch(`/api/socios?busqueda=${encodeURIComponent(dni)}`);
+                const data = await res.json();
+
+                if (data.success && data.data.length > 0) {
+                    socioActual = data.data[0];
+                    mostrarSocio(socioActual);
+                    cargarDeudas(socioActual.id);
+                } else {
+                    mostrarAlerta('Socio no encontrado.', 'error');
+                    ocultarPaneles();
+                }
+            } catch (err) {
+                mostrarAlerta('Error al buscar socio.', 'error');
+            }
+        }
+
+        function mostrarSocio(socio) {
+            document.getElementById('socioNombre').textContent = `${socio.nombre} ${socio.apellido}`;
+            document.getElementById('socioNumero').textContent = socio.numero_socio;
+            document.getElementById('socioEstado').textContent = socio.estado;
+            document.getElementById('socioZona').textContent = socio.zona_nombre || 'N/A';
+            document.getElementById('socioCard').style.display = 'block';
+            document.getElementById('resultActions').style.display = 'none';
+        }
+
+        function ocultarPaneles() {
+            document.getElementById('socioCard').style.display = 'none';
+            document.getElementById('deudasContainer').style.display = 'none';
+            document.getElementById('resultActions').style.display = 'none';
+            socioActual = null;
+            deudasPendientes = [];
+            deudasSeleccionadas = [];
+        }
+
+        async function cargarDeudas(socioId) {
+            try {
+                const res = await fetch(`/api/deuda/socio/${socioId}/pendientes`);
+                const data = await res.json();
+
+                if (data.success) {
+                    deudasPendientes = data.data;
+                    renderizarDeudas();
+                } else {
+                    mostrarAlerta('Error al cargar deudas.', 'error');
+                }
+            } catch (err) {
+                mostrarAlerta('Error de red al cargar deudas.', 'error');
+            }
+        }
+
+        function renderizarDeudas() {
+            const container = document.getElementById('listaDeudas');
+            container.innerHTML = '';
+            
+            if (deudasPendientes.length === 0) {
+                container.innerHTML = '<p>El socio no tiene deudas pendientes.</p>';
+                document.getElementById('btnConfirmar').disabled = true;
+                document.getElementById('montoTotal').textContent = '0.00';
+            } else {
+                deudasPendientes.forEach((deuda, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'deuda-item';
+                    
+                    const labelPeriodo = deuda.periodo === 'deuda_anterior' ? 'Deuda Anterior' : formatPeriodo(deuda.periodo);
+                    
+                    div.innerHTML = `
+                        <div>
+                            <input type="checkbox" class="deuda-checkbox" id="chk_${index}" data-index="${index}" data-id="${deuda.id}" data-monto="${deuda.monto}" onchange="manejarSeleccion(${index})">
+                            <label for="chk_${index}" style="font-size: 1.1rem;">${labelPeriodo}</label>
+                        </div>
+                        <div style="font-weight: 500;">
+                            $${parseFloat(deuda.monto).toFixed(2)}
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+            
+            document.getElementById('deudasContainer').style.display = 'block';
+            actualizarTotal();
+        }
+
+        function formatPeriodo(periodo) {
+            if (!periodo || !periodo.includes('-')) return periodo;
+            const [year, month] = periodo.split('-');
+            return `${month}/${year}`;
+        }
+
+        function manejarSeleccion(selectedIndex) {
+            const checkboxes = document.querySelectorAll('.deuda-checkbox');
+            const checked = checkboxes[selectedIndex].checked;
+            
+            if (checked) {
+                // If checking, verify all previous are checked
+                for (let i = 0; i < selectedIndex; i++) {
+                    if (!checkboxes[i].checked) {
+                        checkboxes[i].checked = true; // Auto-check previous ones
+                    }
+                }
+            } else {
+                // If unchecking, uncheck all subsequent ones
+                for (let i = selectedIndex + 1; i < checkboxes.length; i++) {
+                    checkboxes[i].checked = false;
+                }
+            }
+            
+            actualizarTotal();
+        }
+
+        function actualizarTotal() {
+            const checkboxes = document.querySelectorAll('.deuda-checkbox');
+            let total = 0;
+            deudasSeleccionadas = [];
+            
+            checkboxes.forEach((chk, index) => {
+                if (chk.checked) {
+                    total += parseFloat(chk.dataset.monto);
+                    deudasSeleccionadas.push(deudasPendientes[index]);
+                }
+            });
+            
+            document.getElementById('montoTotal').textContent = total.toFixed(2);
+            document.getElementById('btnConfirmar').disabled = deudasSeleccionadas.length === 0;
+        }
+
+        function abrirModalConfirmacion() {
+            if (deudasSeleccionadas.length === 0) return;
+            
+            document.getElementById('modalSocio').textContent = `${socioActual.nombre} ${socioActual.apellido}`;
+            document.getElementById('modalTotal').textContent = document.getElementById('montoTotal').textContent;
+            
+            const metodo = document.getElementById('metodoPago').value;
+            document.getElementById('modalMetodo').textContent = metodo.charAt(0).toUpperCase() + metodo.slice(1);
+            
+            const periodos = deudasSeleccionadas.map(d => d.periodo === 'deuda_anterior' ? 'Deuda Anterior' : formatPeriodo(d.periodo)).join(', ');
+            document.getElementById('modalPeriodos').textContent = periodos;
+            
+            document.getElementById('modalConfirmacion').style.display = 'flex';
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalConfirmacion').style.display = 'none';
+        }
+
+        async function registrarPago() {
+            const deudaIds = deudasSeleccionadas.map(d => d.id);
+            const metodo_pago = document.getElementById('metodoPago').value;
+            const observacion = document.getElementById('observacion').value;
+            
+            const payload = {
+                socio_id: socioActual.id,
+                deuda_ids: deudaIds,
+                metodo_pago: metodo_pago,
+                observacion: observacion
+            };
+
+            try {
+                const res = await fetch('/api/pagos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    cerrarModal();
+                    mostrarAlerta('Pago registrado con éxito.', 'success');
+                    
+                    document.getElementById('deudasContainer').style.display = 'none';
+                    
+                    // Show actions
+                    const actions = document.getElementById('resultActions');
+                    actions.style.display = 'flex';
+                    document.getElementById('linkComprobante').href = data.data.comprobante_url;
+                    document.getElementById('linkWhatsapp').href = data.data.whatsapp_url;
+                    
+                } else {
+                    mostrarAlerta(data.message || 'Error al registrar pago.', 'error');
+                }
+            } catch (err) {
+                mostrarAlerta('Error de red.', 'error');
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert--${tipo}`;
+            alert.textContent = mensaje;
+            alert.style.marginBottom = '1rem';
+            alert.style.padding = '1rem';
+            alert.style.borderRadius = '4px';
+            alert.style.backgroundColor = tipo === 'success' ? '#d4edda' : '#f8d7da';
+            alert.style.color = tipo === 'success' ? '#155724' : '#721c24';
+            
+            container.innerHTML = '';
+            container.appendChild(alert);
+            
+            setTimeout(() => { alert.remove(); }, 5000);
+        }
+    </script>
+</body>
+</html>

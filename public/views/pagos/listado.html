@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Pagos - Centro de Jubilados Primavera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .filters-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        .table-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .table th, .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .badge--registrado { background: #d4edda; color: #155724; }
+        .badge--anulado { background: #f8d7da; color: #721c24; }
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .action-link {
+            color: var(--primary-color, #0d6efd);
+            text-decoration: none;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        .action-link:hover {
+            text-decoration: underline;
+        }
+        .text-danger {
+            color: #dc3545;
+        }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #fff;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/dashboard" class="sidebar-nav-item">Dashboard</a>
+                <a href="/views/pagos/listado.html" class="sidebar-nav-item sidebar-nav-item--active">Listado de Pagos</a>
+                <a href="/views/pagos/cobro-sede.html" class="sidebar-nav-item">Cobro en Sede</a>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <div class="content__header">
+                <div>
+                    <h1 class="content__title">Listado de Pagos</h1>
+                    <p class="content__subtitle">Historial y gestión de cobros</p>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label class="form-label">Socio ID (UUID)</label>
+                    <input type="text" id="filtroSocio" class="form-control" placeholder="ID del socio...">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Estado</label>
+                    <select id="filtroEstado" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="registrado">Registrado</option>
+                        <option value="anulado">Anulado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Fecha Desde</label>
+                    <input type="date" id="filtroFechaDesde" class="form-control">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Fecha Hasta</label>
+                    <input type="date" id="filtroFechaHasta" class="form-control">
+                </div>
+                <div class="filter-group" style="display: flex; align-items: flex-end;">
+                    <button type="button" class="btn btn--primary" onclick="cargarPagos(1)" style="width: 100%;">Filtrar</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Socio</th>
+                            <th>Monto</th>
+                            <th>Método</th>
+                            <th>Estado</th>
+                            <th>Cobrador</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaPagos">
+                        <tr><td colspan="7" style="text-align: center;">Cargando pagos...</td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Anular -->
+    <div class="modal-overlay" id="modalAnular">
+        <div class="modal">
+            <h2 style="margin-top: 0; color: #d32f2f;">Anular Pago</h2>
+            <p>Está a punto de anular el pago. Las deudas asociadas volverán a estado "pendiente" y se generará una notificación para el socio (con 7 días para posible reversión).</p>
+            <div class="form-group">
+                <label class="form-label" for="motivoAnulacion">Motivo de la anulación (Obligatorio)</label>
+                <textarea id="motivoAnulacion" class="form-control" rows="3" required></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" onclick="cerrarModalAnular()">Cancelar</button>
+                <button type="button" class="btn btn--primary" style="background-color: #dc3545; border-color: #dc3545;" onclick="confirmarAnular()">Confirmar Anulación</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pagoAAnular = null;
+        let paginaActual = 1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarPagos(1);
+        });
+
+        async function cargarPagos(pagina) {
+            paginaActual = pagina;
+            const tbody = document.getElementById('tablaPagos');
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Cargando pagos...</td></tr>';
+            
+            const params = new URLSearchParams();
+            if (document.getElementById('filtroSocio').value) params.append('socio_id', document.getElementById('filtroSocio').value);
+            if (document.getElementById('filtroEstado').value) params.append('estado', document.getElementById('filtroEstado').value);
+            if (document.getElementById('filtroFechaDesde').value) params.append('fecha_desde', document.getElementById('filtroFechaDesde').value);
+            if (document.getElementById('filtroFechaHasta').value) params.append('fecha_hasta', document.getElementById('filtroFechaHasta').value);
+            params.append('pagina', pagina);
+
+            try {
+                const res = await fetch(`/api/pagos?${params.toString()}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    renderizarTabla(data.data);
+                    renderizarPaginacion(data.meta);
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${data.message}</td></tr>`;
+                }
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error de conexión.</td></tr>';
+            }
+        }
+
+        function renderizarTabla(pagos) {
+            const tbody = document.getElementById('tablaPagos');
+            tbody.innerHTML = '';
+
+            if (pagos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No se encontraron pagos.</td></tr>';
+                return;
+            }
+
+            pagos.forEach(pago => {
+                const tr = document.createElement('tr');
+                
+                const fecha = new Date(pago.fecha_hora).toLocaleString('es-AR');
+                const badgeClass = pago.estado === 'registrado' ? 'badge--registrado' : 'badge--anulado';
+                const cobrador = pago.cobrador_nombre ? `${pago.cobrador_nombre} ${pago.cobrador_apellido}` : 'Sistema';
+                
+                let acciones = `<a href="/api/pagos/${pago.id}/comprobante" target="_blank" class="action-link">PDF</a>`;
+                if (pago.estado === 'registrado') {
+                    acciones += `<a class="action-link text-danger" onclick="abrirModalAnular('${pago.id}')">Anular</a>`;
+                }
+
+                tr.innerHTML = `
+                    <td>${fecha}</td>
+                    <td>${pago.socio_nombre} ${pago.socio_apellido} (#${pago.numero_socio})</td>
+                    <td>$${parseFloat(pago.monto_total).toFixed(2)}</td>
+                    <td style="text-transform: capitalize;">${pago.metodo_pago}</td>
+                    <td><span class="badge ${badgeClass}">${pago.estado.toUpperCase()}</span></td>
+                    <td>${cobrador}</td>
+                    <td>${acciones}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderizarPaginacion(meta) {
+            const container = document.getElementById('pagination');
+            let html = `<span>Total: ${meta.total} registros</span><div>`;
+            
+            if (meta.pagina_actual > 1) {
+                html += `<button class="btn btn--secondary" onclick="cargarPagos(${meta.pagina_actual - 1})" style="padding: 0.25rem 0.5rem; margin-right: 0.5rem;">Anterior</button>`;
+            }
+            html += `<span>Página ${meta.pagina_actual} de ${meta.paginas || 1}</span>`;
+            if (meta.pagina_actual < meta.paginas) {
+                html += `<button class="btn btn--secondary" onclick="cargarPagos(${meta.pagina_actual + 1})" style="padding: 0.25rem 0.5rem; margin-left: 0.5rem;">Siguiente</button>`;
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function abrirModalAnular(id) {
+            pagoAAnular = id;
+            document.getElementById('motivoAnulacion').value = '';
+            document.getElementById('modalAnular').style.display = 'flex';
+        }
+
+        function cerrarModalAnular() {
+            document.getElementById('modalAnular').style.display = 'none';
+            pagoAAnular = null;
+        }
+
+        async function confirmarAnular() {
+            if (!pagoAAnular) return;
+            
+            const motivo = document.getElementById('motivoAnulacion').value.trim();
+            if (!motivo) {
+                alert('El motivo es obligatorio.');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/pagos/${pagoAAnular}/anular`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ motivo })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    mostrarAlerta('Pago anulado correctamente.', 'success');
+                    cerrarModalAnular();
+                    cargarPagos(paginaActual);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (err) {
+                alert('Error de red.');
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert--${tipo}`;
+            alert.textContent = mensaje;
+            alert.style.marginBottom = '1rem';
+            alert.style.padding = '1rem';
+            alert.style.borderRadius = '4px';
+            alert.style.backgroundColor = tipo === 'success' ? '#d4edda' : '#f8d7da';
+            alert.style.color = tipo === 'success' ? '#155724' : '#721c24';
+            
+            container.innerHTML = '';
+            container.appendChild(alert);
+            
+            setTimeout(() => { alert.remove(); }, 5000);
+        }
+    </script>
+</body>
+</html>
