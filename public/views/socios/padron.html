@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padrón de Socios - Centro de Jubilados Primavera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/dashboard" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Dashboard
+                </a>
+                <a href="/views/socios/padron.html" class="sidebar-nav-item sidebar-nav-item--active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Socios
+                </a>
+                <a href="/cobranza" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Cobranza
+                </a>
+                <a href="/planillas" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Planillas y Ruteo
+                </a>
+                <a href="/notificaciones" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    Notificaciones
+                </a>
+                <a href="/auditoria" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Auditoría
+                </a>
+                <a href="/usuarios" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Usuarios
+                </a>
+                <a href="/configuracion" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Configuración
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <div class="content__header">
+                <div>
+                    <h1 class="content__title">Padrón de Socios</h1>
+                    <p class="content__subtitle">Gestión y consulta del padrón de socios del centro</p>
+                </div>
+                <div style="display:flex;gap:0.5rem;">
+                    <a href="/views/socios/importar.html" class="btn btn--secondary">Importar CSV</a>
+                    <button type="button" class="btn btn--primary" id="btnNuevoSocio">Nuevo socio</button>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <!-- Toolbar: búsqueda + filtros -->
+            <div class="toolbar">
+                <div class="toolbar__search">
+                    <span class="toolbar__search-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </span>
+                    <input type="text" id="inputBusqueda" placeholder="Buscar por nombre, DNI o N° de socio..." autocomplete="off">
+                </div>
+                <div class="filter-chips">
+                    <div class="filter-chip">
+                        <select id="filtroEstado">
+                            <option value="">Estado: Todos</option>
+                            <option value="activo">Activo</option>
+                            <option value="suspendido">Suspendido</option>
+                            <option value="eliminado">Eliminado</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filtroZona">
+                            <option value="">Zona: Todas</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filtroModalidad">
+                            <option value="">Modalidad: Todas</option>
+                            <option value="cobranza_domiciliaria">Domiciliaria</option>
+                            <option value="cobranza_en_sede">En sede</option>
+                        </select>
+                    </div>
+                    <div class="filter-chip">
+                        <select id="filtroDeuda">
+                            <option value="">Deuda: Todas</option>
+                            <option value="1">Con deuda</option>
+                            <option value="0">Al día</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="table-wrapper">
+                <table class="table" id="tablaSocios">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Nombre</th>
+                            <th>DNI</th>
+                            <th>Estado</th>
+                            <th>Zona</th>
+                            <th>Modalidad</th>
+                            <th>Deuda</th>
+                            <th class="table__actions"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaBody">
+                        <tr class="loading-row"><td colspan="8">Cargando socios...</td></tr>
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <div class="empty-state__title">No se encontraron socios</div>
+                    <div class="empty-state__text">No hay socios que coincidan con los filtros aplicados. Pruebe modificar la búsqueda o los filtros.</div>
+                </div>
+            </div>
+
+            <!-- Paginación -->
+            <div class="pagination" id="paginacion" style="display:none;">
+                <span id="paginacionInfo"></span>
+                <div class="pagination__controls">
+                    <button type="button" class="btn btn--secondary btn--sm" id="btnPagAnterior">Anterior</button>
+                    <button type="button" class="btn btn--secondary btn--sm" id="btnPagSiguiente">Siguiente</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Menú contextual -->
+    <div class="context-menu" id="contextMenu">
+        <button type="button" class="context-menu__item" data-action="ver">Ver perfil</button>
+        <button type="button" class="context-menu__item" data-action="suspender" id="ctxSuspender">Suspender</button>
+        <button type="button" class="context-menu__item" data-action="reactivar" id="ctxReactivar" style="display:none;">Reactivar</button>
+        <button type="button" class="context-menu__item context-menu__item--danger" data-action="eliminar">Eliminar</button>
+    </div>
+
+    <!-- Drawer: nuevo socio -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <aside class="drawer" id="drawerNuevo">
+        <div class="drawer__header">
+            <h2 class="drawer__title">Nuevo socio</h2>
+            <button type="button" class="btn--icon" id="btnCerrarDrawer" aria-label="Cerrar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <form id="formNuevoSocio" class="drawer__body">
+            <div class="form-group">
+                <label for="nombre_apellido">Nombre y apellido *</label>
+                <input type="text" id="nombre_apellido" name="nombre_apellido" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="dni">DNI *</label>
+                <input type="text" id="dni" name="dni" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="fecha_nacimiento">Fecha de nacimiento *</label>
+                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono *</label>
+                <input type="tel" id="telefono" name="telefono" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="mutual">Mutual</label>
+                <input type="text" id="mutual" name="mutual" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="direccion">Dirección *</label>
+                <input type="text" id="direccion" name="direccion" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Modalidad de cobranza *</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="modalidad_cobranza" value="cobranza_domiciliaria" checked> Domiciliaria</label>
+                    <label><input type="radio" name="modalidad_cobranza" value="cobranza_en_sede"> En sede</label>
+                </div>
+            </div>
+        </form>
+        <div class="drawer__footer">
+            <button type="button" class="btn btn--secondary" id="btnCancelarDrawer">Cancelar</button>
+            <button type="submit" form="formNuevoSocio" class="btn btn--primary" id="btnGuardarSocio">Guardar</button>
+        </div>
+    </aside>
+
+    <!-- Modal confirmación (eliminar) -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modal__header">
+                <h3 class="modal__title" id="modalTitle">Confirmar acción</h3>
+            </div>
+            <div class="modal__body">
+                <p class="modal__message" id="modalMessage"></p>
+                <div class="form-group" id="modalMotivoGroup" style="display:none;">
+                    <label for="modalMotivo">Motivo *</label>
+                    <textarea id="modalMotivo" class="form-control form-control--textarea" rows="3" placeholder="Ingrese el motivo..."></textarea>
+                </div>
+            </div>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" id="modalCancelar">Cancelar</button>
+                <button type="button" class="btn btn--danger" id="modalConfirmar">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        var state = {
+            pagina: 1,
+            total: 0,
+            porPagina: 25,
+            socios: [],
+            zonasMap: {},
+            contextSocioId: null,
+            contextSocioEstado: null,
+            debounceTimer: null,
+            modalCallback: null
+        };
+
+        var ICON_CASA = '<span class="modalidad-icon" title="Domiciliaria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>';
+        var ICON_EDIFICIO = '<span class="modalidad-icon" title="En sede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="15" y2="18"/></svg></span>';
+
+        /* --- Utilidades --- */
+        function apiFetch(url, options) {
+            options = options || {};
+            options.headers = Object.assign({
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }, options.headers || {});
+            return fetch(url, options).then(function (res) {
+                return res.json().then(function (data) {
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || 'Error en la solicitud.');
+                    }
+                    return data;
+                });
+            });
+        }
+
+        function showAlert(message, type) {
+            var container = document.getElementById('alertContainer');
+            container.innerHTML = '<div class="alert alert--' + (type || 'error') + '">' + escapeHtml(message) + '</div>';
+            setTimeout(function () { container.innerHTML = ''; }, 5000);
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function estadoBadge(estado) {
+            var labels = { activo: 'Activo', suspendido: 'Suspendido', eliminado: 'Eliminado' };
+            var cls = 'badge--' + (estado || 'activo');
+            return '<span class="badge ' + cls + '">' + escapeHtml(labels[estado] || estado) + '</span>';
+        }
+
+        function getZonaNombre(zonaId) {
+            if (!zonaId) return '—';
+            return state.zonasMap[zonaId] || '—';
+        }
+
+        function getModalidadIcon(modalidad) {
+            return modalidad === 'cobranza_en_sede' ? ICON_EDIFICIO : ICON_CASA;
+        }
+
+        /* --- Carga de zonas --- */
+        function cargarZonas() {
+            return apiFetch('/api/zonas').then(function (result) {
+                var select = document.getElementById('filtroZona');
+                (result.data || []).forEach(function (zona) {
+                    state.zonasMap[zona.id] = zona.nombre;
+                    var opt = document.createElement('option');
+                    opt.value = zona.id;
+                    opt.textContent = zona.nombre;
+                    select.appendChild(opt);
+                });
+            }).catch(function () {
+                /* Zonas opcionales para filtros */
+            });
+        }
+
+        /* --- Carga de socios --- */
+        function buildQueryParams() {
+            var params = new URLSearchParams();
+            params.set('pagina', state.pagina);
+
+            var busqueda = document.getElementById('inputBusqueda').value.trim();
+            if (busqueda) params.set('busqueda', busqueda);
+
+            var estado = document.getElementById('filtroEstado').value;
+            if (estado) params.set('estado', estado);
+
+            var zona = document.getElementById('filtroZona').value;
+            if (zona) params.set('zona_id', zona);
+
+            var modalidad = document.getElementById('filtroModalidad').value;
+            if (modalidad) params.set('modalidad_cobranza', modalidad);
+
+            var deuda = document.getElementById('filtroDeuda').value;
+            if (deuda !== '') params.set('con_deuda', deuda);
+
+            return params.toString();
+        }
+
+        function cargarSocios() {
+            var tbody = document.getElementById('tablaBody');
+            var emptyState = document.getElementById('emptyState');
+            tbody.innerHTML = '<tr class="loading-row"><td colspan="8">Cargando socios...</td></tr>';
+            emptyState.style.display = 'none';
+
+            apiFetch('/api/socios?' + buildQueryParams())
+                .then(function (result) {
+                    var data = result.data;
+                    state.socios = data.data || [];
+                    state.total = data.total || 0;
+                    state.porPagina = data.por_pagina || 25;
+                    state.pagina = data.pagina || 1;
+                    renderTabla();
+                    renderPaginacion();
+                })
+                .catch(function (err) {
+                    tbody.innerHTML = '';
+                    emptyState.style.display = 'flex';
+                    showAlert(err.message);
+                });
+        }
+
+        function renderTabla() {
+            var tbody = document.getElementById('tablaBody');
+            var emptyState = document.getElementById('emptyState');
+
+            if (state.socios.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'flex';
+                document.getElementById('paginacion').style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = state.socios.map(function (socio) {
+                var deudaHtml = socio.con_deuda
+                    ? '<span class="deuda--si">Con deuda</span>'
+                    : '<span class="deuda--no">Al día</span>';
+
+                return '<tr data-id="' + escapeHtml(socio.id) + '">' +
+                    '<td>' + socio.numero_socio + '</td>' +
+                    '<td>' + escapeHtml(socio.nombre_apellido) + '</td>' +
+                    '<td>' + escapeHtml(socio.dni) + '</td>' +
+                    '<td>' + estadoBadge(socio.estado) + '</td>' +
+                    '<td>' + escapeHtml(getZonaNombre(socio.zona_id)) + '</td>' +
+                    '<td>' + getModalidadIcon(socio.modalidad_cobranza) + '</td>' +
+                    '<td>' + deudaHtml + '</td>' +
+                    '<td class="table__actions table__actions-cell">' +
+                        '<button type="button" class="btn--icon btn-menu" data-id="' + escapeHtml(socio.id) + '" data-estado="' + escapeHtml(socio.estado) + '" aria-label="Acciones">' +
+                            '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>' +
+                        '</button>' +
+                    '</td>' +
+                '</tr>';
+            }).join('');
+
+            tbody.querySelectorAll('tr[data-id]').forEach(function (row) {
+                row.addEventListener('click', function (e) {
+                    if (e.target.closest('.btn-menu')) return;
+                    window.location.href = '/views/socios/perfil.html?id=' + encodeURIComponent(row.dataset.id);
+                });
+            });
+
+            tbody.querySelectorAll('.btn-menu').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    abrirContextMenu(e, btn.dataset.id, btn.dataset.estado);
+                });
+            });
+        }
+
+        function renderPaginacion() {
+            var pag = document.getElementById('paginacion');
+            var info = document.getElementById('paginacionInfo');
+            var totalPaginas = Math.ceil(state.total / state.porPagina) || 1;
+            var desde = state.total === 0 ? 0 : (state.pagina - 1) * state.porPagina + 1;
+            var hasta = Math.min(state.pagina * state.porPagina, state.total);
+
+            pag.style.display = 'flex';
+            info.textContent = 'Mostrando ' + desde + '–' + hasta + ' de ' + state.total + ' socios';
+
+            document.getElementById('btnPagAnterior').disabled = state.pagina <= 1;
+            document.getElementById('btnPagSiguiente').disabled = state.pagina >= totalPaginas;
+        }
+
+        /* --- Menú contextual --- */
+        function abrirContextMenu(e, id, estado) {
+            state.contextSocioId = id;
+            state.contextSocioEstado = estado;
+
+            var menu = document.getElementById('contextMenu');
+            var btnSusp = document.getElementById('ctxSuspender');
+            var btnReact = document.getElementById('ctxReactivar');
+
+            btnSusp.style.display = estado === 'activo' ? 'block' : 'none';
+            btnReact.style.display = estado === 'suspendido' ? 'block' : 'none';
+
+            menu.classList.add('context-menu--open');
+            menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+            menu.style.top = e.clientY + 'px';
+        }
+
+        function cerrarContextMenu() {
+            document.getElementById('contextMenu').classList.remove('context-menu--open');
+        }
+
+        document.getElementById('contextMenu').addEventListener('click', function (e) {
+            var action = e.target.closest('[data-action]');
+            if (!action) return;
+            cerrarContextMenu();
+            var id = state.contextSocioId;
+
+            switch (action.dataset.action) {
+                case 'ver':
+                    window.location.href = '/views/socios/perfil.html?id=' + encodeURIComponent(id);
+                    break;
+                case 'suspender':
+                    suspenderSocio(id);
+                    break;
+                case 'reactivar':
+                    reactivarSocio(id);
+                    break;
+                case 'eliminar':
+                    confirmarEliminar(id);
+                    break;
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.context-menu') && !e.target.closest('.btn-menu')) {
+                cerrarContextMenu();
+            }
+        });
+
+        /* --- Acciones sobre socios --- */
+        function suspenderSocio(id) {
+            apiFetch('/api/socios/' + id + '/suspender', { method: 'POST', body: '{}' })
+                .then(function () {
+                    showAlert('Socio suspendido correctamente.', 'success');
+                    cargarSocios();
+                })
+                .catch(function (err) { showAlert(err.message); });
+        }
+
+        function reactivarSocio(id) {
+            apiFetch('/api/socios/' + id + '/reactivar', { method: 'POST', body: '{}' })
+                .then(function () {
+                    showAlert('Socio reactivado correctamente.', 'success');
+                    cargarSocios();
+                })
+                .catch(function (err) { showAlert(err.message); });
+        }
+
+        function confirmarEliminar(id) {
+            abrirModal({
+                title: 'Eliminar socio',
+                message: 'Esta acción dará de baja al socio. Ingrese el motivo para continuar.',
+                requireMotivo: true,
+                onConfirm: function (motivo) {
+                    return apiFetch('/api/socios/' + id, {
+                        method: 'DELETE',
+                        body: JSON.stringify({ motivo: motivo })
+                    });
+                }
+            });
+        }
+
+        /* --- Modal reutilizable --- */
+        function abrirModal(opts) {
+            document.getElementById('modalTitle').textContent = opts.title;
+            document.getElementById('modalMessage').textContent = opts.message;
+            document.getElementById('modalMotivo').value = '';
+
+            var motivoGroup = document.getElementById('modalMotivoGroup');
+            motivoGroup.style.display = opts.requireMotivo ? 'block' : 'none';
+
+            state.modalCallback = opts.onConfirm;
+            document.getElementById('modalOverlay').classList.add('modal-overlay--open');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalOverlay').classList.remove('modal-overlay--open');
+            state.modalCallback = null;
+        }
+
+        document.getElementById('modalCancelar').addEventListener('click', cerrarModal);
+        document.getElementById('modalOverlay').addEventListener('click', function (e) {
+            if (e.target === this) cerrarModal();
+        });
+
+        document.getElementById('modalConfirmar').addEventListener('click', function () {
+            var motivo = document.getElementById('modalMotivo').value.trim();
+            var motivoGroup = document.getElementById('modalMotivoGroup');
+
+            if (motivoGroup.style.display !== 'none' && !motivo) {
+                showAlert('Debe ingresar un motivo.');
+                return;
+            }
+
+            if (!state.modalCallback) return;
+
+            var btn = document.getElementById('modalConfirmar');
+            btn.disabled = true;
+
+            state.modalCallback(motivo)
+                .then(function () {
+                    cerrarModal();
+                    showAlert('Operación realizada correctamente.', 'success');
+                    cargarSocios();
+                })
+                .catch(function (err) {
+                    showAlert(err.message);
+                })
+                .finally(function () {
+                    btn.disabled = false;
+                });
+        });
+
+        /* --- Drawer nuevo socio --- */
+        function abrirDrawer() {
+            document.getElementById('drawerOverlay').classList.add('drawer-overlay--open');
+            document.getElementById('drawerNuevo').classList.add('drawer--open');
+            document.getElementById('formNuevoSocio').reset();
+        }
+
+        function cerrarDrawer() {
+            document.getElementById('drawerOverlay').classList.remove('drawer-overlay--open');
+            document.getElementById('drawerNuevo').classList.remove('drawer--open');
+        }
+
+        document.getElementById('btnNuevoSocio').addEventListener('click', abrirDrawer);
+        document.getElementById('btnCerrarDrawer').addEventListener('click', cerrarDrawer);
+        document.getElementById('btnCancelarDrawer').addEventListener('click', cerrarDrawer);
+        document.getElementById('drawerOverlay').addEventListener('click', cerrarDrawer);
+
+        document.getElementById('formNuevoSocio').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var btn = document.getElementById('btnGuardarSocio');
+            btn.disabled = true;
+
+            var form = e.target;
+            var modalidad = form.querySelector('input[name="modalidad_cobranza"]:checked');
+            var payload = {
+                nombre_apellido: form.nombre_apellido.value.trim(),
+                dni: form.dni.value.trim(),
+                fecha_nacimiento: form.fecha_nacimiento.value,
+                telefono: form.telefono.value.trim(),
+                mutual: form.mutual.value.trim() || null,
+                direccion: form.direccion.value.trim(),
+                modalidad_cobranza: modalidad ? modalidad.value : 'cobranza_domiciliaria'
+            };
+
+            apiFetch('/api/socios', { method: 'POST', body: JSON.stringify(payload) })
+                .then(function () {
+                    cerrarDrawer();
+                    showAlert('Socio creado correctamente.', 'success');
+                    cargarSocios();
+                })
+                .catch(function (err) {
+                    showAlert(err.message);
+                })
+                .finally(function () {
+                    btn.disabled = false;
+                });
+        });
+
+        /* --- Filtros y búsqueda --- */
+        document.getElementById('inputBusqueda').addEventListener('input', function () {
+            clearTimeout(state.debounceTimer);
+            state.debounceTimer = setTimeout(function () {
+                state.pagina = 1;
+                cargarSocios();
+            }, 400);
+        });
+
+        document.getElementById('inputBusqueda').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                clearTimeout(state.debounceTimer);
+                state.pagina = 1;
+                cargarSocios();
+            }
+        });
+
+        ['filtroEstado', 'filtroZona', 'filtroModalidad', 'filtroDeuda'].forEach(function (id) {
+            document.getElementById(id).addEventListener('change', function () {
+                state.pagina = 1;
+                cargarSocios();
+            });
+        });
+
+        document.getElementById('btnPagAnterior').addEventListener('click', function () {
+            if (state.pagina > 1) {
+                state.pagina--;
+                cargarSocios();
+            }
+        });
+
+        document.getElementById('btnPagSiguiente').addEventListener('click', function () {
+            var totalPaginas = Math.ceil(state.total / state.porPagina);
+            if (state.pagina < totalPaginas) {
+                state.pagina++;
+                cargarSocios();
+            }
+        });
+
+        /* --- Inicialización --- */
+        cargarZonas().then(cargarSocios);
+    })();
+    </script>
+</body>
+</html>

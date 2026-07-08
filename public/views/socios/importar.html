@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Socios - Centro de Jubilados Primavera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/dashboard" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Dashboard
+                </a>
+                <a href="/views/socios/padron.html" class="sidebar-nav-item sidebar-nav-item--active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Socios
+                </a>
+                <a href="/cobranza" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Cobranza
+                </a>
+                <a href="/planillas" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Planillas y Ruteo
+                </a>
+                <a href="/notificaciones" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    Notificaciones
+                </a>
+                <a href="/auditoria" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Auditoría
+                </a>
+                <a href="/usuarios" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Usuarios
+                </a>
+                <a href="/configuracion" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Configuración
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Contenido -->
+        <main class="content">
+            <div style="margin-bottom:1rem;">
+                <a href="/views/socios/padron.html" style="font-size:0.8125rem;color:var(--color-text-muted);">&larr; Volver al padrón</a>
+            </div>
+
+            <div class="content__header">
+                <div>
+                    <h1 class="content__title">Importar Socios</h1>
+                    <p class="content__subtitle">Carga masiva de socios desde archivo CSV</p>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <!-- Sección de importación -->
+            <div class="card">
+                <div class="card__header">Archivo CSV</div>
+                <div class="card__body">
+                    <div class="drop-zone" id="dropZone">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <div class="drop-zone__title">Arrastre un archivo CSV aquí</div>
+                        <div class="drop-zone__hint">o haga clic para seleccionar un archivo</div>
+                        <div class="drop-zone__file" id="fileName" style="display:none;"></div>
+                    </div>
+                    <input type="file" id="fileInput" accept=".csv" style="display:none;">
+
+                    <div class="columns-table">
+                        <p style="font-size:0.8125rem;color:var(--color-text-muted);margin-top:1rem;">Columnas esperadas en el CSV:</p>
+                        <div class="table-wrapper" style="margin-top:0.5rem;">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Columna</th>
+                                        <th>Obligatorio</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td><code>nombre_apellido</code></td><td>Sí</td><td>Nombre completo del socio</td></tr>
+                                    <tr><td><code>dni</code></td><td>Sí</td><td>Documento de identidad</td></tr>
+                                    <tr><td><code>fecha_nacimiento</code></td><td>Sí</td><td>Formato YYYY-MM-DD</td></tr>
+                                    <tr><td><code>telefono</code></td><td>Sí</td><td>Número de contacto</td></tr>
+                                    <tr><td><code>mutual</code></td><td>No</td><td>Obra social o mutual</td></tr>
+                                    <tr><td><code>direccion</code></td><td>Sí</td><td>Domicilio del socio</td></tr>
+                                    <tr><td><code>modalidad_cobranza</code></td><td>Sí</td><td><code>cobranza_domiciliaria</code> o <code>cobranza_en_sede</code></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-bar__fill" id="progressFill"></div>
+                    </div>
+
+                    <div style="margin-top:1rem;">
+                        <button type="button" class="btn btn--primary" id="btnImportar" disabled>Importar</button>
+                    </div>
+
+                    <!-- Resultado -->
+                    <div id="resultadoImport" style="display:none;">
+                        <div class="result-cards">
+                            <div class="result-card result-card--success">
+                                <div class="result-card__number" id="resultExitosos">0</div>
+                                <div class="result-card__label">Importados exitosamente</div>
+                            </div>
+                            <div class="result-card result-card--error">
+                                <div class="result-card__number" id="resultFallidos">0</div>
+                                <div class="result-card__label">Registros fallidos</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bandeja de inconsistencias -->
+            <h2 class="section-title">Bandeja de inconsistencias</h2>
+
+            <div class="toolbar" style="margin-bottom:1rem;">
+                <div class="filter-chips">
+                    <div class="filter-chip">
+                        <select id="filtroInconsistencia">
+                            <option value="">Estado: Todos</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="resuelto">Resuelto</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Datos del registro</th>
+                            <th>Motivo de rechazo</th>
+                            <th>Estado</th>
+                            <th>Fecha importación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaInconsistencias">
+                        <tr class="loading-row"><td colspan="4">Cargando inconsistencias...</td></tr>
+                    </tbody>
+                </table>
+                <div id="inconsistenciasEmpty" class="empty-state" style="display:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <div class="empty-state__title">Sin inconsistencias</div>
+                    <div class="empty-state__text">No hay registros con inconsistencias en la bandeja.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        var selectedFile = null;
+        var INCONSISTENCIAS_URL = '/api/socios/inconsistencias';
+
+        function showAlert(message, type) {
+            var container = document.getElementById('alertContainer');
+            container.innerHTML = '<div class="alert alert--' + (type || 'error') + '">' + escapeHtml(message) + '</div>';
+            setTimeout(function () { container.innerHTML = ''; }, 6000);
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            var div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            var parts = dateStr.split(/[T\s]/)[0].split('-');
+            if (parts.length !== 3) return dateStr;
+            return parts[2] + '/' + parts[1] + '/' + parts[0];
+        }
+
+        function formatDatosRegistro(datos) {
+            if (typeof datos === 'string') {
+                try { datos = JSON.parse(datos); } catch (e) { return escapeHtml(datos); }
+            }
+            if (!datos || typeof datos !== 'object') return '—';
+            var parts = [];
+            if (datos.nombre_apellido) parts.push(datos.nombre_apellido);
+            if (datos.dni) parts.push('DNI: ' + datos.dni);
+            return escapeHtml(parts.join(' — ') || JSON.stringify(datos));
+        }
+
+        function estadoBadge(estado) {
+            var cls = estado === 'resuelto' ? 'badge--resuelto' : 'badge--pendiente';
+            var label = estado === 'resuelto' ? 'Resuelto' : 'Pendiente';
+            return '<span class="badge ' + cls + '">' + label + '</span>';
+        }
+
+        /* --- Drop zone --- */
+        var dropZone = document.getElementById('dropZone');
+        var fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('click', function () { fileInput.click(); });
+
+        dropZone.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            dropZone.classList.add('drop-zone--dragover');
+        });
+
+        dropZone.addEventListener('dragleave', function () {
+            dropZone.classList.remove('drop-zone--dragover');
+        });
+
+        dropZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            dropZone.classList.remove('drop-zone--dragover');
+            if (e.dataTransfer.files.length > 0) {
+                seleccionarArchivo(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', function () {
+            if (fileInput.files.length > 0) {
+                seleccionarArchivo(fileInput.files[0]);
+            }
+        });
+
+        function seleccionarArchivo(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showAlert('Solo se aceptan archivos CSV.');
+                return;
+            }
+            selectedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileName').style.display = 'block';
+            document.getElementById('btnImportar').disabled = false;
+        }
+
+        /* --- Importar --- */
+        document.getElementById('btnImportar').addEventListener('click', function () {
+            if (!selectedFile) {
+                showAlert('Seleccione un archivo CSV.');
+                return;
+            }
+
+            var btn = document.getElementById('btnImportar');
+            var progressBar = document.getElementById('progressBar');
+            var progressFill = document.getElementById('progressFill');
+
+            btn.disabled = true;
+            progressBar.classList.add('progress-bar--visible');
+            progressFill.style.width = '0%';
+
+            var progress = 0;
+            var progressInterval = setInterval(function () {
+                progress = Math.min(progress + Math.random() * 15, 90);
+                progressFill.style.width = progress + '%';
+            }, 300);
+
+            var formData = new FormData();
+            formData.append('archivo', selectedFile);
+
+            fetch('/api/socios/importar', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            }).then(function (res) {
+                return res.json().then(function (data) {
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || 'Error en la importación.');
+                    }
+                    return data;
+                });
+            }).then(function (result) {
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+
+                var data = result.data || {};
+                document.getElementById('resultExitosos').textContent = data.exitosos || 0;
+                document.getElementById('resultFallidos').textContent = data.fallidos || 0;
+                document.getElementById('resultadoImport').style.display = 'block';
+
+                showAlert(result.message || 'Importación completada.', 'success');
+                cargarInconsistencias();
+            }).catch(function (err) {
+                clearInterval(progressInterval);
+                progressFill.style.width = '0%';
+                showAlert(err.message);
+            }).finally(function () {
+                btn.disabled = false;
+                setTimeout(function () {
+                    progressBar.classList.remove('progress-bar--visible');
+                }, 1000);
+            });
+        });
+
+        /* --- Inconsistencias --- */
+        function cargarInconsistencias() {
+            var tbody = document.getElementById('tablaInconsistencias');
+            var empty = document.getElementById('inconsistenciasEmpty');
+            tbody.innerHTML = '<tr class="loading-row"><td colspan="4">Cargando inconsistencias...</td></tr>';
+            empty.style.display = 'none';
+
+            var estado = document.getElementById('filtroInconsistencia').value;
+            var url = INCONSISTENCIAS_URL + (estado ? '?estado=' + encodeURIComponent(estado) : '');
+
+            fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    var items = [];
+                    if (data && data.success && data.data) {
+                        items = Array.isArray(data.data) ? data.data : (data.data.data || []);
+                    }
+
+                    if (items.length === 0) {
+                        tbody.innerHTML = '';
+                        empty.style.display = 'flex';
+                        return;
+                    }
+
+                    tbody.innerHTML = items.map(function (item) {
+                        return '<tr>' +
+                            '<td style="font-size:0.8125rem;">' + formatDatosRegistro(item.datos_registro) + '</td>' +
+                            '<td style="font-size:0.8125rem;">' + escapeHtml(item.motivo_rechazo) + '</td>' +
+                            '<td>' + estadoBadge(item.estado) + '</td>' +
+                            '<td style="font-size:0.8125rem;">' + formatDate(item.fecha_importacion) + '</td>' +
+                        '</tr>';
+                    }).join('');
+                })
+                .catch(function () {
+                    tbody.innerHTML = '';
+                    empty.style.display = 'flex';
+                    empty.querySelector('.empty-state__text').textContent =
+                        'No se pudo cargar la bandeja de inconsistencias. El endpoint puede no estar disponible aún.';
+                });
+        }
+
+        document.getElementById('filtroInconsistencia').addEventListener('change', cargarInconsistencias);
+
+        cargarInconsistencias();
+    })();
+    </script>
+</body>
+</html>

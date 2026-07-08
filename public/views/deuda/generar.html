@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Deuda Mensual - Centro de Jubilados Primavera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .card-info {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color, #0d6efd);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+        .card-info h3 { margin-top: 0; }
+        .form-generar {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-width: 500px;
+        }
+        
+        /* Modal simple */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .resultados-card {
+            display: none;
+            background: #e6f4ea;
+            border: 1px solid #cce8d6;
+            color: #1a73e8;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/dashboard" class="sidebar-nav-item">Dashboard</a>
+                <a href="/views/socios/padron.html" class="sidebar-nav-item">Socios</a>
+                <a href="/views/deuda/generar.html" class="sidebar-nav-item sidebar-nav-item--active">Generar Deuda</a>
+                <a href="/views/deuda/configuracion-cuota.html" class="sidebar-nav-item">Configurar Cuota</a>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <div class="content__header">
+                <div>
+                    <h1 class="content__title">Generar Deuda Mensual</h1>
+                    <p class="content__subtitle">Emisión masiva de deudas para socios activos</p>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div class="card-info" id="infoCuota">
+                <h3>Cargando información de cuota...</h3>
+            </div>
+
+            <form id="formGenerar" class="form-generar">
+                <div class="form-group">
+                    <label class="form-label" for="inputPeriodo">Período (Mes y Año)</label>
+                    <input type="month" id="inputPeriodo" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn--primary" style="width: 100%;">Generar deuda mensual</button>
+            </form>
+            
+            <div class="resultados-card" id="resultadosCard">
+                <h3 style="margin-top:0">Resultado de la generación</h3>
+                <p id="resGeneradas">Deudas generadas: 0</p>
+                <p id="resOmitidas">Deudas omitidas (ya existían): 0</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Advertencia -->
+    <div class="modal-overlay" id="modalAdvertencia">
+        <div class="modal">
+            <h2 style="margin-top: 0; color: #d32f2f;">¡Atención! Deudas duplicadas</h2>
+            <p>Se ha detectado que <strong id="cantDuplicados">0</strong> socios ya tienen deuda generada para este período.</p>
+            <p>¿Desea continuar de todas formas? Esto sobrescribirá el estado de esas deudas a "Pendiente".</p>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" onclick="cerrarModal()">Cancelar</button>
+                <button type="button" class="btn btn--primary" id="btnConfirmarDuplicados">Confirmar de todas formas</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let periodoActual = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarInfoCuota();
+
+            document.getElementById('formGenerar').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                periodoActual = document.getElementById('inputPeriodo').value;
+                await procesarGeneracion(false);
+            });
+
+            document.getElementById('btnConfirmarDuplicados').addEventListener('click', async () => {
+                cerrarModal();
+                await procesarGeneracion(true);
+            });
+        });
+
+        async function cargarInfoCuota() {
+            try {
+                const res = await fetch('/api/cuota/vigente');
+                const data = await res.json();
+                
+                const card = document.getElementById('infoCuota');
+                if (data.success && data.data) {
+                    const monto = parseFloat(data.data.monto).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+                    card.innerHTML = `
+                        <h3>Cuota Vigente: ${monto}</h3>
+                        <p>La deuda se generará usando este monto (vigente desde ${new Date(data.data.fecha_vigencia_desde).toLocaleDateString('es-AR')}).</p>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <h3 style="color: #d32f2f;">No hay cuota vigente</h3>
+                        <p>Debe configurar el valor de la cuota antes de poder generar deudas.</p>
+                    `;
+                    document.querySelector('#formGenerar button').disabled = true;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function procesarGeneracion(confirmarDuplicado) {
+            try {
+                const res = await fetch('/api/deuda/generar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        periodo: periodoActual,
+                        confirmar_duplicado: confirmarDuplicado
+                    })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const result = data.resultado;
+                    
+                    if (result.advertencias && result.advertencias.length > 0 && !confirmarDuplicado) {
+                        // Mostrar advertencia
+                        document.getElementById('cantDuplicados').textContent = result.advertencias.length;
+                        document.getElementById('modalAdvertencia').style.display = 'flex';
+                    } else {
+                        // Mostrar resultados finales
+                        document.getElementById('resultadosCard').style.display = 'block';
+                        document.getElementById('resGeneradas').textContent = `Deudas generadas: ${result.generadas}`;
+                        document.getElementById('resOmitidas').textContent = `Deudas omitidas: ${result.omitidas}`;
+                        mostrarAlerta('Proceso completado.', 'success');
+                    }
+                } else {
+                    mostrarAlerta(data.error || 'Error al generar deuda.', 'error');
+                }
+            } catch (err) {
+                mostrarAlerta('Error de red al generar deuda.', 'error');
+            }
+        }
+
+        function cerrarModal() {
+            document.getElementById('modalAdvertencia').style.display = 'none';
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert--${tipo}`;
+            alert.textContent = mensaje;
+            alert.style.marginBottom = '1rem';
+            alert.style.padding = '1rem';
+            alert.style.borderRadius = '4px';
+            alert.style.backgroundColor = tipo === 'success' ? '#d4edda' : '#f8d7da';
+            alert.style.color = tipo === 'success' ? '#155724' : '#721c24';
+            
+            container.innerHTML = '';
+            container.appendChild(alert);
+            
+            setTimeout(() => { alert.remove(); }, 5000);
+        }
+    </script>
+</body>
+</html>

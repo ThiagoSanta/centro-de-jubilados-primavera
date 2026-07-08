@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil del Socio - Centro de Jubilados Primavera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/vendor/leaflet/leaflet.css">
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/dashboard" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Dashboard
+                </a>
+                <a href="/views/socios/padron.html" class="sidebar-nav-item sidebar-nav-item--active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Socios
+                </a>
+                <a href="/cobranza" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Cobranza
+                </a>
+                <a href="/planillas" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Planillas y Ruteo
+                </a>
+                <a href="/notificaciones" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    Notificaciones
+                </a>
+                <a href="/auditoria" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Auditoría
+                </a>
+                <a href="/usuarios" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Usuarios
+                </a>
+                <a href="/configuracion" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Configuración
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Contenido -->
+        <main class="content">
+            <div style="margin-bottom:1rem;">
+                <a href="/views/socios/padron.html" style="font-size:0.8125rem;color:var(--color-text-muted);">&larr; Volver al padrón</a>
+            </div>
+
+            <div id="alertContainer"></div>
+            <div id="loadingState" style="text-align:center;padding:3rem;color:var(--color-text-muted);">
+                <span class="spinner spinner--dark"></span> Cargando perfil...
+            </div>
+
+            <div id="profileContent" style="display:none;">
+                <!-- Encabezado -->
+                <div class="profile-header">
+                    <div class="profile-header__info">
+                        <h1 id="socioNombre"></h1>
+                        <div class="profile-header__meta">
+                            <span id="socioNumero"></span>
+                            <span id="socioEstadoBadge"></span>
+                        </div>
+                    </div>
+                    <div class="profile-header__actions">
+                        <button type="button" class="btn btn--secondary btn--sm" id="btnEditar">Editar</button>
+                        <button type="button" class="btn btn--secondary btn--sm" id="btnSuspender" style="display:none;">Suspender</button>
+                        <button type="button" class="btn btn--secondary btn--sm" id="btnReactivar" style="display:none;">Reactivar</button>
+                        <button type="button" class="btn btn--danger btn--sm" id="btnEliminar">Eliminar</button>
+                        <button type="button" class="btn btn--secondary btn--sm" id="btnHistorial">Ver historial completo</button>
+                    </div>
+                </div>
+
+                <div class="profile-grid">
+                    <!-- Columna izquierda -->
+                    <div>
+                        <div class="card">
+                            <div class="card__header">Datos personales</div>
+                            <div class="card__body">
+                                <dl class="data-list" id="datosPersonales"></dl>
+                                <div class="map-container" id="mapaMini"></div>
+                                <button type="button" class="btn btn--secondary btn--sm" id="btnCorregirGeo" style="margin-top:0.75rem;">Corregir ubicación</button>
+                            </div>
+                        </div>
+
+                        <!-- Pestañas -->
+                        <div style="margin-top:1.5rem;">
+                            <div class="tabs" role="tablist">
+                                <button type="button" class="tab tab--active" data-tab="datos" role="tab">Datos</button>
+                                <button type="button" class="tab" data-tab="observaciones" role="tab">Observaciones</button>
+                                <button type="button" class="tab" data-tab="pagos" role="tab">Pagos</button>
+                            </div>
+
+                            <div class="tab-panel tab-panel--active" id="panelDatos">
+                                <div class="card">
+                                    <div class="card__body">
+                                        <dl class="data-list" id="datosExtendidos"></dl>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-panel" id="panelObservaciones">
+                                <div class="card">
+                                    <div class="card__body">
+                                        <div id="listaObservaciones"></div>
+                                        <div class="observacion-form">
+                                            <input type="text" id="inputObservacion" class="form-control" placeholder="Escriba una observación...">
+                                            <button type="button" class="btn btn--primary btn--sm" id="btnAgregarObs">Agregar observación</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-panel" id="panelPagos">
+                                <div class="card">
+                                    <div class="card__body" style="padding:0;">
+                                        <div class="table-wrapper" style="border:none;">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Fecha</th>
+                                                        <th>Monto</th>
+                                                        <th>Método</th>
+                                                        <th>Estado</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tablaPagos"></tbody>
+                                            </table>
+                                        </div>
+                                        <div id="pagosEmpty" class="empty-state" style="display:none;padding:2rem;">
+                                            <div class="empty-state__title">Sin pagos registrados</div>
+                                            <div class="empty-state__text">Este socio aún no tiene pagos en el sistema.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna derecha: deuda -->
+                    <div>
+                        <div class="card">
+                            <div class="card__header">Estado de cuenta</div>
+                            <div class="card__body deuda-card">
+                                <div class="deuda-card__label">Total adeudado</div>
+                                <div class="deuda-card__amount" id="deudaAmount"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal editar socio -->
+    <div class="modal-overlay" id="modalEditarOverlay">
+        <div class="modal modal--lg" role="dialog">
+            <div class="modal__header">
+                <h3 class="modal__title">Editar socio</h3>
+            </div>
+            <form id="formEditar" class="modal__body">
+                <div class="form-group">
+                    <label for="editNombre">Nombre y apellido</label>
+                    <input type="text" id="editNombre" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editTelefono">Teléfono</label>
+                    <input type="tel" id="editTelefono" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editMutual">Mutual</label>
+                    <input type="text" id="editMutual" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="editDireccion">Dirección</label>
+                    <input type="text" id="editDireccion" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Modalidad de cobranza</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="editModalidad" value="cobranza_domiciliaria"> Domiciliaria</label>
+                        <label><input type="radio" name="editModalidad" value="cobranza_en_sede"> En sede</label>
+                    </div>
+                </div>
+            </form>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" id="btnCancelarEditar">Cancelar</button>
+                <button type="submit" form="formEditar" class="btn btn--primary">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal eliminar -->
+    <div class="modal-overlay" id="modalEliminarOverlay">
+        <div class="modal" role="dialog">
+            <div class="modal__header">
+                <h3 class="modal__title">Eliminar socio</h3>
+            </div>
+            <div class="modal__body">
+                <p class="modal__message">Esta acción dará de baja al socio. Ingrese el motivo para continuar.</p>
+                <div class="form-group">
+                    <label for="eliminarMotivo">Motivo *</label>
+                    <textarea id="eliminarMotivo" class="form-control form-control--textarea" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" id="btnCancelarEliminar">Cancelar</button>
+                <button type="button" class="btn btn--danger" id="btnConfirmarEliminar">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal geolocalización -->
+    <div class="modal-overlay" id="modalGeoOverlay">
+        <div class="modal modal--lg" role="dialog">
+            <div class="modal__header">
+                <h3 class="modal__title">Corregir ubicación</h3>
+            </div>
+            <div class="modal__body">
+                <p class="modal__message">Arrastre el marcador para ajustar la ubicación del socio.</p>
+                <div class="map-container map-container--lg" id="mapaGeo"></div>
+                <div class="coords-display" id="coordsDisplay">Lat: — | Lng: —</div>
+            </div>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" id="btnCancelarGeo">Cancelar</button>
+                <button type="button" class="btn btn--primary" id="btnGuardarGeo">Guardar nueva ubicación</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal historial -->
+    <div class="modal-overlay" id="modalHistorialOverlay">
+        <div class="modal modal--lg" role="dialog">
+            <div class="modal__header">
+                <h3 class="modal__title">Historial completo</h3>
+            </div>
+            <div class="modal__body" id="historialContent" style="max-height:60vh;overflow-y:auto;"></div>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" id="btnCerrarHistorial">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/vendor/leaflet/leaflet.js"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        var DEFAULT_CENTER = [-32.816, -61.389722];
+        var socioId = new URLSearchParams(window.location.search).get('id');
+        var socio = null;
+        var zonasMap = {};
+        var mapaMini = null;
+        var mapaGeo = null;
+        var markerGeo = null;
+        var markerMini = null;
+
+        if (!socioId) {
+            document.getElementById('loadingState').innerHTML = '<div class="alert alert--error">No se especificó un ID de socio.</div>';
+            return;
+        }
+
+        function apiFetch(url, options) {
+            options = options || {};
+            if (!(options.body instanceof FormData)) {
+                options.headers = Object.assign({
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }, options.headers || {});
+            } else {
+                options.headers = Object.assign({
+                    'X-Requested-With': 'XMLHttpRequest'
+                }, options.headers || {});
+            }
+            return fetch(url, options).then(function (res) {
+                return res.json().then(function (data) {
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.message || 'Error en la solicitud.');
+                    }
+                    return data;
+                });
+            });
+        }
+
+        function apiFetchOptional(url) {
+            return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    if (!data.success) return null;
+                    return data.data;
+                })
+                .catch(function () { return null; });
+        }
+
+        function showAlert(message, type) {
+            var container = document.getElementById('alertContainer');
+            container.innerHTML = '<div class="alert alert--' + (type || 'error') + '">' + escapeHtml(message) + '</div>';
+            setTimeout(function () { container.innerHTML = ''; }, 5000);
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            var div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '—';
+            var parts = dateStr.split(/[T\s]/)[0].split('-');
+            if (parts.length !== 3) return dateStr;
+            return parts[2] + '/' + parts[1] + '/' + parts[0];
+        }
+
+        function formatMoney(amount) {
+            return '$ ' + Number(amount).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function estadoBadge(estado) {
+            var labels = { activo: 'Activo', suspendido: 'Suspendido', eliminado: 'Eliminado' };
+            return '<span class="badge badge--' + estado + '">' + escapeHtml(labels[estado] || estado) + '</span>';
+        }
+
+        function modalidadLabel(mod) {
+            return mod === 'cobranza_en_sede' ? 'Cobranza en sede' : 'Cobranza domiciliaria';
+        }
+
+        function getZonaNombre(zonaId) {
+            return zonasMap[zonaId] || '—';
+        }
+
+        /* --- Carga inicial --- */
+        function init() {
+            Promise.all([
+                apiFetch('/api/socios/' + socioId).then(function (r) { socio = r.data; }),
+                apiFetchOptional('/api/zonas').then(function (data) {
+                    (data || []).forEach(function (z) { zonasMap[z.id] = z.nombre; });
+                })
+            ]).then(function () {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('profileContent').style.display = 'block';
+                renderPerfil();
+                initMapaMini();
+                cargarObservaciones();
+                cargarPagos();
+            }).catch(function (err) {
+                document.getElementById('loadingState').innerHTML = '<div class="alert alert--error">' + escapeHtml(err.message) + '</div>';
+            });
+        }
+
+        function renderPerfil() {
+            document.getElementById('socioNombre').textContent = socio.nombre_apellido;
+            document.getElementById('socioNumero').textContent = 'N° ' + socio.numero_socio;
+            document.getElementById('socioEstadoBadge').innerHTML = estadoBadge(socio.estado);
+
+            document.getElementById('btnSuspender').style.display = socio.estado === 'activo' ? 'inline-flex' : 'none';
+            document.getElementById('btnReactivar').style.display = socio.estado === 'suspendido' ? 'inline-flex' : 'none';
+
+            document.getElementById('datosPersonales').innerHTML =
+                '<dt>DNI</dt><dd>' + escapeHtml(socio.dni) + '</dd>' +
+                '<dt>Fecha nacimiento</dt><dd>' + formatDate(socio.fecha_nacimiento) + '</dd>' +
+                '<dt>Teléfono</dt><dd>' + escapeHtml(socio.telefono) + '</dd>' +
+                '<dt>Mutual</dt><dd>' + escapeHtml(socio.mutual || '—') + '</dd>' +
+                '<dt>Dirección</dt><dd>' + escapeHtml(socio.direccion) + '</dd>' +
+                '<dt>Modalidad</dt><dd>' + modalidadLabel(socio.modalidad_cobranza) + '</dd>' +
+                '<dt>Fecha alta</dt><dd>' + formatDate(socio.fecha_alta) + '</dd>';
+
+            document.getElementById('datosExtendidos').innerHTML =
+                '<dt>Zona</dt><dd>' + escapeHtml(getZonaNombre(socio.zona_id)) + '</dd>' +
+                '<dt>Geolocalización</dt><dd>' + (socio.geolocalizacion_pendiente ? 'Pendiente' : 'Confirmada') + '</dd>' +
+                (socio.latitud && socio.longitud
+                    ? '<dt>Coordenadas</dt><dd>' + socio.latitud.toFixed(6) + ', ' + socio.longitud.toFixed(6) + '</dd>'
+                    : '') +
+                (socio.motivo_baja ? '<dt>Motivo baja</dt><dd>' + escapeHtml(socio.motivo_baja) + '</dd>' : '');
+
+            var deudaEl = document.getElementById('deudaAmount');
+            if (socio.con_deuda) {
+                deudaEl.textContent = 'Con deuda';
+                deudaEl.className = 'deuda-card__amount deuda-card__amount--deuda';
+            } else {
+                deudaEl.textContent = 'Al día';
+                deudaEl.className = 'deuda-card__amount deuda-card__amount--ok';
+            }
+        }
+
+        /* --- Mapa mini --- */
+        function initMapaMini() {
+            var container = document.getElementById('mapaMini');
+            if (!socio.latitud || !socio.longitud) {
+                container.innerHTML = '<div class="map-placeholder">Sin coordenadas registradas</div>';
+                return;
+            }
+
+            mapaMini = L.map(container, { scrollWheelZoom: false, dragging: false, zoomControl: false }).setView([socio.latitud, socio.longitud], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(mapaMini);
+            markerMini = L.marker([socio.latitud, socio.longitud]).addTo(mapaMini);
+        }
+
+        /* --- Mapa geolocalización --- */
+        function abrirModalGeo() {
+            document.getElementById('modalGeoOverlay').classList.add('modal-overlay--open');
+
+            setTimeout(function () {
+                if (mapaGeo) {
+                    mapaGeo.remove();
+                    mapaGeo = null;
+                }
+
+                var lat = socio.latitud || DEFAULT_CENTER[0];
+                var lng = socio.longitud || DEFAULT_CENTER[1];
+
+                mapaGeo = L.map('mapaGeo').setView([lat, lng], 16);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(mapaGeo);
+
+                markerGeo = L.marker([lat, lng], { draggable: true }).addTo(mapaGeo);
+                actualizarCoordsDisplay(lat, lng);
+
+                markerGeo.on('dragend', function () {
+                    var pos = markerGeo.getLatLng();
+                    actualizarCoordsDisplay(pos.lat, pos.lng);
+                });
+
+                mapaGeo.invalidateSize();
+            }, 200);
+        }
+
+        function actualizarCoordsDisplay(lat, lng) {
+            document.getElementById('coordsDisplay').textContent =
+                'Lat: ' + lat.toFixed(6) + ' | Lng: ' + lng.toFixed(6);
+        }
+
+        document.getElementById('btnCorregirGeo').addEventListener('click', abrirModalGeo);
+        document.getElementById('btnCancelarGeo').addEventListener('click', function () {
+            document.getElementById('modalGeoOverlay').classList.remove('modal-overlay--open');
+        });
+
+        document.getElementById('btnGuardarGeo').addEventListener('click', function () {
+            if (!markerGeo) return;
+            var pos = markerGeo.getLatLng();
+            var btn = document.getElementById('btnGuardarGeo');
+            btn.disabled = true;
+
+            apiFetch('/api/socios/' + socioId + '/geolocalizacion', {
+                method: 'POST',
+                body: JSON.stringify({ lat: pos.lat, lng: pos.lng })
+            }).then(function () {
+                document.getElementById('modalGeoOverlay').classList.remove('modal-overlay--open');
+                showAlert('Ubicación actualizada correctamente.', 'success');
+                return apiFetch('/api/socios/' + socioId);
+            }).then(function (r) {
+                socio = r.data;
+                if (mapaMini) { mapaMini.remove(); mapaMini = null; }
+                initMapaMini();
+                renderPerfil();
+            }).catch(function (err) {
+                showAlert(err.message);
+            }).finally(function () {
+                btn.disabled = false;
+            });
+        });
+
+        /* --- Pestañas --- */
+        document.querySelectorAll('.tab').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('tab--active'); });
+                document.querySelectorAll('.tab-panel').forEach(function (p) { p.classList.remove('tab-panel--active'); });
+                tab.classList.add('tab--active');
+                document.getElementById('panel' + tab.dataset.tab.charAt(0).toUpperCase() + tab.dataset.tab.slice(1)).classList.add('tab-panel--active');
+            });
+        });
+
+        /* --- Observaciones (endpoint placeholder) --- */
+        function cargarObservaciones() {
+            apiFetchOptional('/api/socios/' + socioId + '/observaciones').then(function (data) {
+                var container = document.getElementById('listaObservaciones');
+                var items = data || [];
+                if (items.length === 0) {
+                    container.innerHTML = '<div class="empty-state" style="padding:1.5rem 0;"><div class="empty-state__text">No hay observaciones registradas.</div></div>';
+                    return;
+                }
+                container.innerHTML = items.map(function (obs) {
+                    return '<div class="observacion-item">' +
+                        '<div class="observacion-item__fecha">' + formatDate(obs.fecha || obs.fecha_creacion) + '</div>' +
+                        '<div class="observacion-item__texto">' + escapeHtml(obs.texto || obs.observacion) + '</div>' +
+                    '</div>';
+                }).join('');
+            });
+        }
+
+        document.getElementById('btnAgregarObs').addEventListener('click', function () {
+            var texto = document.getElementById('inputObservacion').value.trim();
+            if (!texto) { showAlert('Ingrese una observación.'); return; }
+
+            fetch('/api/socios/' + socioId + '/observaciones', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ texto: texto })
+            }).then(function (res) { return res.json(); })
+            .then(function (data) {
+                if (!data.success) throw new Error(data.message || 'Error al agregar observación.');
+                document.getElementById('inputObservacion').value = '';
+                showAlert('Observación agregada.', 'success');
+                cargarObservaciones();
+            }).catch(function (err) {
+                showAlert(err.message);
+            });
+        });
+
+        /* --- Pagos (endpoint placeholder) --- */
+        function cargarPagos() {
+            apiFetchOptional('/api/socios/' + socioId + '/pagos').then(function (data) {
+                var tbody = document.getElementById('tablaPagos');
+                var empty = document.getElementById('pagosEmpty');
+                var pagos = data || [];
+
+                if (pagos.length === 0) {
+                    tbody.innerHTML = '';
+                    empty.style.display = 'flex';
+                    return;
+                }
+
+                empty.style.display = 'none';
+                tbody.innerHTML = pagos.map(function (pago) {
+                    var estadoPago = pago.estado === 'anulado'
+                        ? '<span class="badge badge--eliminado">Anulado</span>'
+                        : '<span class="badge badge--activo">Confirmado</span>';
+
+                    return '<tr>' +
+                        '<td>' + formatDate(pago.fecha) + '</td>' +
+                        '<td>' + formatMoney(pago.monto) + '</td>' +
+                        '<td>' + escapeHtml(pago.metodo || '—') + '</td>' +
+                        '<td>' + estadoPago + '</td>' +
+                        '<td>' + (pago.estado !== 'anulado'
+                            ? '<button type="button" class="btn btn--secondary btn--sm btn-anular-pago" data-id="' + escapeHtml(pago.id) + '">Anular</button>'
+                            : '') + '</td>' +
+                    '</tr>';
+                }).join('');
+
+                tbody.querySelectorAll('.btn-anular-pago').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        if (!confirm('¿Confirma anular este pago?')) return;
+                        fetch('/api/socios/' + socioId + '/pagos/' + btn.dataset.id + '/anular', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                        }).then(function (res) { return res.json(); })
+                        .then(function (data) {
+                            if (!data.success) throw new Error(data.message);
+                            showAlert('Pago anulado.', 'success');
+                            cargarPagos();
+                        }).catch(function (err) { showAlert(err.message); });
+                    });
+                });
+            });
+        }
+
+        /* --- Historial (endpoint placeholder) --- */
+        document.getElementById('btnHistorial').addEventListener('click', function () {
+            document.getElementById('modalHistorialOverlay').classList.add('modal-overlay--open');
+            var content = document.getElementById('historialContent');
+            content.innerHTML = '<p style="color:var(--color-text-muted);">Cargando historial...</p>';
+
+            apiFetchOptional('/api/socios/' + socioId + '/historial').then(function (data) {
+                var items = data || [];
+                if (items.length === 0) {
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state__text">No hay eventos en el historial.</div></div>';
+                    return;
+                }
+                content.innerHTML = items.map(function (item) {
+                    return '<div class="historial-item">' +
+                        '<div class="historial-item__fecha">' + formatDate(item.fecha || item.fecha_hora) + '</div>' +
+                        '<div class="historial-item__contenido">' + escapeHtml(item.descripcion || item.mensaje || item.accion) + '</div>' +
+                    '</div>';
+                }).join('');
+            });
+        });
+
+        document.getElementById('btnCerrarHistorial').addEventListener('click', function () {
+            document.getElementById('modalHistorialOverlay').classList.remove('modal-overlay--open');
+        });
+
+        /* --- Editar --- */
+        document.getElementById('btnEditar').addEventListener('click', function () {
+            document.getElementById('editNombre').value = socio.nombre_apellido;
+            document.getElementById('editTelefono').value = socio.telefono;
+            document.getElementById('editMutual').value = socio.mutual || '';
+            document.getElementById('editDireccion').value = socio.direccion;
+            document.querySelectorAll('input[name="editModalidad"]').forEach(function (r) {
+                r.checked = r.value === socio.modalidad_cobranza;
+            });
+            document.getElementById('modalEditarOverlay').classList.add('modal-overlay--open');
+        });
+
+        document.getElementById('btnCancelarEditar').addEventListener('click', function () {
+            document.getElementById('modalEditarOverlay').classList.remove('modal-overlay--open');
+        });
+
+        document.getElementById('formEditar').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var modalidad = document.querySelector('input[name="editModalidad"]:checked');
+            var payload = {
+                nombre_apellido: document.getElementById('editNombre').value.trim(),
+                telefono: document.getElementById('editTelefono').value.trim(),
+                mutual: document.getElementById('editMutual').value.trim() || null,
+                direccion: document.getElementById('editDireccion').value.trim(),
+                modalidad_cobranza: modalidad ? modalidad.value : socio.modalidad_cobranza
+            };
+
+            apiFetch('/api/socios/' + socioId, { method: 'PUT', body: JSON.stringify(payload) })
+                .then(function (r) {
+                    socio = r.data;
+                    document.getElementById('modalEditarOverlay').classList.remove('modal-overlay--open');
+                    showAlert('Datos actualizados correctamente.', 'success');
+                    renderPerfil();
+                    if (mapaMini) { mapaMini.remove(); mapaMini = null; }
+                    initMapaMini();
+                })
+                .catch(function (err) { showAlert(err.message); });
+        });
+
+        /* --- Suspender / Reactivar / Eliminar --- */
+        document.getElementById('btnSuspender').addEventListener('click', function () {
+            apiFetch('/api/socios/' + socioId + '/suspender', { method: 'POST', body: '{}' })
+                .then(function () {
+                    showAlert('Socio suspendido.', 'success');
+                    return apiFetch('/api/socios/' + socioId);
+                })
+                .then(function (r) { socio = r.data; renderPerfil(); })
+                .catch(function (err) { showAlert(err.message); });
+        });
+
+        document.getElementById('btnReactivar').addEventListener('click', function () {
+            apiFetch('/api/socios/' + socioId + '/reactivar', { method: 'POST', body: '{}' })
+                .then(function () {
+                    showAlert('Socio reactivado.', 'success');
+                    return apiFetch('/api/socios/' + socioId);
+                })
+                .then(function (r) { socio = r.data; renderPerfil(); })
+                .catch(function (err) { showAlert(err.message); });
+        });
+
+        document.getElementById('btnEliminar').addEventListener('click', function () {
+            document.getElementById('eliminarMotivo').value = '';
+            document.getElementById('modalEliminarOverlay').classList.add('modal-overlay--open');
+        });
+
+        document.getElementById('btnCancelarEliminar').addEventListener('click', function () {
+            document.getElementById('modalEliminarOverlay').classList.remove('modal-overlay--open');
+        });
+
+        document.getElementById('btnConfirmarEliminar').addEventListener('click', function () {
+            var motivo = document.getElementById('eliminarMotivo').value.trim();
+            if (!motivo) { showAlert('Debe ingresar un motivo.'); return; }
+
+            apiFetch('/api/socios/' + socioId, {
+                method: 'DELETE',
+                body: JSON.stringify({ motivo: motivo })
+            }).then(function () {
+                document.getElementById('modalEliminarOverlay').classList.remove('modal-overlay--open');
+                showAlert('Socio dado de baja.', 'success');
+                return apiFetch('/api/socios/' + socioId);
+            }).then(function (r) {
+                socio = r.data;
+                renderPerfil();
+            }).catch(function (err) { showAlert(err.message); });
+        });
+
+        /* --- Cerrar modales con click en overlay --- */
+        ['modalEditarOverlay', 'modalEliminarOverlay', 'modalGeoOverlay', 'modalHistorialOverlay'].forEach(function (id) {
+            document.getElementById(id).addEventListener('click', function (e) {
+                if (e.target === this) this.classList.remove('modal-overlay--open');
+            });
+        });
+
+        init();
+    })();
+    </script>
+</body>
+</html>

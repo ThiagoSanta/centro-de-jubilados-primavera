@@ -8,6 +8,7 @@ use CJP\Modules\Auth\AuthController;
 use CJP\Shared\AuthMiddleware;
 use CJP\Modules\Zonas\ZonaController;
 use CJP\Modules\Socios\SocioController;
+use CJP\Modules\Deuda\DeudaController;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -57,6 +58,16 @@ $router->post('/api/socios/{id}/reactivar', [SocioController::class, 'reactivate
 $router->post('/api/socios/{id}/revertir', [SocioController::class, 'revertDelete']);
 $router->post('/api/socios/{id}/geolocalizacion', [SocioController::class, 'corregirGeo']);
 $router->get('/api/socios/{id}/qr', [SocioController::class, 'getQR']);
+
+// Deuda & Cuota routes (order is critical: static before parameterized)
+$router->get('/api/cuota/vigente', [DeudaController::class, 'getCuotaVigente']);
+$router->get('/api/cuota/historico', [DeudaController::class, 'getHistoricoCuotas']);
+$router->post('/api/cuota', [DeudaController::class, 'registrarCuota']);
+$router->post('/api/deuda/generar', [DeudaController::class, 'generarMensual']);
+$router->post('/api/deuda/anterior', [DeudaController::class, 'cargarAnterior']);
+$router->get('/api/deuda/socio/{socioId}/pendientes', [DeudaController::class, 'getPendientesBySocio']);
+$router->get('/api/deuda/socio/{socioId}', [DeudaController::class, 'getBySocio']);
+$router->post('/api/deuda/{id}/exonerar', [DeudaController::class, 'exonerar']);
 
 // Dispatch request
 $router->dispatch();

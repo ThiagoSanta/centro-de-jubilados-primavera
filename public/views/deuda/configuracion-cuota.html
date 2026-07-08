@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Cuota - Centro de Jubilados Primavera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .card-vigente {
+            background-color: var(--primary-color, #0d6efd);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .card-vigente h2 {
+            margin: 0;
+            font-size: 3rem;
+        }
+        .card-vigente p {
+            margin: 0.5rem 0 0;
+            opacity: 0.8;
+        }
+        .form-inline {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/dashboard" class="sidebar-nav-item">Dashboard</a>
+                <a href="/views/socios/padron.html" class="sidebar-nav-item">Socios</a>
+                <a href="/views/deuda/generar.html" class="sidebar-nav-item">Generar Deuda</a>
+                <a href="/views/deuda/configuracion-cuota.html" class="sidebar-nav-item sidebar-nav-item--active">Configurar Cuota</a>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <div class="content__header">
+                <div>
+                    <h1 class="content__title">Configuración de Cuota</h1>
+                    <p class="content__subtitle">Gestiona el valor histórico y actual de la cuota social</p>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div class="card-vigente" id="cardVigente">
+                <h2>Cargando...</h2>
+                <p>Monto vigente actual</p>
+            </div>
+
+            <form id="formCuota" class="form-inline">
+                <div class="form-group" style="flex: 1; margin: 0;">
+                    <label class="form-label">Monto ($)</label>
+                    <input type="number" id="inputMonto" class="form-control" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group" style="flex: 1; margin: 0;">
+                    <label class="form-label">Vigente Desde</label>
+                    <input type="date" id="inputFechaVigencia" class="form-control" required>
+                </div>
+                <div style="flex: 1;">
+                    <button type="submit" class="btn btn--primary" style="width: 100%;">Registrar nuevo valor</button>
+                </div>
+            </form>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Monto</th>
+                            <th>Vigente Desde</th>
+                            <th>Registrado Por</th>
+                            <th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHistorico">
+                        <tr><td colspan="4" style="text-align: center;">Cargando histórico...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarCuotaVigente();
+            cargarHistorico();
+
+            document.getElementById('formCuota').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const monto = document.getElementById('inputMonto').value;
+                const fecha = document.getElementById('inputFechaVigencia').value;
+
+                try {
+                    const res = await fetch('/api/cuota', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ monto, fecha_vigencia_desde: fecha })
+                    });
+                    const data = await res.json();
+                    
+                    if (data.success) {
+                        mostrarAlerta('Cuota registrada correctamente.', 'success');
+                        document.getElementById('formCuota').reset();
+                        cargarCuotaVigente();
+                        cargarHistorico();
+                    } else {
+                        mostrarAlerta(data.error || 'Error al registrar cuota.', 'error');
+                    }
+                } catch (err) {
+                    mostrarAlerta('Error de red al registrar cuota.', 'error');
+                }
+            });
+        });
+
+        async function cargarCuotaVigente() {
+            try {
+                const res = await fetch('/api/cuota/vigente');
+                const data = await res.json();
+                
+                const card = document.getElementById('cardVigente');
+                if (data.success && data.data) {
+                    const monto = parseFloat(data.data.monto).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+                    card.innerHTML = `
+                        <h2>${monto}</h2>
+                        <p>Vigente desde: ${new Date(data.data.fecha_vigencia_desde).toLocaleDateString('es-AR')}</p>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <h2>Sin cuota</h2>
+                        <p>No hay cuotas configuradas aún</p>
+                    `;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function cargarHistorico() {
+            try {
+                const res = await fetch('/api/cuota/historico');
+                const data = await res.json();
+                
+                const tbody = document.getElementById('tablaHistorico');
+                if (data.success && data.data.length > 0) {
+                    tbody.innerHTML = data.data.map(c => `
+                        <tr>
+                            <td>${parseFloat(c.monto).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}</td>
+                            <td>${new Date(c.fecha_vigencia_desde).toLocaleDateString('es-AR')}</td>
+                            <td>${c.usuario_nombre || c.usuario_id}</td>
+                            <td>${new Date(c.fecha_registro).toLocaleString('es-AR')}</td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center;">No hay histórico registrado</td></tr>`;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert--${tipo}`;
+            alert.textContent = mensaje;
+            alert.style.marginBottom = '1rem';
+            alert.style.padding = '1rem';
+            alert.style.borderRadius = '4px';
+            alert.style.backgroundColor = tipo === 'success' ? '#d4edda' : '#f8d7da';
+            alert.style.color = tipo === 'success' ? '#155724' : '#721c24';
+            
+            container.innerHTML = '';
+            container.appendChild(alert);
+            
+            setTimeout(() => { alert.remove(); }, 5000);
+        }
+    </script>
+</body>
+</html>
