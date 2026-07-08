@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generar Planilla - CJP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-gray-100 h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-green-800 text-white flex flex-col">
+        <div class="p-4 bg-green-900">
+            <h1 class="text-xl font-bold">CJP Admin</h1>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <a href="/views/dashboard.html" class="block p-2 rounded hover:bg-green-700">Dashboard</a>
+            <a href="/views/socios/listado.html" class="block p-2 rounded hover:bg-green-700">Socios</a>
+            <a href="/views/deuda/generacion.html" class="block p-2 rounded hover:bg-green-700">Generar Deuda</a>
+            <a href="/views/pagos/listado.html" class="block p-2 rounded hover:bg-green-700">Pagos</a>
+            <div class="pt-4 pb-2">
+                <p class="text-xs uppercase text-green-300 font-bold">Planillas</p>
+                <a href="/views/planillas/generar.html" class="block p-2 mt-2 rounded bg-green-700">Generar Planilla</a>
+                <a href="/views/planillas/historico.html" class="block p-2 rounded hover:bg-green-700">Histórico</a>
+                <a href="/views/planillas/mapa.html" class="block p-2 rounded hover:bg-green-700">Mapa General</a>
+            </div>
+        </nav>
+        <div class="p-4 bg-green-900 border-t border-green-700">
+            <button onclick="logout()" class="w-full text-left p-2 hover:bg-green-700 rounded text-red-300">Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="bg-white shadow p-4 flex justify-between items-center">
+            <h2 class="text-xl font-semibold text-gray-800">Generar Planilla de Cobranza</h2>
+        </header>
+
+        <div class="flex-1 overflow-auto p-6">
+            <div class="bg-white p-6 rounded-lg shadow max-w-4xl mx-auto">
+                <form id="formGenerar" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Zona</label>
+                            <select id="zonaSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                                <option value="">Seleccione zona...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Cobrador</label>
+                            <select id="cobradorSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                                <option value="">Seleccione cobrador...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 focus:outline-none">Generar Planilla</button>
+                    </div>
+                </form>
+                
+                <div id="loadingMessage" class="hidden mt-4 text-center text-blue-600">Procesando...</div>
+                <div id="errorMessage" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded"></div>
+                <div id="successMessage" class="hidden mt-4 p-3 bg-green-100 text-green-700 rounded flex justify-between items-center">
+                    <span>Planilla generada con éxito.</span>
+                    <a id="linkPdf" href="#" target="_blank" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Ver PDF</a>
+                </div>
+
+                <div id="previewContainer" class="mt-8 hidden">
+                    <h3 class="text-lg font-medium text-gray-800 border-b pb-2 mb-4">Vista Previa de Socios</h3>
+                    
+                    <div class="h-96 w-full rounded border mb-4" id="mapPreview"></div>
+                    
+                    <table class="min-w-full divide-y divide-gray-200 border mt-4">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Socio</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Geo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaPreview" class="bg-white divide-y divide-gray-200">
+                            <!-- JS will populate -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+        let map;
+        let markers = [];
+
+        async function init() {
+            try {
+                const [zonasRes, cobradoresRes] = await Promise.all([
+                    fetch(`${API_BASE}/zonas`),
+                    fetch(`${API_BASE}/planillas/cobradores`)
+                ]);
+                
+                const zonasData = await zonasRes.json();
+                const cobData = await cobradoresRes.json();
+                
+                const zonaSelect = document.getElementById('zonaSelect');
+                zonasData.data.forEach(z => {
+                    const option = document.createElement('option');
+                    option.value = z.id;
+                    option.textContent = `${z.nombre} (${z.codigo})`;
+                    zonaSelect.appendChild(option);
+                });
+
+                const cobradorSelect = document.getElementById('cobradorSelect');
+                cobData.data.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = `${c.apellido}, ${c.nombre}`;
+                    cobradorSelect.appendChild(option);
+                });
+                
+                zonaSelect.addEventListener('change', loadPreview);
+                document.getElementById('formGenerar').addEventListener('submit', generarPlanilla);
+                
+                initMap();
+            } catch (error) {
+                console.error("Error al inicializar:", error);
+                alert("Error cargando datos iniciales.");
+            }
+        }
+
+        function initMap() {
+            map = L.map('mapPreview').setView([-32.820366, -61.403157], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            L.marker([-32.820366, -61.403157], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+                    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+                })
+            }).addTo(map).bindPopup('Sede Centro Jubilados Primavera');
+        }
+
+        async function loadPreview() {
+            const zonaId = document.getElementById('zonaSelect').value;
+            const container = document.getElementById('previewContainer');
+            if (!zonaId) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            try {
+                // El filtro con_deuda puede o no estar en el controller de socios según fase anterior,
+                // Pero traemos los de la zona domiciliarios activos, asumiendo o con suerte con_deuda se procesa
+                const res = await fetch(`${API_BASE}/socios?limit=10000&zona_id=${zonaId}&modalidad_cobranza=cobranza_domiciliaria&estado=activo`);
+                const data = await res.json();
+                
+                if (data.success) {
+                    container.classList.remove('hidden');
+                    
+                    markers.forEach(m => map.removeLayer(m));
+                    markers = [];
+                    
+                    const tbody = document.getElementById('tablaPreview');
+                    tbody.innerHTML = '';
+                    
+                    let bounds = L.latLngBounds([[-32.820366, -61.403157]]);
+                    
+                    data.data.data.forEach(s => {
+                        const tr = document.createElement('tr');
+                        const geoOk = s.latitud && s.longitud && !s.geolocalizacion_pendiente;
+                        
+                        tr.innerHTML = `
+                            <td class="px-4 py-2 text-sm">${s.numero_socio}</td>
+                            <td class="px-4 py-2 text-sm">${s.nombre_apellido}</td>
+                            <td class="px-4 py-2 text-sm">${s.direccion}</td>
+                            <td class="px-4 py-2 text-sm">
+                                ${geoOk 
+                                    ? '<span class="text-green-600 font-bold">✓</span>' 
+                                    : '<span class="text-red-500 font-bold">✕</span>'}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                        
+                        if (s.latitud && s.longitud) {
+                            const color = geoOk ? 'green' : 'grey';
+                            const marker = L.marker([s.latitud, s.longitud], {
+                                icon: L.icon({
+                                    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+                                    iconSize: [25, 41], iconAnchor: [12, 41]
+                                })
+                            }).addTo(map).bindPopup(`${s.nombre_apellido}<br>${s.direccion}`);
+                            markers.push(marker);
+                            bounds.extend([s.latitud, s.longitud]);
+                        }
+                    });
+                    
+                    map.fitBounds(bounds, {padding: [50, 50]});
+                    setTimeout(() => { map.invalidateSize(); }, 200);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function generarPlanilla(e) {
+            e.preventDefault();
+            const zona_id = document.getElementById('zonaSelect').value;
+            const cobrador_id = document.getElementById('cobradorSelect').value;
+            
+            const errDiv = document.getElementById('errorMessage');
+            const succDiv = document.getElementById('successMessage');
+            const loadDiv = document.getElementById('loadingMessage');
+            
+            errDiv.classList.add('hidden');
+            succDiv.classList.add('hidden');
+            
+            if (!zona_id || !cobrador_id) {
+                errDiv.textContent = 'Seleccione zona y cobrador.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+            
+            loadDiv.classList.remove('hidden');
+            
+            try {
+                const res = await fetch(`${API_BASE}/planillas`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ zona_id, cobrador_id })
+                });
+                const data = await res.json();
+                
+                loadDiv.classList.add('hidden');
+                
+                if (data.success) {
+                    succDiv.classList.remove('hidden');
+                    document.getElementById('linkPdf').href = `${API_BASE}/planillas/${data.data.id}/pdf`;
+                } else {
+                    errDiv.textContent = data.message || 'Error al generar';
+                    errDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                loadDiv.classList.add('hidden');
+                errDiv.textContent = 'Error de red';
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            fetch('/api/auth/logout', {method: 'POST'})
+                .then(() => window.location.href = '/views/auth/login.html');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

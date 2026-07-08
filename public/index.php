@@ -10,6 +10,7 @@ use CJP\Modules\Zonas\ZonaController;
 use CJP\Modules\Socios\SocioController;
 use CJP\Modules\Deuda\DeudaController;
 use CJP\Modules\Pagos\PagoController;
+use CJP\Modules\Planillas\PlanillaController;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -77,6 +78,13 @@ $router->post('/api/pagos', [PagoController::class, 'registrar']);
 $router->get('/api/pagos/{id}/comprobante', [PagoController::class, 'getComprobante']);
 $router->post('/api/pagos/{id}/anular', [PagoController::class, 'anular']);
 $router->get('/api/pagos/{id}', [PagoController::class, 'getOne']);
+
+// Planillas routes
+$router->get('/api/planillas/cobradores', [PlanillaController::class, 'getCobradores']);
+$router->get('/api/planillas', [PlanillaController::class, 'getAll']);
+$router->post('/api/planillas', [PlanillaController::class, 'generar']);
+$router->get('/api/planillas/{id}/pdf', [PlanillaController::class, 'getPdf']);
+$router->get('/api/planillas/{id}', [PlanillaController::class, 'getOne']);
 
 // Dispatch request
 $router->dispatch();

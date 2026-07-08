@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa General - CJP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map { height: 600px; width: 100%; z-index: 1; }
+        .map-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+        }
+        .legend div { display: flex; align-items: center; margin-bottom: 4px; font-size: 14px; }
+        .legend img { width: 16px; height: 26px; margin-right: 8px; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-green-800 text-white flex flex-col z-20">
+        <div class="p-4 bg-green-900">
+            <h1 class="text-xl font-bold">CJP Admin</h1>
+        </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+            <a href="/views/dashboard.html" class="block p-2 rounded hover:bg-green-700">Dashboard</a>
+            <a href="/views/socios/listado.html" class="block p-2 rounded hover:bg-green-700">Socios</a>
+            <a href="/views/deuda/generacion.html" class="block p-2 rounded hover:bg-green-700">Generar Deuda</a>
+            <a href="/views/pagos/listado.html" class="block p-2 rounded hover:bg-green-700">Pagos</a>
+            <div class="pt-4 pb-2">
+                <p class="text-xs uppercase text-green-300 font-bold">Planillas</p>
+                <a href="/views/planillas/generar.html" class="block p-2 mt-2 rounded hover:bg-green-700">Generar Planilla</a>
+                <a href="/views/planillas/historico.html" class="block p-2 rounded hover:bg-green-700">Histórico</a>
+                <a href="/views/planillas/mapa.html" class="block p-2 rounded bg-green-700">Mapa General</a>
+            </div>
+        </nav>
+        <div class="p-4 bg-green-900 border-t border-green-700">
+            <button onclick="logout()" class="w-full text-left p-2 hover:bg-green-700 rounded text-red-300">Cerrar Sesión</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col relative h-screen">
+        <header class="bg-white shadow p-4 flex justify-between items-center z-10">
+            <h2 class="text-xl font-semibold text-gray-800">Mapa General de Socios</h2>
+        </header>
+
+        <div class="flex-1 relative z-0">
+            <div id="map"></div>
+            
+            <div class="map-overlay">
+                <h3 class="font-bold mb-2">Filtros</h3>
+                <div class="space-y-2">
+                    <select id="zonaFilter" class="block w-full border rounded p-1 text-sm">
+                        <option value="">Todas las zonas</option>
+                    </select>
+                    <select id="estadoFilter" class="block w-full border rounded p-1 text-sm">
+                        <option value="">Todos los estados</option>
+                        <option value="activo">Activo</option>
+                        <option value="suspendido">Suspendido</option>
+                        <option value="eliminado">Eliminado</option>
+                    </select>
+                    <select id="modalidadFilter" class="block w-full border rounded p-1 text-sm">
+                        <option value="">Todas las modalidades</option>
+                        <option value="cobranza_domiciliaria">Domiciliaria</option>
+                        <option value="pago_sede">Sede</option>
+                        <option value="transferencia">Transferencia</option>
+                    </select>
+                    <button onclick="loadSocios()" class="bg-blue-600 text-white w-full py-1 rounded text-sm hover:bg-blue-700">Aplicar</button>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png"> Activo</div>
+                <div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png"> Suspendido</div>
+                <div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png"> Eliminado</div>
+                <div><img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png"> Sin Geolocalizar</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+        let map;
+        let markersGroup;
+
+        async function init() {
+            map = L.map('map').setView([-32.820366, -61.403157], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            
+            markersGroup = L.layerGroup().addTo(map);
+
+            const resZonas = await fetch(`${API_BASE}/zonas`);
+            const dataZonas = await resZonas.json();
+            const zonaSelect = document.getElementById('zonaFilter');
+            dataZonas.data.forEach(z => {
+                const opt = document.createElement('option');
+                opt.value = z.id;
+                opt.textContent = z.nombre;
+                zonaSelect.appendChild(opt);
+            });
+
+            loadSocios();
+        }
+
+        async function loadSocios() {
+            markersGroup.clearLayers();
+            
+            const zona = document.getElementById('zonaFilter').value;
+            const estado = document.getElementById('estadoFilter').value;
+            const mod = document.getElementById('modalidadFilter').value;
+            
+            let url = `${API_BASE}/socios?limit=10000`; 
+            if (zona) url += `&zona_id=${zona}`;
+            if (estado) url += `&estado=${estado}`;
+            if (mod) url += `&modalidad_cobranza=${mod}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.success && data.data.data) {
+                    let bounds = L.latLngBounds([[-32.820366, -61.403157]]);
+                    
+                    data.data.data.forEach(s => {
+                        if (s.latitud && s.longitud) {
+                            let color = 'grey';
+                            if (!s.geolocalizacion_pendiente) {
+                                if (s.estado === 'activo') color = 'green';
+                                else if (s.estado === 'suspendido') color = 'gold';
+                                else if (s.estado === 'eliminado') color = 'red';
+                            }
+                            
+                            const marker = L.marker([s.latitud, s.longitud], {
+                                icon: L.icon({
+                                    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+                                    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34]
+                                })
+                            });
+                            
+                            marker.bindPopup(`
+                                <strong>${s.nombre_apellido}</strong><br>
+                                Nº: ${s.numero_socio}<br>
+                                Dir: ${s.direccion}<br>
+                                Zona: ${s.zona_nombre || 'N/A'}<br>
+                                <a href="/views/socios/perfil.html?id=${s.id}" target="_blank" class="text-blue-500 hover:underline">Ver perfil</a>
+                            `);
+                            
+                            markersGroup.addLayer(marker);
+                            bounds.extend([s.latitud, s.longitud]);
+                        }
+                    });
+                    
+                    if (data.data.data.length > 0) {
+                        map.fitBounds(bounds, {padding: [30, 30]});
+                    }
+                }
+            } catch (e) {
+                console.error("Error cargando socios:", e);
+            }
+        }
+
+        function logout() {
+            fetch('/api/auth/logout', {method: 'POST'})
+                .then(() => window.location.href = '/views/auth/login.html');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
