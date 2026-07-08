@@ -15,6 +15,8 @@ use CJP\Modules\Notificaciones\NotificacionController;
 use CJP\Modules\Auditoria\AuditoriaController;
 use CJP\Modules\Historial\HistorialController;
 use CJP\Modules\Observaciones\ObservacionController;
+use CJP\Modules\Dashboard\DashboardController;
+use CJP\Modules\Usuarios\UsuarioController;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -29,6 +31,15 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 // Handle preflight OPTIONS requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
+    exit;
+}
+
+// Redirigir raíz a login
+$requestUriRaw = $_SERVER['REQUEST_URI'] ?? '/';
+$pathOnly = parse_url($requestUriRaw, PHP_URL_PATH);
+$pathOnly = '/' . trim($pathOnly, '/');
+if ($pathOnly === '/' || $pathOnly === '/public' || $pathOnly === '/public/') {
+    header('Location: /views/auth/login.html');
     exit;
 }
 
@@ -106,6 +117,18 @@ $router->get('/api/historial/socio/{socioId}', [HistorialController::class, 'get
 // Observaciones routes
 $router->get('/api/observaciones/socio/{socioId}', [ObservacionController::class, 'getBySocio']);
 $router->post('/api/observaciones', [ObservacionController::class, 'agregar']);
+
+// Dashboard routes
+$router->get('/api/dashboard/metricas', [DashboardController::class, 'metricas']);
+
+// Usuarios routes (order is critical: static before parameterized)
+$router->get('/api/usuarios', [UsuarioController::class, 'getAll']);
+$router->post('/api/usuarios', [UsuarioController::class, 'crear']);
+$router->post('/api/usuarios/{id}/password', [UsuarioController::class, 'cambiarPassword']);
+$router->post('/api/usuarios/{id}/desactivar', [UsuarioController::class, 'desactivar']);
+$router->post('/api/usuarios/{id}/reactivar', [UsuarioController::class, 'reactivar']);
+$router->put('/api/usuarios/{id}', [UsuarioController::class, 'editar']);
+$router->get('/api/usuarios/{id}', [UsuarioController::class, 'getOne']);
 
 // Dispatch request
 $router->dispatch();

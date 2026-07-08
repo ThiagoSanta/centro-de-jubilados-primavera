@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios — Centro de Jubilados Primavera</title>
+    <meta name="description" content="Administración de usuarios del sistema de gestión del Centro de Jubilados Primavera.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .badge--administrador {
+            background: rgba(124,58,237,.12);
+            color: #7c3aed;
+        }
+        .badge--cobrador {
+            background: rgba(59,130,246,.12);
+            color: #2563eb;
+        }
+        .badge--desactivado {
+            background: rgba(107,114,128,.12);
+            color: #6b7280;
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-bg-subtle);
+            border: 1px solid var(--color-border);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            flex-shrink: 0;
+        }
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+        .role-readonly {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            font-style: italic;
+        }
+        .form-hint {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar__brand">
+            <div class="sidebar__brand-title">Centro Primavera</div>
+            <div class="sidebar__brand-sub">Sistema de Gestión</div>
+        </div>
+        <nav class="sidebar__nav">
+            <a href="/views/dashboard/index.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                Dashboard
+            </a>
+            <a href="/views/socios/padron.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Socios
+            </a>
+            <a href="/views/pagos/index.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                Cobranza
+            </a>
+            <a href="/views/planillas/index.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Planillas y Ruteo
+            </a>
+            <a href="/views/notificaciones/index.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Notificaciones
+            </a>
+            <a href="/views/auditoria/index.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Auditoría
+            </a>
+            <a href="/views/usuarios/index.html" class="sidebar-nav-item sidebar-nav-item--active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Usuarios
+            </a>
+            <a href="/views/configuracion/index.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Configuración
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="content">
+        <div class="content__header">
+            <div>
+                <h1 class="content__title">Usuarios del sistema</h1>
+                <p class="content__subtitle">Gestión de administradores y cobradores</p>
+            </div>
+            <button type="button" class="btn btn--primary" id="btnNuevoUsuario">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nuevo usuario
+            </button>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- Tabla de usuarios -->
+        <div class="table-wrapper">
+            <table class="table" id="tablaUsuarios">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Último acceso</th>
+                        <th class="table__actions"></th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody">
+                    <tr class="loading-row"><td colspan="7">Cargando usuarios...</td></tr>
+                </tbody>
+            </table>
+            <div id="emptyState" class="empty-state" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <div class="empty-state__title">No hay usuarios registrados</div>
+                <div class="empty-state__text">Cree el primer usuario con el botón "Nuevo usuario".</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ── Modal: Nuevo usuario ─────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalNuevo">
+    <div class="modal">
+        <div class="modal__header">
+            <div class="modal__title">Nuevo usuario</div>
+        </div>
+        <div class="modal__body">
+            <div class="form-group">
+                <label for="nuevoNombre">Nombre</label>
+                <input type="text" id="nuevoNombre" class="form-control" placeholder="Nombre" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="nuevoApellido">Apellido</label>
+                <input type="text" id="nuevoApellido" class="form-control" placeholder="Apellido" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="nuevoUsuario">Nombre de usuario</label>
+                <input type="text" id="nuevoUsuario" class="form-control" placeholder="usuario" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="nuevoPassword">Contraseña</label>
+                <input type="password" id="nuevoPassword" class="form-control" placeholder="Mínimo 8 caracteres">
+                <div class="form-hint">Debe tener al menos 8 caracteres.</div>
+            </div>
+            <div class="form-group">
+                <label for="nuevoRol">Rol</label>
+                <select id="nuevoRol" class="form-control">
+                    <option value="cobrador">Cobrador</option>
+                    <option value="administrador">Administrador</option>
+                </select>
+                <div class="form-hint">El rol no puede modificarse después de crear el usuario.</div>
+            </div>
+            <div id="alertModalNuevo"></div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn--secondary" id="btnCancelarNuevo">Cancelar</button>
+            <button type="button" class="btn btn--primary" id="btnGuardarNuevo">Crear usuario</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal: Editar usuario ────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalEditar">
+    <div class="modal">
+        <div class="modal__header">
+            <div class="modal__title">Editar usuario</div>
+        </div>
+        <div class="modal__body">
+            <input type="hidden" id="editarId">
+            <div class="form-group">
+                <label for="editarNombre">Nombre</label>
+                <input type="text" id="editarNombre" class="form-control" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="editarApellido">Apellido</label>
+                <input type="text" id="editarApellido" class="form-control" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Nombre de usuario</label>
+                <p class="role-readonly" id="editarUsuarioTexto">—</p>
+            </div>
+            <div class="form-group">
+                <label>Rol</label>
+                <p class="role-readonly" id="editarRolTexto">—</p>
+                <div class="form-hint">El rol no es editable.</div>
+            </div>
+            <div id="alertModalEditar"></div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn--secondary" id="btnCancelarEditar">Cancelar</button>
+            <button type="button" class="btn btn--primary" id="btnGuardarEditar">Guardar cambios</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal: Cambiar contraseña ─────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modalPassword">
+    <div class="modal">
+        <div class="modal__header">
+            <div class="modal__title">Cambiar contraseña</div>
+        </div>
+        <div class="modal__body">
+            <input type="hidden" id="passwordId">
+            <p class="modal__message" id="passwordUsuarioLabel">Actualice la contraseña del usuario.</p>
+            <div class="form-group">
+                <label for="nuevaPassword">Nueva contraseña</label>
+                <input type="password" id="nuevaPassword" class="form-control" placeholder="Mínimo 8 caracteres">
+                <div class="form-hint">Debe tener al menos 8 caracteres.</div>
+            </div>
+            <div id="alertModalPassword"></div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn--secondary" id="btnCancelarPassword">Cancelar</button>
+            <button type="button" class="btn btn--primary" id="btnGuardarPassword">Actualizar contraseña</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal: Confirmar desactivar/reactivar ──────────────────────────────────── -->
+<div class="modal-overlay" id="modalConfirmar">
+    <div class="modal">
+        <div class="modal__header">
+            <div class="modal__title" id="confirmarTitulo">Confirmar acción</div>
+        </div>
+        <div class="modal__body">
+            <p class="modal__message" id="confirmarMensaje">¿Está seguro?</p>
+            <div id="alertModalConfirmar"></div>
+        </div>
+        <div class="modal__footer">
+            <button type="button" class="btn btn--secondary" id="btnCancelarConfirmar">Cancelar</button>
+            <button type="button" class="btn btn--danger" id="btnConfirmarAccion">Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ─── Estado ───────────────────────────────────────────────────────────────
+    var usuarios = [];
+    var accionPendiente = null; // { id, accion }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+    function escHtml(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function initials(nombre, apellido) {
+        return ((nombre || '').charAt(0) + (apellido || '').charAt(0)).toUpperCase();
+    }
+
+    function fmtFecha(str) {
+        if (!str) return '—';
+        var d = new Date(str);
+        return d.toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function badgeRol(rol) {
+        var labels = { administrador: 'Administrador', cobrador: 'Cobrador' };
+        return '<span class="badge badge--' + escHtml(rol) + '">' + escHtml(labels[rol] || rol) + '</span>';
+    }
+
+    function badgeEstado(estado) {
+        var clases = { activo: 'badge--activo', desactivado: 'badge--desactivado' };
+        var labels = { activo: 'Activo', desactivado: 'Desactivado' };
+        return '<span class="badge ' + (clases[estado] || '') + '">' + escHtml(labels[estado] || estado) + '</span>';
+    }
+
+    function showAlert(msg, type) {
+        var c = document.getElementById('alertContainer');
+        c.innerHTML = '<div class="alert alert--' + type + '">' + escHtml(msg) + '</div>';
+        setTimeout(function () { c.innerHTML = ''; }, 5000);
+    }
+
+    function showModalAlert(containerId, msg, type) {
+        document.getElementById(containerId).innerHTML =
+            '<div class="alert alert--' + type + '" style="margin-top:.75rem;">' + escHtml(msg) + '</div>';
+    }
+
+    function clearModalAlert(containerId) {
+        document.getElementById(containerId).innerHTML = '';
+    }
+
+    // ─── Cerrar modal ─────────────────────────────────────────────────────────
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('modal-overlay--open');
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.add('modal-overlay--open');
+    }
+
+    // Cerrar al hacer clic fuera del modal
+    document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) {
+                overlay.classList.remove('modal-overlay--open');
+            }
+        });
+    });
+
+    // ─── Renderizar tabla ─────────────────────────────────────────────────────
+    function renderTabla(lista) {
+        var body = document.getElementById('tablaBody');
+        var empty = document.getElementById('emptyState');
+
+        if (!lista || lista.length === 0) {
+            body.innerHTML = '';
+            empty.style.display = 'flex';
+            return;
+        }
+        empty.style.display = 'none';
+
+        var html = '';
+        lista.forEach(function (u) {
+            html += '<tr data-id="' + escHtml(u.id) + '">' +
+                '<td>' +
+                    '<div class="user-cell">' +
+                        '<div class="user-avatar">' + escHtml(initials(u.nombre, u.apellido)) + '</div>' +
+                        escHtml(u.usuario) +
+                    '</div>' +
+                '</td>' +
+                '<td>' + escHtml(u.nombre) + '</td>' +
+                '<td>' + escHtml(u.apellido) + '</td>' +
+                '<td>' + badgeRol(u.rol) + '</td>' +
+                '<td>' + badgeEstado(u.estado) + '</td>' +
+                '<td>' + fmtFecha(u.ultimo_acceso) + '</td>' +
+                '<td class="table__actions-cell" style="text-align:right;white-space:nowrap;">' +
+                    '<button type="button" class="btn btn--secondary btn--sm" onclick="abrirEditar(\'' + escHtml(u.id) + '\')">Editar</button> ' +
+                    '<button type="button" class="btn btn--secondary btn--sm" onclick="abrirPassword(\'' + escHtml(u.id) + '\', \'' + escHtml(u.usuario) + '\')">Contraseña</button> ' +
+                    (u.estado === 'activo'
+                        ? '<button type="button" class="btn btn--danger btn--sm" onclick="abrirConfirmar(\'' + escHtml(u.id) + '\', \'desactivar\', \'' + escHtml(u.usuario) + '\')">Desactivar</button>'
+                        : '<button type="button" class="btn btn--secondary btn--sm" onclick="abrirConfirmar(\'' + escHtml(u.id) + '\', \'reactivar\', \'' + escHtml(u.usuario) + '\')">Reactivar</button>'
+                    ) +
+                '</td>' +
+                '</tr>';
+        });
+        body.innerHTML = html;
+    }
+
+    // ─── Cargar usuarios ──────────────────────────────────────────────────────
+    function cargarUsuarios() {
+        fetch('/api/usuarios', { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                if (!res.success) {
+                    showAlert(res.message || 'Error al cargar usuarios.', 'error');
+                    return;
+                }
+                usuarios = res.data || [];
+                renderTabla(usuarios);
+            })
+            .catch(function () {
+                showAlert('Error de red al cargar usuarios.', 'error');
+            });
+    }
+
+    // ─── Modal Nuevo ──────────────────────────────────────────────────────────
+    document.getElementById('btnNuevoUsuario').addEventListener('click', function () {
+        document.getElementById('nuevoNombre').value = '';
+        document.getElementById('nuevoApellido').value = '';
+        document.getElementById('nuevoUsuario').value = '';
+        document.getElementById('nuevoPassword').value = '';
+        document.getElementById('nuevoRol').value = 'cobrador';
+        clearModalAlert('alertModalNuevo');
+        openModal('modalNuevo');
+    });
+
+    document.getElementById('btnCancelarNuevo').addEventListener('click', function () {
+        closeModal('modalNuevo');
+    });
+
+    document.getElementById('btnGuardarNuevo').addEventListener('click', function () {
+        var btn = this;
+        btn.disabled = true;
+        clearModalAlert('alertModalNuevo');
+
+        var payload = {
+            nombre:    document.getElementById('nuevoNombre').value.trim(),
+            apellido:  document.getElementById('nuevoApellido').value.trim(),
+            usuario:   document.getElementById('nuevoUsuario').value.trim(),
+            contrasena: document.getElementById('nuevoPassword').value,
+            rol:       document.getElementById('nuevoRol').value
+        };
+
+        fetch('/api/usuarios', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            btn.disabled = false;
+            if (!res.success) {
+                showModalAlert('alertModalNuevo', res.message || 'Error al crear usuario.', 'error');
+                return;
+            }
+            closeModal('modalNuevo');
+            showAlert('Usuario creado correctamente.', 'success');
+            cargarUsuarios();
+        })
+        .catch(function () {
+            btn.disabled = false;
+            showModalAlert('alertModalNuevo', 'Error de red.', 'error');
+        });
+    });
+
+    // ─── Modal Editar ─────────────────────────────────────────────────────────
+    function abrirEditar(id) {
+        var u = usuarios.find(function (x) { return x.id === id; });
+        if (!u) return;
+        document.getElementById('editarId').value      = u.id;
+        document.getElementById('editarNombre').value  = u.nombre;
+        document.getElementById('editarApellido').value = u.apellido;
+        document.getElementById('editarUsuarioTexto').textContent = u.usuario;
+        document.getElementById('editarRolTexto').textContent =
+            u.rol === 'administrador' ? 'Administrador' : 'Cobrador';
+        clearModalAlert('alertModalEditar');
+        openModal('modalEditar');
+    }
+
+    document.getElementById('btnCancelarEditar').addEventListener('click', function () {
+        closeModal('modalEditar');
+    });
+
+    document.getElementById('btnGuardarEditar').addEventListener('click', function () {
+        var btn = this;
+        btn.disabled = true;
+        clearModalAlert('alertModalEditar');
+
+        var id = document.getElementById('editarId').value;
+        var payload = {
+            nombre:   document.getElementById('editarNombre').value.trim(),
+            apellido: document.getElementById('editarApellido').value.trim()
+        };
+
+        fetch('/api/usuarios/' + id, {
+            method: 'PUT',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            btn.disabled = false;
+            if (!res.success) {
+                showModalAlert('alertModalEditar', res.message || 'Error al actualizar.', 'error');
+                return;
+            }
+            closeModal('modalEditar');
+            showAlert('Usuario actualizado correctamente.', 'success');
+            cargarUsuarios();
+        })
+        .catch(function () {
+            btn.disabled = false;
+            showModalAlert('alertModalEditar', 'Error de red.', 'error');
+        });
+    });
+
+    // ─── Modal Contraseña ─────────────────────────────────────────────────────
+    function abrirPassword(id, username) {
+        document.getElementById('passwordId').value = id;
+        document.getElementById('nuevaPassword').value = '';
+        document.getElementById('passwordUsuarioLabel').textContent =
+            'Actualice la contraseña del usuario: ' + username;
+        clearModalAlert('alertModalPassword');
+        openModal('modalPassword');
+    }
+
+    document.getElementById('btnCancelarPassword').addEventListener('click', function () {
+        closeModal('modalPassword');
+    });
+
+    document.getElementById('btnGuardarPassword').addEventListener('click', function () {
+        var btn = this;
+        btn.disabled = true;
+        clearModalAlert('alertModalPassword');
+
+        var id = document.getElementById('passwordId').value;
+        var nueva = document.getElementById('nuevaPassword').value;
+
+        fetch('/api/usuarios/' + id + '/password', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nueva_password: nueva })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            btn.disabled = false;
+            if (!res.success) {
+                showModalAlert('alertModalPassword', res.message || 'Error al cambiar contraseña.', 'error');
+                return;
+            }
+            closeModal('modalPassword');
+            showAlert('Contraseña actualizada correctamente.', 'success');
+        })
+        .catch(function () {
+            btn.disabled = false;
+            showModalAlert('alertModalPassword', 'Error de red.', 'error');
+        });
+    });
+
+    // ─── Modal Confirmar ──────────────────────────────────────────────────────
+    function abrirConfirmar(id, accion, username) {
+        accionPendiente = { id: id, accion: accion };
+        var desactivar = accion === 'desactivar';
+        document.getElementById('confirmarTitulo').textContent =
+            desactivar ? 'Desactivar usuario' : 'Reactivar usuario';
+        document.getElementById('confirmarMensaje').textContent =
+            desactivar
+                ? '¿Desea desactivar al usuario "' + username + '"? No podrá iniciar sesión.'
+                : '¿Desea reactivar al usuario "' + username + '"?';
+        document.getElementById('btnConfirmarAccion').className =
+            desactivar ? 'btn btn--danger' : 'btn btn--primary';
+        document.getElementById('btnConfirmarAccion').textContent =
+            desactivar ? 'Desactivar' : 'Reactivar';
+        clearModalAlert('alertModalConfirmar');
+        openModal('modalConfirmar');
+    }
+
+    document.getElementById('btnCancelarConfirmar').addEventListener('click', function () {
+        closeModal('modalConfirmar');
+        accionPendiente = null;
+    });
+
+    document.getElementById('btnConfirmarAccion').addEventListener('click', function () {
+        if (!accionPendiente) return;
+        var btn = this;
+        btn.disabled = true;
+        clearModalAlert('alertModalConfirmar');
+
+        var url = '/api/usuarios/' + accionPendiente.id + '/' + accionPendiente.accion;
+
+        fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            btn.disabled = false;
+            if (!res.success) {
+                showModalAlert('alertModalConfirmar', res.message || 'Error en la operación.', 'error');
+                return;
+            }
+            closeModal('modalConfirmar');
+            showAlert(res.message || 'Operación realizada.', 'success');
+            accionPendiente = null;
+            cargarUsuarios();
+        })
+        .catch(function () {
+            btn.disabled = false;
+            showModalAlert('alertModalConfirmar', 'Error de red.', 'error');
+        });
+    });
+
+    // ─── Inicializar ──────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function () {
+        cargarUsuarios();
+    });
+</script>
+</body>
+</html>
