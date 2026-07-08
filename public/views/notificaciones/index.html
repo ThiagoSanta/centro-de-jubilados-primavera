@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones - Centro de Jubilados Primavera</title>
+    <meta name="description" content="Centro de notificaciones y reversión de acciones del sistema CJP">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .notif-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--color-border);
+            transition: background 0.12s;
+        }
+        .notif-item:last-child {
+            border-bottom: none;
+        }
+        .notif-item--no_leida {
+            background: rgba(59, 130, 246, 0.04);
+        }
+        .notif-item__left {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.875rem;
+        }
+        .notif-item__icon {
+            font-size: 1.375rem;
+            line-height: 1;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+        }
+        .notif-item__body {}
+        .notif-item__mensaje {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--color-text);
+            margin-bottom: 0.25rem;
+        }
+        .notif-item__meta {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            flex-wrap: wrap;
+        }
+        .notif-item__expiry {
+            font-size: 0.8125rem;
+            color: #d97706;
+            margin-top: 0.25rem;
+        }
+        .notif-item__actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        .empty-state {
+            padding: 3rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/dashboard" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Dashboard
+                </a>
+                <a href="/views/socios/padron.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Socios
+                </a>
+                <a href="/views/deuda/generacion.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Cobranza
+                </a>
+                <a href="/views/planillas/generar.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Planillas y Ruteo
+                </a>
+                <a href="/views/notificaciones/index.html" class="sidebar-nav-item sidebar-nav-item--active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    Notificaciones
+                </a>
+                <a href="/views/auditoria/index.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Auditoría
+                </a>
+                <a href="/usuarios" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Usuarios
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="content">
+            <div class="content__header">
+                <div>
+                    <h1 class="content__title">Notificaciones</h1>
+                    <p class="content__subtitle">Acciones reversibles del sistema — ventana de 7 días</p>
+                </div>
+                <div class="filter-chips">
+                    <div class="filter-chip">
+                        <select id="filtroEstado">
+                            <option value="">Estado: Todos</option>
+                            <option value="no_leida">No leídas</option>
+                            <option value="leida">Leídas</option>
+                            <option value="archivada">Archivadas</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="alertContainer"></div>
+
+            <div class="table-wrapper">
+                <ul class="notif-list" id="listaNotificaciones">
+                    <li class="loading-row" style="list-style:none;text-align:center;padding:2rem;color:var(--color-text-muted);">Cargando…</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de confirmación de reversión -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalRevertir" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal__header">
+                <h2 class="modal__title" id="modalTitle">Confirmar reversión</h2>
+            </div>
+            <div class="modal__body">
+                <p class="modal__message">Esta operación restaurará los datos a su estado anterior. ¿Confirmar la reversión?</p>
+            </div>
+            <div class="modal__footer">
+                <button type="button" class="btn btn--secondary" id="btnCancelarRevertir">Cancelar</button>
+                <button type="button" class="btn btn--danger" id="btnConfirmarRevertir">Revertir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let notificacionPendiente = null;
+
+        // ── Alertas ────────────────────────────────────────────────────────────
+        function showAlert(tipo, mensaje) {
+            const container = document.getElementById('alertContainer');
+            const div = document.createElement('div');
+            div.className = `alert alert--${tipo}`;
+            div.textContent = mensaje;
+            container.innerHTML = '';
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 4000);
+        }
+
+        // ── Cargar notificaciones ──────────────────────────────────────────────
+        async function fetchNotificaciones() {
+            const estado = document.getElementById('filtroEstado').value;
+            let url = `${API_BASE}/notificaciones`;
+            if (estado) url += `?estado=${encodeURIComponent(estado)}`;
+
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.success) {
+                    renderNotificaciones(data.data);
+                } else {
+                    showAlert('error', data.message || 'Error al obtener notificaciones.');
+                }
+            } catch (e) {
+                showAlert('error', 'Error de red al cargar notificaciones.');
+            }
+        }
+
+        function renderNotificaciones(list) {
+            const container = document.getElementById('listaNotificaciones');
+            container.innerHTML = '';
+
+            if (!list.length) {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        <div class="empty-state__title">Sin notificaciones</div>
+                        <div class="empty-state__text">No hay notificaciones con el filtro seleccionado.</div>
+                    </div>`;
+                container.appendChild(li);
+                return;
+            }
+
+            const now = new Date();
+
+            list.forEach(n => {
+                const expDate = new Date(n.fecha_expiracion_reversion);
+                const expirada = now > expDate;
+                const diffMs = expDate - now;
+                const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+                const iconos = {
+                    eliminacion_socio: '🗑️',
+                    anulacion_pago: '💵'
+                };
+                const icono = iconos[n.tipo] ?? 'ℹ️';
+
+                const badgeClases = {
+                    no_leida: 'badge--pendiente',
+                    leida: 'badge--resuelto',
+                    archivada: 'badge--suspendido'
+                };
+                const badgeTextos = { no_leida: 'No leída', leida: 'Leída', archivada: 'Archivada' };
+
+                const mostrarRevertir = n.estado !== 'archivada' && !expirada;
+
+                const li = document.createElement('li');
+                li.className = `notif-item notif-item--${n.estado}`;
+
+                li.innerHTML = `
+                    <div class="notif-item__left">
+                        <span class="notif-item__icon" aria-hidden="true">${icono}</span>
+                        <div class="notif-item__body">
+                            <div class="notif-item__mensaje">${escHtml(n.mensaje)}</div>
+                            <div class="notif-item__meta">
+                                <time datetime="${n.fecha}">${new Date(n.fecha).toLocaleString('es-AR')}</time>
+                                <span class="badge ${badgeClases[n.estado] ?? ''}">${badgeTextos[n.estado] ?? n.estado}</span>
+                            </div>
+                            ${mostrarRevertir ? `<div class="notif-item__expiry">⏳ Expira en ${diffDias} día${diffDias !== 1 ? 's' : ''}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="notif-item__actions">
+                        ${n.estado === 'no_leida' ? `<button type="button" class="btn btn--secondary btn--sm" onclick="accionLeida('${n.id}')">Marcar leída</button>` : ''}
+                        ${mostrarRevertir ? `<button type="button" class="btn btn--danger btn--sm" onclick="abrirModalRevertir('${n.id}')">Revertir</button>` : ''}
+                        ${n.estado !== 'archivada' ? `<button type="button" class="btn btn--secondary btn--sm" onclick="accionArchivar('${n.id}')">Archivar</button>` : ''}
+                    </div>`;
+                container.appendChild(li);
+            });
+        }
+
+        function escHtml(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        // ── Acciones individuales ──────────────────────────────────────────────
+        async function accionLeida(id) {
+            try {
+                const res = await fetch(`${API_BASE}/notificaciones/${id}/leida`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) fetchNotificaciones();
+                else showAlert('error', data.message || 'Error al marcar como leída.');
+            } catch { showAlert('error', 'Error de red.'); }
+        }
+
+        async function accionArchivar(id) {
+            try {
+                const res = await fetch(`${API_BASE}/notificaciones/${id}/archivar`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) fetchNotificaciones();
+                else showAlert('error', data.message || 'Error al archivar.');
+            } catch { showAlert('error', 'Error de red.'); }
+        }
+
+        // ── Modal de reversión ────────────────────────────────────────────────
+        function abrirModalRevertir(id) {
+            notificacionPendiente = id;
+            document.getElementById('modalOverlay').classList.add('modal-overlay--open');
+        }
+
+        function cerrarModal() {
+            notificacionPendiente = null;
+            document.getElementById('modalOverlay').classList.remove('modal-overlay--open');
+        }
+
+        document.getElementById('btnCancelarRevertir').addEventListener('click', cerrarModal);
+
+        document.getElementById('btnConfirmarRevertir').addEventListener('click', async () => {
+            if (!notificacionPendiente) return;
+            const id = notificacionPendiente;
+            cerrarModal();
+            try {
+                const res = await fetch(`${API_BASE}/notificaciones/${id}/revertir`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    showAlert('success', 'Reversión ejecutada correctamente.');
+                    fetchNotificaciones();
+                } else {
+                    showAlert('error', data.message || 'No se pudo revertir.');
+                }
+            } catch { showAlert('error', 'Error de red al revertir.'); }
+        });
+
+        // Cerrar modal al hacer clic fuera del panel
+        document.getElementById('modalOverlay').addEventListener('click', e => {
+            if (e.target === document.getElementById('modalOverlay')) cerrarModal();
+        });
+
+        // ── Filtro ─────────────────────────────────────────────────────────────
+        document.getElementById('filtroEstado').addEventListener('change', fetchNotificaciones);
+
+        document.addEventListener('DOMContentLoaded', fetchNotificaciones);
+    </script>
+</body>
+</html>

@@ -11,6 +11,10 @@ use CJP\Modules\Socios\SocioController;
 use CJP\Modules\Deuda\DeudaController;
 use CJP\Modules\Pagos\PagoController;
 use CJP\Modules\Planillas\PlanillaController;
+use CJP\Modules\Notificaciones\NotificacionController;
+use CJP\Modules\Auditoria\AuditoriaController;
+use CJP\Modules\Historial\HistorialController;
+use CJP\Modules\Observaciones\ObservacionController;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -85,6 +89,23 @@ $router->get('/api/planillas', [PlanillaController::class, 'getAll']);
 $router->post('/api/planillas', [PlanillaController::class, 'generar']);
 $router->get('/api/planillas/{id}/pdf', [PlanillaController::class, 'getPdf']);
 $router->get('/api/planillas/{id}', [PlanillaController::class, 'getOne']);
+
+// Notificaciones routes
+$router->get('/api/notificaciones', [NotificacionController::class, 'getAll']);
+$router->post('/api/notificaciones/{id}/leida', [NotificacionController::class, 'marcarLeida']);
+$router->post('/api/notificaciones/{id}/archivar', [NotificacionController::class, 'archivar']);
+$router->post('/api/notificaciones/{id}/revertir', [NotificacionController::class, 'revertir']);
+
+// Auditoría routes
+$router->get('/api/auditoria', [AuditoriaController::class, 'getAll']);
+$router->get('/api/auditoria/{id}', [AuditoriaController::class, 'getOne']);
+
+// Historial routes
+$router->get('/api/historial/socio/{socioId}', [HistorialController::class, 'getBySocio']);
+
+// Observaciones routes
+$router->get('/api/observaciones/socio/{socioId}', [ObservacionController::class, 'getBySocio']);
+$router->post('/api/observaciones', [ObservacionController::class, 'agregar']);
 
 // Dispatch request
 $router->dispatch();
