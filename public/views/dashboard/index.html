@@ -365,6 +365,8 @@
 </div>
 
 <script>
+    const BASE_URL = '/centro-de-jubilados-primavera/public';
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
     function fmt(n) {
         return new Intl.NumberFormat('es-AR').format(n);
@@ -388,7 +390,7 @@
 
     // ─── Cargar métricas ──────────────────────────────────────────────────────
     function cargarMetricas() {
-        fetch('/api/dashboard/metricas', { credentials: 'same-origin' })
+        fetch(BASE_URL + '/api/dashboard/metricas', { credentials: 'same-origin' })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 if (!res.success) {
@@ -419,7 +421,7 @@
 
     // ─── Cargar actividad reciente ────────────────────────────────────────────
     function cargarActividad() {
-        fetch('/api/auditoria?limit=5', { credentials: 'same-origin' })
+        fetch(BASE_URL + '/api/auditoria?limit=5', { credentials: 'same-origin' })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 var body = document.getElementById('actividadBody');

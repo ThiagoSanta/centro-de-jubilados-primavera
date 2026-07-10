@@ -348,6 +348,8 @@
     </div>
 
     <script>
+        const BASE_URL = '/centro-de-jubilados-primavera/public';
+
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             
@@ -367,7 +369,7 @@
             setLoading(true);
 
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(`${BASE_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -389,9 +391,9 @@
 
                 const user = result.data;
                 if (user.rol === 'administrador') {
-                    window.location.href = '/dashboard';
+                    window.location.href = `${BASE_URL}/dashboard`;
                 } else if (user.rol === 'cobrador') {
-                    window.location.href = '/cobrador';
+                    window.location.href = `${BASE_URL}/cobrador`;
                 } else {
                     throw new Error('Rol de usuario desconocido o no autorizado.');
                 }

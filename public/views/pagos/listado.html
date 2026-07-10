@@ -186,6 +186,8 @@
     </div>
 
     <script>
+        const BASE_URL = '/centro-de-jubilados-primavera/public';
+
         let pagoAAnular = null;
         let paginaActual = 1;
 
@@ -206,7 +208,7 @@
             params.append('pagina', pagina);
 
             try {
-                const res = await fetch(`/api/pagos?${params.toString()}`);
+                const res = await fetch(`${BASE_URL}/api/pagos?${params.toString()}`);
                 const data = await res.json();
 
                 if (data.success) {
@@ -236,7 +238,7 @@
                 const badgeClass = pago.estado === 'registrado' ? 'badge--registrado' : 'badge--anulado';
                 const cobrador = pago.cobrador_nombre ? `${pago.cobrador_nombre} ${pago.cobrador_apellido}` : 'Sistema';
                 
-                let acciones = `<a href="/api/pagos/${pago.id}/comprobante" target="_blank" class="action-link">PDF</a>`;
+                let acciones = `<a href="${BASE_URL}/api/pagos/${pago.id}/comprobante" target="_blank" class="action-link">PDF</a>`;
                 if (pago.estado === 'registrado') {
                     acciones += `<a class="action-link text-danger" onclick="abrirModalAnular('${pago.id}')">Anular</a>`;
                 }
@@ -290,7 +292,7 @@
             }
 
             try {
-                const res = await fetch(`/api/pagos/${pagoAAnular}/anular`, {
+                const res = await fetch(`${BASE_URL}/api/pagos/${pagoAAnular}/anular`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ motivo })

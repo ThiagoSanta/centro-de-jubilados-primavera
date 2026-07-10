@@ -170,8 +170,10 @@
     (function () {
         'use strict';
 
+        var BASE_URL = '/centro-de-jubilados-primavera/public';
+
         var selectedFile = null;
-        var INCONSISTENCIAS_URL = '/api/socios/inconsistencias';
+        var INCONSISTENCIAS_URL = BASE_URL + '/api/socios/inconsistencias';
 
         function showAlert(message, type) {
             var container = document.getElementById('alertContainer');
@@ -274,7 +276,7 @@
             var formData = new FormData();
             formData.append('archivo', selectedFile);
 
-            fetch('/api/socios/importar', {
+            fetch(BASE_URL + '/api/socios/importar', {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 body: formData

@@ -260,6 +260,8 @@
     (function () {
         'use strict';
 
+        var BASE_URL = '/centro-de-jubilados-primavera/public';
+
         var DEFAULT_CENTER = [-32.816, -61.389722];
         var socioId = new URLSearchParams(window.location.search).get('id');
         var socio = null;
@@ -346,8 +348,8 @@
         /* --- Carga inicial --- */
         function init() {
             Promise.all([
-                apiFetch('/api/socios/' + socioId).then(function (r) { socio = r.data; }),
-                apiFetchOptional('/api/zonas').then(function (data) {
+                apiFetch(BASE_URL + '/api/socios/' + socioId).then(function (r) { socio = r.data; }),
+                apiFetchOptional(BASE_URL + '/api/zonas').then(function (data) {
                     (data || []).forEach(function (z) { zonasMap[z.id] = z.nombre; });
                 })
             ]).then(function () {
@@ -458,13 +460,13 @@
             var btn = document.getElementById('btnGuardarGeo');
             btn.disabled = true;
 
-            apiFetch('/api/socios/' + socioId + '/geolocalizacion', {
+            apiFetch(BASE_URL + '/api/socios/' + socioId + '/geolocalizacion', {
                 method: 'POST',
                 body: JSON.stringify({ lat: pos.lat, lng: pos.lng })
             }).then(function () {
                 document.getElementById('modalGeoOverlay').classList.remove('modal-overlay--open');
                 showAlert('Ubicación actualizada correctamente.', 'success');
-                return apiFetch('/api/socios/' + socioId);
+                return apiFetch(BASE_URL + '/api/socios/' + socioId);
             }).then(function (r) {
                 socio = r.data;
                 if (mapaMini) { mapaMini.remove(); mapaMini = null; }
@@ -489,7 +491,7 @@
 
         /* --- Observaciones (endpoint placeholder) --- */
         function cargarObservaciones() {
-            apiFetchOptional('/api/socios/' + socioId + '/observaciones').then(function (data) {
+            apiFetchOptional(BASE_URL + '/api/socios/' + socioId + '/observaciones').then(function (data) {
                 var container = document.getElementById('listaObservaciones');
                 var items = data || [];
                 if (items.length === 0) {
@@ -509,7 +511,7 @@
             var texto = document.getElementById('inputObservacion').value.trim();
             if (!texto) { showAlert('Ingrese una observación.'); return; }
 
-            fetch('/api/socios/' + socioId + '/observaciones', {
+            fetch(BASE_URL + '/api/socios/' + socioId + '/observaciones', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                 body: JSON.stringify({ texto: texto })
@@ -526,7 +528,7 @@
 
         /* --- Pagos (endpoint placeholder) --- */
         function cargarPagos() {
-            apiFetchOptional('/api/socios/' + socioId + '/pagos').then(function (data) {
+            apiFetchOptional(BASE_URL + '/api/socios/' + socioId + '/pagos').then(function (data) {
                 var tbody = document.getElementById('tablaPagos');
                 var empty = document.getElementById('pagosEmpty');
                 var pagos = data || [];
@@ -557,7 +559,7 @@
                 tbody.querySelectorAll('.btn-anular-pago').forEach(function (btn) {
                     btn.addEventListener('click', function () {
                         if (!confirm('¿Confirma anular este pago?')) return;
-                        fetch('/api/socios/' + socioId + '/pagos/' + btn.dataset.id + '/anular', {
+                        fetch(BASE_URL + '/api/socios/' + socioId + '/pagos/' + btn.dataset.id + '/anular', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                         }).then(function (res) { return res.json(); })
@@ -577,7 +579,7 @@
             var content = document.getElementById('historialContent');
             content.innerHTML = '<p style="color:var(--color-text-muted);">Cargando historial...</p>';
 
-            apiFetchOptional('/api/socios/' + socioId + '/historial').then(function (data) {
+            apiFetchOptional(BASE_URL + '/api/socios/' + socioId + '/historial').then(function (data) {
                 var items = data || [];
                 if (items.length === 0) {
                     content.innerHTML = '<div class="empty-state"><div class="empty-state__text">No hay eventos en el historial.</div></div>';
@@ -623,7 +625,7 @@
                 modalidad_cobranza: modalidad ? modalidad.value : socio.modalidad_cobranza
             };
 
-            apiFetch('/api/socios/' + socioId, { method: 'PUT', body: JSON.stringify(payload) })
+            apiFetch(BASE_URL + '/api/socios/' + socioId, { method: 'PUT', body: JSON.stringify(payload) })
                 .then(function (r) {
                     socio = r.data;
                     document.getElementById('modalEditarOverlay').classList.remove('modal-overlay--open');
@@ -637,20 +639,20 @@
 
         /* --- Suspender / Reactivar / Eliminar --- */
         document.getElementById('btnSuspender').addEventListener('click', function () {
-            apiFetch('/api/socios/' + socioId + '/suspender', { method: 'POST', body: '{}' })
+            apiFetch(BASE_URL + '/api/socios/' + socioId + '/suspender', { method: 'POST', body: '{}' })
                 .then(function () {
                     showAlert('Socio suspendido.', 'success');
-                    return apiFetch('/api/socios/' + socioId);
+                    return apiFetch(BASE_URL + '/api/socios/' + socioId);
                 })
                 .then(function (r) { socio = r.data; renderPerfil(); })
                 .catch(function (err) { showAlert(err.message); });
         });
 
         document.getElementById('btnReactivar').addEventListener('click', function () {
-            apiFetch('/api/socios/' + socioId + '/reactivar', { method: 'POST', body: '{}' })
+            apiFetch(BASE_URL + '/api/socios/' + socioId + '/reactivar', { method: 'POST', body: '{}' })
                 .then(function () {
                     showAlert('Socio reactivado.', 'success');
-                    return apiFetch('/api/socios/' + socioId);
+                    return apiFetch(BASE_URL + '/api/socios/' + socioId);
                 })
                 .then(function (r) { socio = r.data; renderPerfil(); })
                 .catch(function (err) { showAlert(err.message); });
@@ -669,13 +671,13 @@
             var motivo = document.getElementById('eliminarMotivo').value.trim();
             if (!motivo) { showAlert('Debe ingresar un motivo.'); return; }
 
-            apiFetch('/api/socios/' + socioId, {
+            apiFetch(BASE_URL + '/api/socios/' + socioId, {
                 method: 'DELETE',
                 body: JSON.stringify({ motivo: motivo })
             }).then(function () {
                 document.getElementById('modalEliminarOverlay').classList.remove('modal-overlay--open');
                 showAlert('Socio dado de baja.', 'success');
-                return apiFetch('/api/socios/' + socioId);
+                return apiFetch(BASE_URL + '/api/socios/' + socioId);
             }).then(function (r) {
                 socio = r.data;
                 renderPerfil();

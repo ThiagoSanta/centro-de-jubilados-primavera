@@ -120,6 +120,8 @@
     </div>
 
     <script>
+        const BASE_URL = '/centro-de-jubilados-primavera/public';
+
         let periodoActual = '';
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -139,7 +141,7 @@
 
         async function cargarInfoCuota() {
             try {
-                const res = await fetch('/api/cuota/vigente');
+                const res = await fetch(`${BASE_URL}/api/cuota/vigente`);
                 const data = await res.json();
                 
                 const card = document.getElementById('infoCuota');
@@ -163,7 +165,7 @@
 
         async function procesarGeneracion(confirmarDuplicado) {
             try {
-                const res = await fetch('/api/deuda/generar', {
+                const res = await fetch(`${BASE_URL}/api/deuda/generar`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

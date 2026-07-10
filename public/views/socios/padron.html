@@ -224,6 +224,8 @@
     (function () {
         'use strict';
 
+        var BASE_URL = '/centro-de-jubilados-primavera/public';
+
         var state = {
             pagina: 1,
             total: 0,
@@ -285,7 +287,7 @@
 
         /* --- Carga de zonas --- */
         function cargarZonas() {
-            return apiFetch('/api/zonas').then(function (result) {
+            return apiFetch(BASE_URL + '/api/zonas').then(function (result) {
                 var select = document.getElementById('filtroZona');
                 (result.data || []).forEach(function (zona) {
                     state.zonasMap[zona.id] = zona.nombre;
@@ -328,7 +330,7 @@
             tbody.innerHTML = '<tr class="loading-row"><td colspan="8">Cargando socios...</td></tr>';
             emptyState.style.display = 'none';
 
-            apiFetch('/api/socios?' + buildQueryParams())
+            apiFetch(BASE_URL + '/api/socios?' + buildQueryParams())
                 .then(function (result) {
                     var data = result.data;
                     state.socios = data.data || [];
@@ -381,7 +383,7 @@
             tbody.querySelectorAll('tr[data-id]').forEach(function (row) {
                 row.addEventListener('click', function (e) {
                     if (e.target.closest('.btn-menu')) return;
-                    window.location.href = '/views/socios/perfil.html?id=' + encodeURIComponent(row.dataset.id);
+                    window.location.href = BASE_URL + '/views/socios/perfil.html?id=' + encodeURIComponent(row.dataset.id);
                 });
             });
 
@@ -436,7 +438,7 @@
 
             switch (action.dataset.action) {
                 case 'ver':
-                    window.location.href = '/views/socios/perfil.html?id=' + encodeURIComponent(id);
+                    window.location.href = BASE_URL + '/views/socios/perfil.html?id=' + encodeURIComponent(id);
                     break;
                 case 'suspender':
                     suspenderSocio(id);
@@ -458,7 +460,7 @@
 
         /* --- Acciones sobre socios --- */
         function suspenderSocio(id) {
-            apiFetch('/api/socios/' + id + '/suspender', { method: 'POST', body: '{}' })
+            apiFetch(BASE_URL + '/api/socios/' + id + '/suspender', { method: 'POST', body: '{}' })
                 .then(function () {
                     showAlert('Socio suspendido correctamente.', 'success');
                     cargarSocios();
@@ -467,7 +469,7 @@
         }
 
         function reactivarSocio(id) {
-            apiFetch('/api/socios/' + id + '/reactivar', { method: 'POST', body: '{}' })
+            apiFetch(BASE_URL + '/api/socios/' + id + '/reactivar', { method: 'POST', body: '{}' })
                 .then(function () {
                     showAlert('Socio reactivado correctamente.', 'success');
                     cargarSocios();
@@ -481,7 +483,7 @@
                 message: 'Esta acción dará de baja al socio. Ingrese el motivo para continuar.',
                 requireMotivo: true,
                 onConfirm: function (motivo) {
-                    return apiFetch('/api/socios/' + id, {
+                    return apiFetch(BASE_URL + '/api/socios/' + id, {
                         method: 'DELETE',
                         body: JSON.stringify({ motivo: motivo })
                     });
@@ -574,7 +576,7 @@
                 modalidad_cobranza: modalidad ? modalidad.value : 'cobranza_domiciliaria'
             };
 
-            apiFetch('/api/socios', { method: 'POST', body: JSON.stringify(payload) })
+            apiFetch(BASE_URL + '/api/socios', { method: 'POST', body: JSON.stringify(payload) })
                 .then(function () {
                     cerrarDrawer();
                     showAlert('Socio creado correctamente.', 'success');

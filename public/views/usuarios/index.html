@@ -255,6 +255,8 @@
 </div>
 
 <script>
+    const BASE_URL = '/centro-de-jubilados-primavera/public';
+
     // ─── Estado ───────────────────────────────────────────────────────────────
     var usuarios = [];
     var accionPendiente = null; // { id, accion }
@@ -360,7 +362,7 @@
 
     // ─── Cargar usuarios ──────────────────────────────────────────────────────
     function cargarUsuarios() {
-        fetch('/api/usuarios', { credentials: 'same-origin' })
+        fetch(BASE_URL + '/api/usuarios', { credentials: 'same-origin' })
             .then(function (r) { return r.json(); })
             .then(function (res) {
                 if (!res.success) {
@@ -403,7 +405,7 @@
             rol:       document.getElementById('nuevoRol').value
         };
 
-        fetch('/api/usuarios', {
+        fetch(BASE_URL + '/api/usuarios', {
             method: 'POST',
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' },
@@ -455,7 +457,7 @@
             apellido: document.getElementById('editarApellido').value.trim()
         };
 
-        fetch('/api/usuarios/' + id, {
+        fetch(BASE_URL + '/api/usuarios/' + id, {
             method: 'PUT',
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' },
@@ -500,7 +502,7 @@
         var id = document.getElementById('passwordId').value;
         var nueva = document.getElementById('nuevaPassword').value;
 
-        fetch('/api/usuarios/' + id + '/password', {
+        fetch(BASE_URL + '/api/usuarios/' + id + '/password', {
             method: 'POST',
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' },
@@ -551,7 +553,7 @@
         btn.disabled = true;
         clearModalAlert('alertModalConfirmar');
 
-        var url = '/api/usuarios/' + accionPendiente.id + '/' + accionPendiente.accion;
+        var url = BASE_URL + '/api/usuarios/' + accionPendiente.id + '/' + accionPendiente.accion;
 
         fetch(url, {
             method: 'POST',

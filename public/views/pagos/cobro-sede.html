@@ -186,6 +186,8 @@
     </div>
 
     <script>
+        const BASE_URL = '/centro-de-jubilados-primavera/public';
+
         let socioActual = null;
         let deudasPendientes = [];
         let deudasSeleccionadas = [];
@@ -197,7 +199,7 @@
             try {
                 // Assuming we can search by exact DNI matching or similar via /api/socios
                 // Actually the API is GET /api/socios?busqueda={dni}
-                const res = await fetch(`/api/socios?busqueda=${encodeURIComponent(dni)}`);
+                const res = await fetch(`${BASE_URL}/api/socios?busqueda=${encodeURIComponent(dni)}`);
                 const data = await res.json();
 
                 if (data.success && data.data.length > 0) {
@@ -233,7 +235,7 @@
 
         async function cargarDeudas(socioId) {
             try {
-                const res = await fetch(`/api/deuda/socio/${socioId}/pendientes`);
+                const res = await fetch(`${BASE_URL}/api/deuda/socio/${socioId}/pendientes`);
                 const data = await res.json();
 
                 if (data.success) {
@@ -354,7 +356,7 @@
             };
 
             try {
-                const res = await fetch('/api/pagos', {
+                const res = await fetch(`${BASE_URL}/api/pagos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

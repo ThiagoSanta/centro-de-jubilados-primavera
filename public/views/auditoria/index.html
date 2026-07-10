@@ -79,7 +79,8 @@
     </main>
 
     <script>
-        const API_BASE = 'http://localhost:8000/api';
+        const BASE_URL = '/centro-de-jubilados-primavera/public';
+        const API_BASE = BASE_URL + '/api';
         let currentPage = 1;
         let totalPages = 1;
 
@@ -154,8 +155,8 @@
         }
 
         function logout() {
-            fetch('/api/auth/logout', {method: 'POST'})
-                .then(() => window.location.href = '/views/auth/login.html');
+            fetch(`${BASE_URL}/api/auth/logout`, {method: 'POST'})
+                .then(() => window.location.href = `${BASE_URL}/views/auth/login.html`);
         }
 
         document.addEventListener('DOMContentLoaded', fetchAuditoria);

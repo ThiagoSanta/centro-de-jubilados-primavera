@@ -97,7 +97,8 @@
     </main>
 
     <script>
-        const API_BASE = 'http://localhost:8000/api';
+        const BASE_URL = '/centro-de-jubilados-primavera/public';
+        const API_BASE = BASE_URL + '/api';
         let map;
         let markersGroup;
 
@@ -162,7 +163,7 @@
                                 Nº: ${s.numero_socio}<br>
                                 Dir: ${s.direccion}<br>
                                 Zona: ${s.zona_nombre || 'N/A'}<br>
-                                <a href="/views/socios/perfil.html?id=${s.id}" target="_blank" class="text-blue-500 hover:underline">Ver perfil</a>
+                                <a href="${BASE_URL}/views/socios/perfil.html?id=${s.id}" target="_blank" class="text-blue-500 hover:underline">Ver perfil</a>
                             `);
                             
                             markersGroup.addLayer(marker);
@@ -180,8 +181,8 @@
         }
 
         function logout() {
-            fetch('/api/auth/logout', {method: 'POST'})
-                .then(() => window.location.href = '/views/auth/login.html');
+            fetch(`${BASE_URL}/api/auth/logout`, {method: 'POST'})
+                .then(() => window.location.href = `${BASE_URL}/views/auth/login.html`);
         }
 
         document.addEventListener('DOMContentLoaded', init);
