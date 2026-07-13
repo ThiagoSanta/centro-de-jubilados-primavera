@@ -53,7 +53,7 @@ class PagoRepository
 
     public function findById(string $id): ?array
     {
-        $sql = "SELECT p.*, s.nombre as socio_nombre, s.apellido as socio_apellido, s.numero_socio 
+        $sql = "SELECT p.*, s.nombre_apellido as socio_nombre, s.numero_socio 
                 FROM pagos p 
                 JOIN socios s ON p.socio_id = s.id 
                 WHERE p.id = :id";
@@ -99,7 +99,7 @@ class PagoRepository
         
         $whereClause = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
         
-        $sql = "SELECT p.*, s.nombre as socio_nombre, s.apellido as socio_apellido, s.numero_socio, u.nombre as cobrador_nombre, u.apellido as cobrador_apellido 
+        $sql = "SELECT p.*, s.nombre_apellido as socio_nombre, s.numero_socio, u.nombre as cobrador_nombre, u.apellido as cobrador_apellido 
                 FROM pagos p 
                 JOIN socios s ON p.socio_id = s.id 
                 LEFT JOIN usuarios u ON p.usuario_id = u.id

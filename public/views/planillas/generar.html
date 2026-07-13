@@ -3,90 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generar Planilla - CJP</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <title>Generar Planilla - Centro de Jubilados Primavera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
+    <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/vendor/leaflet/leaflet.css">
+    <script src="/centro-de-jubilados-primavera/public/assets/vendor/leaflet/leaflet.js"></script>
+    <style>
+        .hidden {
+            display: none !important;
+        }
+        .form-card {
+            max-width: 800px;
+            margin: 0 auto 1.5rem;
+        }
+        .preview-card {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #mapPreview {
+            height: 400px;
+            width: 100%;
+            border-radius: var(--radius);
+            border: 1px solid var(--color-border);
+            margin-bottom: 1.5rem;
+            z-index: 1;
+        }
+        .sidebar__footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.5rem 0;
+        }
+        .sidebar__footer-btn {
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            color: #fca5a5;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 h-screen flex overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-green-800 text-white flex flex-col">
-        <div class="p-4 bg-green-900">
-            <h1 class="text-xl font-bold">CJP Admin</h1>
-        </div>
-                <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
-            <a href="/centro-de-jubilados-primavera/public/views/dashboard/index.html" class="block p-2 rounded hover:bg-green-700">Dashboard</a>
-            <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" class="block p-2 rounded hover:bg-green-700">Socios</a>
-            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="block p-2 rounded hover:bg-green-700">Cobranza</a>
-            <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="block p-2 rounded bg-green-700">Planillas y Ruteo</a>
-            <a href="/centro-de-jubilados-primavera/public/views/notificaciones/index.html" class="block p-2 rounded hover:bg-green-700">Notificaciones</a>
-            <a href="/centro-de-jubilados-primavera/public/views/auditoria/index.html" class="block p-2 rounded hover:bg-green-700">Auditoría</a>
-            <a href="/centro-de-jubilados-primavera/public/views/usuarios/index.html" class="block p-2 rounded hover:bg-green-700">Usuarios</a>
-            <a href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html" class="block p-2 rounded hover:bg-green-700">Configuración</a>
-        </nav>
-        <div class="p-4 bg-green-900 border-t border-green-700">
-            <button onclick="logout()" class="w-full text-left p-2 hover:bg-green-700 rounded text-red-300">Cerrar Sesión</button>
-        </div>
-    </aside>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar__brand">
+                <div class="sidebar__brand-title">Centro Primavera</div>
+                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+            </div>
+            <nav class="sidebar__nav">
+                <a href="/centro-de-jubilados-primavera/public/views/dashboard/index.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                    Dashboard
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Socios
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Cobranza
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="sidebar-nav-item sidebar-nav-item--active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Planillas y Ruteo
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/notificaciones/index.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    Notificaciones
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/auditoria/index.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Auditoría
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/usuarios/index.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Usuarios
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Configuración
+                </a>
+            </nav>
+            <div class="sidebar__footer">
+                <button onclick="logout()" class="sidebar-nav-item sidebar__footer-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Cerrar Sesión
+                </button>
+            </div>
+        </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="bg-white shadow p-4 flex justify-between items-center">
-            <h2 class="text-xl font-semibold text-gray-800">Generar Planilla de Cobranza</h2>
-        </header>
+        <!-- Contenido principal -->
+        <main class="content">
+            <div class="content__header">
+                <div>
+                    <h1 class="content__title">Generar Planilla de Cobranza</h1>
+                    <p class="content__subtitle">Cree planillas de ruteo y visualice socios a cobrar en mapa</p>
+                </div>
+            </div>
 
-        <div class="flex-1 overflow-auto p-6">
-            <div class="bg-white p-6 rounded-lg shadow max-w-4xl mx-auto">
-                <form id="formGenerar" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Zona</label>
-                            <select id="zonaSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+            <!-- Contenedor del Formulario -->
+            <div class="card form-card">
+                <form id="formGenerar">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="zonaSelect">Zona</label>
+                            <select id="zonaSelect" class="form-control">
                                 <option value="">Seleccione zona...</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Cobrador</label>
-                            <select id="cobradorSelect" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200">
+                        <div class="form-group">
+                            <label class="form-label" for="cobradorSelect">Cobrador</label>
+                            <select id="cobradorSelect" class="form-control">
                                 <option value="">Seleccione cobrador...</option>
                             </select>
                         </div>
                     </div>
-                    
-                    <div class="flex justify-end">
-                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 focus:outline-none">Generar Planilla</button>
+
+                    <div style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn--primary">Generar Planilla</button>
                     </div>
                 </form>
-                
-                <div id="loadingMessage" class="hidden mt-4 text-center text-blue-600">Procesando...</div>
-                <div id="errorMessage" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded"></div>
-                <div id="successMessage" class="hidden mt-4 p-3 bg-green-100 text-green-700 rounded flex justify-between items-center">
-                    <span>Planilla generada con éxito.</span>
-                    <a id="linkPdf" href="#" target="_blank" class="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Ver PDF</a>
-                </div>
 
-                <div id="previewContainer" class="mt-8 hidden">
-                    <h3 class="text-lg font-medium text-gray-800 border-b pb-2 mb-4">Vista Previa de Socios</h3>
-                    
-                    <div class="h-96 w-full rounded border mb-4" id="mapPreview"></div>
-                    
-                    <table class="min-w-full divide-y divide-gray-200 border mt-4">
-                        <thead class="bg-gray-50">
+                <div id="loadingMessage" class="alert alert--info hidden" style="margin-top: 1rem; text-align: center;">Procesando...</div>
+                <div id="errorMessage" class="alert alert--error hidden" style="margin-top: 1rem;"></div>
+                <div id="successMessage" class="alert alert--success hidden" style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Planilla generada con éxito.</span>
+                    <a id="linkPdf" href="#" target="_blank" class="btn btn--primary btn--sm">Ver PDF</a>
+                </div>
+            </div>
+
+            <!-- Contenedor de Vista Previa -->
+            <div id="previewContainer" class="card preview-card hidden">
+                <h3 style="font-size: 1.125rem; font-weight: 700; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">Vista Previa de Socios</h3>
+                
+                <div id="mapPreview"></div>
+
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nº Socio</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Geo</th>
+                                <th>Nº Socio</th>
+                                <th>Nombre</th>
+                                <th>Dirección</th>
+                                <th>Geo</th>
                             </tr>
                         </thead>
-                        <tbody id="tablaPreview" class="bg-white divide-y divide-gray-200">
+                        <tbody id="tablaPreview">
                             <!-- JS will populate -->
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <script>
         const BASE_URL = '/centro-de-jubilados-primavera/public';
@@ -153,8 +234,6 @@
             }
             
             try {
-                // El filtro con_deuda puede o no estar en el controller de socios según fase anterior,
-                // Pero traemos los de la zona domiciliarios activos, asumiendo o con suerte con_deuda se procesa
                 const res = await fetch(`${API_BASE}/socios?limit=10000&zona_id=${zonaId}&modalidad_cobranza=cobranza_domiciliaria&estado=activo`);
                 const data = await res.json();
                 
@@ -174,13 +253,13 @@
                         const geoOk = s.latitud && s.longitud && !s.geolocalizacion_pendiente;
                         
                         tr.innerHTML = `
-                            <td class="px-4 py-2 text-sm">${s.numero_socio}</td>
-                            <td class="px-4 py-2 text-sm">${s.nombre_apellido}</td>
-                            <td class="px-4 py-2 text-sm">${s.direccion}</td>
-                            <td class="px-4 py-2 text-sm">
+                            <td>${s.numero_socio}</td>
+                            <td>${s.nombre_apellido}</td>
+                            <td>${s.direccion}</td>
+                            <td>
                                 ${geoOk 
-                                    ? '<span class="text-green-600 font-bold">✓</span>' 
-                                    : '<span class="text-red-500 font-bold">✕</span>'}
+                                    ? '<span class="badge badge--resuelto">✓</span>' 
+                                    : '<span class="badge badge--pendiente">✕</span>'}
                             </td>
                         `;
                         tbody.appendChild(tr);
