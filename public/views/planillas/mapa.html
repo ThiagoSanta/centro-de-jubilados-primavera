@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
+    <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/vendor/leaflet/leaflet.css">
     <script src="/centro-de-jubilados-primavera/public/assets/vendor/leaflet/leaflet.js"></script>
     <style>
@@ -197,8 +198,6 @@
     </div>
 
     <script>
-        const BASE_URL = '/centro-de-jubilados-primavera/public';
-        const API_BASE = BASE_URL + '/api';
         let map;
         let markersGroup;
 
@@ -260,7 +259,7 @@
                             
                             marker.bindPopup(`
                                 <strong>${s.nombre_apellido}</strong><br>
-                                Nº: ${s.numero_socio}<br>
+                                N°: ${s.numero_socio}<br>
                                 Dir: ${s.direccion}<br>
                                 Zona: ${s.zona_nombre || 'N/A'}<br>
                                 <a href="${BASE_URL}/views/socios/perfil.html?id=${s.id}" target="_blank" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Ver perfil</a>
@@ -278,11 +277,6 @@
             } catch (e) {
                 console.error("Error cargando socios:", e);
             }
-        }
-
-        function logout() {
-            fetch(`${BASE_URL}/api/auth/logout`, {method: 'POST'})
-                .then(() => window.location.href = `${BASE_URL}/views/auth/login.html`);
         }
 
         document.addEventListener('DOMContentLoaded', init);

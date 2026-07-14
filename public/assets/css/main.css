@@ -1074,3 +1074,31 @@ a {
     padding: 2rem;
     color: var(--color-text-muted);
 }
+
+.sidebar__footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  margin-top: auto;
+}
+
+.btn--secondary {
+  background-color: transparent;
+  color: var(--text-primary, #1F2937);
+  border: 1px solid var(--border, #E5E7EB);
+}
+
+.btn--secondary:hover {
+  background-color: var(--surface-2, #F9FAFB);
+}
+
+.sidebar__footer .btn--secondary {
+  color: rgba(255,255,255,0.8);
+  border-color: rgba(255,255,255,0.2);
+  width: 100%;
+}
+
+.sidebar__footer .btn--secondary:hover {
+  background-color: rgba(255,255,255,0.1);
+  color: #ffffff;
+}
+

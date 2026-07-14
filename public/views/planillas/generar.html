@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
+    <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/vendor/leaflet/leaflet.css">
     <script src="/centro-de-jubilados-primavera/public/assets/vendor/leaflet/leaflet.js"></script>
     <style>
@@ -154,7 +155,7 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Nº Socio</th>
+                                <th>N° Socio</th>
                                 <th>Nombre</th>
                                 <th>Dirección</th>
                                 <th>Geo</th>
@@ -170,8 +171,6 @@
     </div>
 
     <script>
-        const BASE_URL = '/centro-de-jubilados-primavera/public';
-        const API_BASE = BASE_URL + '/api';
         let map;
         let markers = [];
 
@@ -327,11 +326,6 @@
                 errDiv.textContent = 'Error de red';
                 errDiv.classList.remove('hidden');
             }
-        }
-
-        function logout() {
-            fetch(`${BASE_URL}/api/auth/logout`, {method: 'POST'})
-                .then(() => window.location.href = `${BASE_URL}/views/auth/login.html`);
         }
 
         document.addEventListener('DOMContentLoaded', init);

@@ -717,8 +717,8 @@ class SocioService
     private function geocodeAddress(string $direccion): ?array
     {
         $addressQuery = $direccion;
-        if (!str_contains(strtolower($direccion), 'armstrong')) {
-            $addressQuery .= ', Armstrong, Santa Fe, Argentina';
+        if (!str_contains(strtolower($direccion), 'cañada de gómez') && !str_contains(strtolower($direccion), 'canada de gomez')) {
+            $addressQuery .= ', Cañada de Gómez, Santa Fe, Argentina';
         }
 
         $url = 'https://nominatim.openstreetmap.org/search?q=' . urlencode($addressQuery) . '&format=json&limit=1';
