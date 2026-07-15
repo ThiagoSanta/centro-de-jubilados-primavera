@@ -139,7 +139,8 @@ centro-de-jubilados-primavera/
 ├── database/
 │   └── seeds/                   # Esquema SQL y datos iniciales
 ├── docs/
-│   └── api.md                   # Documentación completa de la API
+│   ├── api.md                   # Documentación completa de la API
+│   └── manual-de-usuario.md     # Manual operativo para usuarios finales
 ├── public/
 │   ├── assets/
 │   │   ├── css/main.css         # Hoja de estilos global
