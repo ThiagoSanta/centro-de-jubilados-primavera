@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio Cobrador - Centro de Jubilados Primavera</title>
+    <meta name="description" content="Pantalla de inicio del cobrador. Permite visualizar planillas asignadas e identificar socios por DNI.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
+    <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
+    <style>
+        body {
+            background-color: var(--color-bg-subtle);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            color: var(--color-text);
+        }
+
+        /* Premium simple Header */
+        .header {
+            background-color: #1A1F3A;
+            color: #ffffff;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header__logo {
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+        }
+
+        .header__logo-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--color-accent) 0%, #6366f1 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .header__logo-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: white;
+            fill: none;
+            stroke-width: 2.2;
+        }
+
+        .header__right {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .header__user {
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+        }
+
+        .header__username {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .header__userrole {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+        }
+
+        .header__logout-btn {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .header__logout-btn:hover {
+            background: rgba(220, 38, 38, 0.85);
+            border-color: #dc2626;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+        }
+
+        .header__logout-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Section 1: Welcome banner */
+        .welcome-card {
+            background: linear-gradient(135deg, #1A1F3A 0%, #2A3154 100%);
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 1.75rem 2rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::after {
+            content: '';
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 70%);
+            top: -160px;
+            right: -60px;
+            z-index: 0;
+        }
+
+        .welcome-card__info {
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-card__title {
+            font-size: 1.625rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .welcome-card__role-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(59, 130, 246, 0.22);
+            color: #93c5fd;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+        }
+
+        .welcome-card__timer {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            padding: 0.65rem 1.15rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .welcome-card__timer-icon {
+            width: 34px;
+            height: 34px;
+            background: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        .welcome-card__timer-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+        }
+
+        .welcome-card__timer-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcome-card__timer-label {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        .welcome-card__timer-value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            font-family: monospace;
+            color: #ffffff;
+        }
+
+        /* Two Column layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 860px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Standard Cards styling matching layout */
+        .card {
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            background: var(--color-content);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card__header {
+            padding: 1.15rem 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--color-bg-subtle);
+        }
+
+        .card__header svg {
+            width: 18px;
+            height: 18px;
+            color: var(--color-accent);
+        }
+
+        .card__body {
+            padding: 1.5rem;
+            flex: 1;
+        }
+
+        /* Section 2: Table layout */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+
+        .planilla-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .planilla-table th {
+            background-color: var(--color-bg-subtle);
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            border-bottom: 1px solid var(--color-border);
+            text-align: left;
+        }
+
+        .planilla-table td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text);
+            vertical-align: middle;
+        }
+
+        .planilla-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .planilla-table tr:hover td {
+            background-color: rgba(59, 130, 246, 0.02);
+        }
+
+        .btn-pdf {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.08);
+            border: 1px solid rgba(220, 38, 38, 0.15);
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-pdf:hover {
+            background: #dc2626;
+            color: #ffffff;
+            border-color: #dc2626;
+            box-shadow: 0 2px 5px rgba(220, 38, 38, 0.22);
+        }
+
+        .btn-pdf svg {
+            width: 14px;
+            height: 14px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+        }
+
+        /* Section 3: Search layout */
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .search-box button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .search-box button svg {
+            width: 15px;
+            height: 15px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2.2;
+        }
+
+        /* Search Results style */
+        .search-result {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-bg-subtle);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .search-result__row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .search-result__row:last-of-type {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .search-result__label {
+            font-size: 0.8125rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        .search-result__value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .search-result__actions {
+            margin-top: 0.5rem;
+        }
+
+        .search-result__btn {
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            justify-content: center;
+        }
+
+        /* Status colors & Empty States */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 999px;
+        }
+
+        .status-badge--activo {
+            background: rgba(22, 163, 74, 0.1);
+            color: var(--color-estado-activo);
+        }
+
+        .status-badge--suspendido {
+            background: rgba(217, 119, 6, 0.1);
+            color: var(--color-estado-suspendido);
+        }
+
+        .empty-placeholder {
+            text-align: center;
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .empty-placeholder svg {
+            width: 32px;
+            height: 32px;
+            opacity: 0.45;
+            color: var(--color-text-muted);
+        }
+
+        .alert-box {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .alert-box--error {
+            background-color: #fef2f2;
+            color: var(--color-estado-eliminado);
+            border: 1px solid #fee2e2;
+        }
+
+        .alert-box--info {
+            background-color: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #dbeafe;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="header">
+        <div class="header__logo">
+            <div class="header__logo-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+            </div>
+            <span>Centro de Jubilados Primavera</span>
+        </div>
+        <div class="header__right">
+            <div class="header__user">
+                <span class="header__username" id="header-user-fullname">Cargando...</span>
+                <span class="header__userrole">Cobrador</span>
+            </div>
+            <button class="header__logout-btn" onclick="logout()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+                Cerrar sesión
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="container">
+        <!-- Section 1: Welcome Banner -->
+        <section class="welcome-card">
+            <div class="welcome-card__info">
+                <h1 class="welcome-card__title">Bienvenido, <span id="welcome-user-name">...</span></h1>
+                <div class="welcome-card__role-badge">Cobrador</div>
+            </div>
+            <div class="welcome-card__timer">
+                <div class="welcome-card__timer-icon">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </div>
+                <div class="welcome-card__timer-text">
+                    <span class="welcome-card__timer-label">Tiempo de sesión</span>
+                    <span class="welcome-card__timer-value" id="session-timer">30:00</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Two Columns Grid -->
+        <div class="dashboard-grid">
+            <!-- Section 2: Mis planillas -->
+            <section class="card">
+                <div class="card__header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    <span>Mis planillas</span>
+                </div>
+                <div class="card__body">
+                    <div id="planillas-container">
+                        <div class="empty-placeholder">
+                            <span style="font-size:0.875rem;">Cargando planillas asignadas...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Identificar socio -->
+            <section class="card">
+                <div class="card__header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <span>Identificar socio</span>
+                </div>
+                <div class="card__body">
+                    <div class="search-container">
+                        <div class="search-box">
+                            <input type="text" id="dni-input" placeholder="Ingrese DNI del socio..." aria-label="Búsqueda por DNI">
+                            <button class="btn btn--primary" id="btn-search" onclick="buscarSocio()">
+                                <svg viewBox="0 0 24 24">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                </svg>
+                                Buscar
+                            </button>
+                        </div>
+                        <div id="search-result-container">
+                            <div class="empty-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <line x1="19" y1="8" x2="19" y2="14"/>
+                                    <line x1="22" y1="11" x2="16" y2="11"/>
+                                </svg>
+                                <span>Ingrese un DNI para iniciar la búsqueda</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        // ─── Session Timer ────────────────────────────────────────────────────────
+        let timeLeft = 1800; // 30 minutes in seconds
+        const timerValueEl = document.getElementById('session-timer');
+
+        const sessionInterval = setInterval(() => {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(sessionInterval);
+                timerValueEl.textContent = "00:00";
+                logout();
+            } else {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerValueEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+
+        // ─── Formatting helpers ───────────────────────────────────────────────────
+        function fmtFecha(str) {
+            if (!str) return '—';
+            // MySQL format: YYYY-MM-DD HH:MM:SS
+            const parts = str.split(' ');
+            if (parts.length >= 1) {
+                const dateParts = parts[0].split('-');
+                if (dateParts.length === 3) {
+                    const y = dateParts[0];
+                    const m = dateParts[1];
+                    const d = dateParts[2];
+                    let formatted = `${d}/${m}/${y}`;
+                    if (parts.length >= 2) {
+                        const timeParts = parts[1].split(':');
+                        if (timeParts.length >= 2) {
+                            formatted += ` ${timeParts[0]}:${timeParts[1]}`;
+                        }
+                    }
+                    return formatted;
+                }
+            }
+            return str;
+        }
+
+        // ─── Auth Verification on Load ──────────────────────────────────────────
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch(`${API_BASE}/auth/me`)
+                .then(res => {
+                    if (!res.ok) throw new Error('No autenticado');
+                    return res.json();
+                })
+                .then(res => {
+                    if (!res.success) {
+                        window.location.href = `${BASE_URL}/views/auth/login.html`;
+                        return;
+                    }
+                    
+                    const user = res.data;
+                    if (user.rol !== 'cobrador') {
+                        // Redirect other roles to their proper home screens
+                        if (user.rol === 'administrador') {
+                            window.location.href = `${BASE_URL}/views/dashboard/index.html`;
+                        } else {
+                            window.location.href = `${BASE_URL}/views/auth/login.html`;
+                        }
+                        return;
+                    }
+
+                    currentUser = user;
+                    
+                    // Display user details
+                    document.getElementById('header-user-fullname').textContent = `${user.nombre} ${user.apellido}`;
+                    document.getElementById('welcome-user-name').textContent = `${user.nombre}`;
+
+                    // Load planillas for this collector
+                    cargarPlanillas(user.usuario_id);
+                })
+                .catch(err => {
+                    console.error('Error de autenticación:', err);
+                    window.location.href = `${BASE_URL}/views/auth/login.html`;
+                });
+
+            // Enter key search binding
+            document.getElementById('dni-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    buscarSocio();
+                }
+            });
+        });
+
+        // ─── Load planillas ───────────────────────────────────────────────────────
+        function cargarPlanillas(cobradorId) {
+            const planillasContainer = document.getElementById('planillas-container');
+            
+            fetch(`${API_BASE}/planillas?cobrador_id=${encodeURIComponent(cobradorId)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Error al consultar planillas');
+                    return res.json();
+                })
+                .then(res => {
+                    if (!res.success || !res.data || !res.data.data || res.data.data.length === 0) {
+                        planillasContainer.innerHTML = `
+                            <div class="empty-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                </svg>
+                                <span>No tenés planillas asignadas aún</span>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    const planillas = res.data.data;
+                    
+                    let html = `
+                        <div class="table-responsive">
+                            <table class="planilla-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Zona</th>
+                                        <th>Socios</th>
+                                        <th style="text-align:right;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    planillas.forEach(p => {
+                        const count = p.cantidad_socios !== undefined ? p.cantidad_socios : 0;
+                        const pdfUrl = `${API_BASE}/planillas/${p.id}/pdf`;
+                        
+                        html += `
+                            <tr>
+                                <td>${fmtFecha(p.fecha_generacion)}</td>
+                                <td><strong>${p.zona_nombre || 'Sin nombre'}</strong></td>
+                                <td>${count}</td>
+                                <td style="text-align:right;">
+                                    <a href="${pdfUrl}" target="_blank" class="btn-pdf">
+                                        <svg viewBox="0 0 24 24">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                            <polyline points="14 2 14 8 20 8"/>
+                                            <line x1="16" y1="13" x2="8" y2="13"/>
+                                            <line x1="16" y1="17" x2="8" y2="17"/>
+                                        </svg>
+                                        Ver PDF
+                                    </a>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+
+                    planillasContainer.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error(err);
+                    planillasContainer.innerHTML = `
+                        <div class="alert-box alert-box--error">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
+                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            <span>Error al cargar las planillas.</span>
+                        </div>
+                    `;
+                });
+        }
+
+        // ─── Search Socio by DNI ──────────────────────────────────────────────────
+        function buscarSocio() {
+            const dniInput = document.getElementById('dni-input');
+            const resultContainer = document.getElementById('search-result-container');
+            const dniClean = dniInput.value.trim();
+
+            if (!dniClean) {
+                resultContainer.innerHTML = `
+                    <div class="alert-box alert-box--info">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        <span>Por favor, ingrese un DNI.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show loading
+            resultContainer.innerHTML = `
+                <div class="empty-placeholder">
+                    <span style="font-size:0.875rem;">Buscando socio...</span>
+                </div>
+            `;
+
+            // Query socios API
+            fetch(`${API_BASE}/socios?busqueda=${encodeURIComponent(dniClean)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Error al buscar socio');
+                    return res.json();
+                })
+                .then(res => {
+                    if (!res.success || !res.data || !res.data.data || res.data.data.length === 0) {
+                        resultContainer.innerHTML = `
+                            <div class="alert-box alert-box--info">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                                <span>Socio no encontrado</span>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Find match where DNI numbers match exactly
+                    const numericSearch = dniClean.replace(/\D/g, '');
+                    const socio = res.data.data.find(s => {
+                        const sDniClean = (s.dni || '').replace(/\D/g, '');
+                        return sDniClean === numericSearch;
+                    }) || res.data.data[0]; // Fallback to first search result if exact matching numeric string wasn't found
+
+                    // Check if state is eliminado
+                    if (socio.estado === 'eliminado') {
+                        resultContainer.innerHTML = `
+                            <div class="alert-box alert-box--error">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                                <span>Socio no disponible</span>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Render Result Card (Only for active and suspended states)
+                    const statusText = socio.estado.charAt(0).toUpperCase() + socio.estado.slice(1);
+                    const profileUrl = `${BASE_URL}/views/socios/perfil.html?id=${socio.id}`;
+                    
+                    resultContainer.innerHTML = `
+                        <div class="search-result">
+                            <div class="search-result__row">
+                                <span class="search-result__label">Nombre</span>
+                                <span class="search-result__value">${socio.nombre_apellido}</span>
+                            </div>
+                            <div class="search-result__row">
+                                <span class="search-result__label">N° Socio</span>
+                                <span class="search-result__value">${socio.numero_socio}</span>
+                            </div>
+                            <div class="search-result__row">
+                                <span class="search-result__label">Estado</span>
+                                <span>
+                                    <span class="status-badge status-badge--${socio.estado}">
+                                        ${statusText}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="search-result__actions">
+                                <a href="${profileUrl}" class="btn btn--secondary btn-pdf search-result__btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                                    </svg>
+                                    Ver perfil
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(err => {
+                    console.error(err);
+                    resultContainer.innerHTML = `
+                        <div class="alert-box alert-box--error">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
+                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            <span>Error al buscar el socio.</span>
+                        </div>
+                    `;
+                });
+        }
+    </script>
+</body>
+</html>
