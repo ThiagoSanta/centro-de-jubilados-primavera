@@ -58,7 +58,7 @@
         .payment-form {
             margin-top: 2rem;
         }
-        
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -81,7 +81,7 @@
             justify-content: flex-end;
             gap: 1rem;
         }
-        
+
         .result-actions {
             display: none;
             margin-top: 2rem;
@@ -101,46 +101,25 @@
 </head>
 <body>
     <div class="layout">
-        <!-- Sidebar -->
-        <aside class="sidebar">
+        <!-- Sidebar (populated dynamically based on role) -->
+        <aside class="sidebar" id="appSidebar">
             <div class="sidebar__brand">
                 <div class="sidebar__brand-title">Centro Primavera</div>
-                <div class="sidebar__brand-sub">Sistema de Gestión</div>
+                <div class="sidebar__brand-sub" id="sidebarRolLabel">Sistema de Gestión</div>
             </div>
-                    <nav class="sidebar__nav">
-            <a href="/centro-de-jubilados-primavera/public/views/dashboard/index.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                Dashboard
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Socios
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item sidebar-nav-item--active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Cobranza
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                Planillas y Ruteo
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/notificaciones/index.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                Notificaciones
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/auditoria/index.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Auditoría
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/usuarios/index.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Usuarios
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                Configuración
-            </a>
-        </nav>
+            <nav class="sidebar__nav" id="sidebarNav">
+                <!-- items se insertan por JS -->
+            </nav>
+            <div class="sidebar__footer" id="sidebarFooter" style="display:none;">
+                <button onclick="logout()" class="sidebar-nav-item sidebar__footer-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Cerrar sesión
+                </button>
+            </div>
         </aside>
 
         <!-- Contenido principal -->
@@ -167,9 +146,9 @@
             <div class="deudas-container" id="deudasContainer">
                 <h3>Deudas Pendientes</h3>
                 <p style="color: #666; font-size: 0.9rem;">Debe seleccionar los períodos en orden cronológico.</p>
-                
+
                 <div id="listaDeudas"></div>
-                
+
                 <div class="total-box">
                     Total a Pagar: $<span id="montoTotal">0.00</span>
                 </div>
@@ -216,7 +195,82 @@
     </div>
 
     <script>
+        // ── Sidebar por rol ───────────────────────────────────────────────────────
+        var SIDEBAR_ADMIN = [
+            { href: '/centro-de-jubilados-primavera/public/views/dashboard/index.html', label: 'Dashboard',
+              icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/socios/padron.html', label: 'Socios',
+              icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/pagos/listado.html', label: 'Cobranza', active: true,
+              icon: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/planillas/generar.html', label: 'Planillas y Ruteo',
+              icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/notificaciones/index.html', label: 'Notificaciones',
+              icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/auditoria/index.html', label: 'Auditoría',
+              icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/usuarios/index.html', label: 'Usuarios',
+              icon: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html', label: 'Configuración',
+              icon: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>' }
+        ];
 
+        var SIDEBAR_COBRADOR = [
+            { href: '/centro-de-jubilados-primavera/public/views/cobrador/index.html', label: 'Inicio',
+              icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/cobrador/index.html#socios', label: 'Socios',
+              icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html', label: 'Cobro en sede', active: true,
+              icon: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/cobrador/index.html#planillas', label: 'Mis planillas',
+              icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' },
+            { href: '/centro-de-jubilados-primavera/public/views/planillas/mapa.html', label: 'Mapa de ruteo',
+              icon: '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>' }
+        ];
+
+        function buildSidebarItems(items) {
+            return items.map(function(item) {
+                var cls = 'sidebar-nav-item' + (item.active ? ' sidebar-nav-item--active' : '');
+                return '<a href="' + item.href + '" class="' + cls + '">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + item.icon + '</svg>' +
+                    item.label +
+                    '</a>';
+            }).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch(API_BASE + '/auth/me')
+                .then(function(res) {
+                    if (!res.ok) throw new Error('No autenticado');
+                    return res.json();
+                })
+                .then(function(res) {
+                    if (!res.success) {
+                        window.location.href = BASE_URL + '/views/auth/login.html';
+                        return;
+                    }
+                    var user = res.data;
+                    var nav = document.getElementById('sidebarNav');
+                    var footer = document.getElementById('sidebarFooter');
+                    var rolLabel = document.getElementById('sidebarRolLabel');
+
+                    if (user.rol === 'cobrador') {
+                        rolLabel.textContent = 'Panel del Cobrador';
+                        nav.innerHTML = buildSidebarItems(SIDEBAR_COBRADOR);
+                        footer.style.display = '';
+                    } else {
+                        // administrador u otro rol
+                        rolLabel.textContent = 'Sistema de Gestión';
+                        nav.innerHTML = buildSidebarItems(SIDEBAR_ADMIN);
+                        footer.style.display = 'none';
+                    }
+                })
+                .catch(function() {
+                    window.location.href = BASE_URL + '/views/auth/login.html';
+                });
+        });
+
+        // ── Lógica de cobro en sede ───────────────────────────────────────────────
         let socioActual = null;
         let deudasPendientes = [];
         let deudasSeleccionadas = [];
@@ -226,8 +280,7 @@
             if (!dni) return mostrarAlerta('Ingrese un DNI', 'error');
 
             try {
-                // Assuming we can search by exact DNI matching or similar via /api/socios
-                // Actually the API is GET /api/socios?busqueda={dni}
+                // GET /api/socios?busqueda={dni}
                 const res = await fetch(`${BASE_URL}/api/socios?busqueda=${encodeURIComponent(dni)}`);
                 const data = await res.json();
 
@@ -281,7 +334,7 @@
         function renderizarDeudas() {
             const container = document.getElementById('listaDeudas');
             container.innerHTML = '';
-            
+
             if (deudasPendientes.length === 0) {
                 container.innerHTML = '<p>El socio no tiene deudas pendientes.</p>';
                 document.getElementById('btnConfirmar').disabled = true;
@@ -290,9 +343,9 @@
                 deudasPendientes.forEach((deuda, index) => {
                     const div = document.createElement('div');
                     div.className = 'deuda-item';
-                    
+
                     const labelPeriodo = deuda.periodo === 'deuda_anterior' ? 'Deuda Anterior' : formatPeriodo(deuda.periodo);
-                    
+
                     div.innerHTML = `
                         <div>
                             <input type="checkbox" class="deuda-checkbox" id="chk_${index}" data-index="${index}" data-id="${deuda.id}" data-monto="${deuda.monto}" onchange="manejarSeleccion(${index})">
@@ -305,7 +358,7 @@
                     container.appendChild(div);
                 });
             }
-            
+
             document.getElementById('deudasContainer').style.display = 'block';
             actualizarTotal();
         }
@@ -319,21 +372,21 @@
         function manejarSeleccion(selectedIndex) {
             const checkboxes = document.querySelectorAll('.deuda-checkbox');
             const checked = checkboxes[selectedIndex].checked;
-            
+
             if (checked) {
-                // If checking, verify all previous are checked
+                // Si se marca, verificar que todos los anteriores estén marcados
                 for (let i = 0; i < selectedIndex; i++) {
                     if (!checkboxes[i].checked) {
-                        checkboxes[i].checked = true; // Auto-check previous ones
+                        checkboxes[i].checked = true;
                     }
                 }
             } else {
-                // If unchecking, uncheck all subsequent ones
+                // Si se desmarca, desmarcar todos los siguientes
                 for (let i = selectedIndex + 1; i < checkboxes.length; i++) {
                     checkboxes[i].checked = false;
                 }
             }
-            
+
             actualizarTotal();
         }
 
@@ -341,30 +394,30 @@
             const checkboxes = document.querySelectorAll('.deuda-checkbox');
             let total = 0;
             deudasSeleccionadas = [];
-            
+
             checkboxes.forEach((chk, index) => {
                 if (chk.checked) {
                     total += parseFloat(chk.dataset.monto);
                     deudasSeleccionadas.push(deudasPendientes[index]);
                 }
             });
-            
+
             document.getElementById('montoTotal').textContent = total.toFixed(2);
             document.getElementById('btnConfirmar').disabled = deudasSeleccionadas.length === 0;
         }
 
         function abrirModalConfirmacion() {
             if (deudasSeleccionadas.length === 0) return;
-            
+
             document.getElementById('modalSocio').textContent = `${socioActual.nombre} ${socioActual.apellido}`;
             document.getElementById('modalTotal').textContent = document.getElementById('montoTotal').textContent;
-            
+
             const metodo = document.getElementById('metodoPago').value;
             document.getElementById('modalMetodo').textContent = metodo.charAt(0).toUpperCase() + metodo.slice(1);
-            
+
             const periodos = deudasSeleccionadas.map(d => d.periodo === 'deuda_anterior' ? 'Deuda Anterior' : formatPeriodo(d.periodo)).join(', ');
             document.getElementById('modalPeriodos').textContent = periodos;
-            
+
             document.getElementById('modalConfirmacion').style.display = 'flex';
         }
 
@@ -376,7 +429,7 @@
             const deudaIds = deudasSeleccionadas.map(d => d.id);
             const metodo_pago = document.getElementById('metodoPago').value;
             const observacion = document.getElementById('observacion').value;
-            
+
             const payload = {
                 socio_id: socioActual.id,
                 deuda_ids: deudaIds,
@@ -391,19 +444,19 @@
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
-                
+
                 if (data.success) {
                     cerrarModal();
                     mostrarAlerta('Pago registrado con éxito.', 'success');
-                    
+
                     document.getElementById('deudasContainer').style.display = 'none';
-                    
-                    // Show actions
+
+                    // Mostrar acciones post-pago
                     const actions = document.getElementById('resultActions');
                     actions.style.display = 'flex';
                     document.getElementById('linkComprobante').href = data.data.comprobante_url;
                     document.getElementById('linkWhatsapp').href = data.data.whatsapp_url;
-                    
+
                 } else {
                     mostrarAlerta(data.message || 'Error al registrar pago.', 'error');
                 }
@@ -422,10 +475,10 @@
             alert.style.borderRadius = '4px';
             alert.style.backgroundColor = tipo === 'success' ? '#d4edda' : '#f8d7da';
             alert.style.color = tipo === 'success' ? '#155724' : '#721c24';
-            
+
             container.innerHTML = '';
             container.appendChild(alert);
-            
+
             setTimeout(() => { alert.remove(); }, 5000);
         }
     </script>
