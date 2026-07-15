@@ -91,8 +91,10 @@ class SocioRepository
 
         // 5. Filter: busqueda (nombre, dni, numero_socio)
         if (!empty($filtros['busqueda'])) {
-            $conditions[] = "(s.nombre_apellido LIKE :busqueda OR s.dni LIKE :busqueda OR CAST(s.numero_socio AS CHAR) LIKE :busqueda)";
-            $params['busqueda'] = '%' . $filtros['busqueda'] . '%';
+            $conditions[] = "(s.nombre_apellido LIKE :busqueda1 OR s.dni LIKE :busqueda2 OR CAST(s.numero_socio AS CHAR) LIKE :busqueda3)";
+            $params['busqueda1'] = '%' . $filtros['busqueda'] . '%';
+            $params['busqueda2'] = '%' . $filtros['busqueda'] . '%';
+            $params['busqueda3'] = '%' . $filtros['busqueda'] . '%';
         }
 
         $whereClause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
