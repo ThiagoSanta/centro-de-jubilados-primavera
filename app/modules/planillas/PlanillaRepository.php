@@ -12,23 +12,26 @@ class PlanillaRepository
 
     public function __construct()
     {
-        $this->db = Database::getInstance()->getConnection();
+        $this->db = Database::getConnection();
     }
 
     public function create(array $datos): string
     {
         $id = sprintf(
             '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
             mt_rand(0, 0xffff),
             mt_rand(0, 0x0fff) | 0x4000,
             mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
         );
 
         $sql = "INSERT INTO planillas (id, fecha_generacion, cobrador_id, zona_id, pdf_generado) 
                 VALUES (:id, :fecha_generacion, :cobrador_id, :zona_id, :pdf_generado)";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':id' => $id,
@@ -128,7 +131,7 @@ class PlanillaRepository
                 LEFT JOIN zonas z ON p.zona_id = z.id
                 LEFT JOIN usuarios u ON p.cobrador_id = u.id
                 WHERE p.id = :id";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $id]);
         $planilla = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -194,7 +197,7 @@ class PlanillaRepository
     {
         $sql = "INSERT INTO auditoria (usuario_id, accion, entidad, entidad_id, detalles, ip, user_agent) 
                 VALUES (:usuario_id, :accion, :entidad, :entidad_id, :detalles, :ip, :user_agent)";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':usuario_id' => $usuarioId,

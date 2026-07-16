@@ -1,20 +1,24 @@
 <?php
+
 namespace CJP\Modules\Auditoria;
 
 use CJP\Config\Database;
 use PDO;
 
-class AuditoriaRepository {
+class AuditoriaRepository
+{
     private \PDO $db;
 
-    public function __construct() {
-        $this->db = Database::getInstance()->getConnection();
+    public function __construct()
+    {
+        $this->db = Database::getConnection();
     }
 
-    public function findAll(array $filtros, int $pagina): array {
+    public function findAll(array $filtros, int $pagina): array
+    {
         $limit = 25;
         $offset = ($pagina - 1) * $limit;
-        
+
         $query = "SELECT a.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido 
                   FROM auditoria a 
                   LEFT JOIN usuarios u ON a.usuario_id = u.id 
@@ -51,7 +55,7 @@ class AuditoriaRepository {
         $query .= " ORDER BY a.fecha_hora DESC LIMIT $limit OFFSET $offset";
         $stmt = $this->db->prepare($query);
         $stmt->execute($params);
-        
+
         return [
             'data' => $stmt->fetchAll(PDO::FETCH_ASSOC),
             'total' => $total,
@@ -59,7 +63,8 @@ class AuditoriaRepository {
         ];
     }
 
-    public function findById(string $id): ?array {
+    public function findById(string $id): ?array
+    {
         $stmt = $this->db->prepare("SELECT a.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido FROM auditoria a LEFT JOIN usuarios u ON a.usuario_id = u.id WHERE a.id = :id");
         $stmt->execute([':id' => $id]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);

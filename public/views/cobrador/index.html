@@ -626,13 +626,14 @@
                         }
                         var user = res.data;
                         if (user.rol !== 'cobrador') {
-                            window.location.href = user.rol === 'administrador'
+                            window.location.replace(user.rol === 'administrador'
                                 ? BASE_URL + '/views/dashboard/index.html'
-                                : BASE_URL + '/views/auth/login.html';
+                                : BASE_URL + '/views/auth/login.html');
                             return;
                         }
                         currentUser = user;
-                        document.getElementById('welcome-user-name').textContent = user.nombre;
+                        const nombreCompleto = [user.nombre, user.apellido].filter(Boolean).join(' ').trim();
+                        document.getElementById('welcome-user-name').textContent = nombreCompleto || user.nombre || 'Usuario';
                         // Por defecto, filtrar socios activos en la primera carga
                         var filtroEstadoEl = document.getElementById('filtroEstado');
                         if (filtroEstadoEl) filtroEstadoEl.value = 'activo';
@@ -640,7 +641,7 @@
                         cargarZonas();
                     })
                     .catch(function () {
-                        window.location.href = BASE_URL + '/views/auth/login.html';
+                        window.location.replace(BASE_URL + '/views/auth/login.html');
                     });
 
                 // Enter key in DNI input
@@ -788,7 +789,7 @@
                 emptyEl.style.display = 'none';
                 tbody.innerHTML = state.socios.map(function (socio) {
                     var profileUrl = BASE_URL + '/views/socios/perfil.html?id=' + encodeURIComponent(socio.id);
-                    return '<tr style="cursor:pointer;" onclick="window.location.href=\'' + profileUrl + '\'">' +
+                    return '<tr style="cursor:pointer;" onclick="window.location.replace(\'' + profileUrl + '\')">' +
                         '<td>' + escapeHtml(socio.numero_socio) + '</td>' +
                         '<td>' + escapeHtml(socio.nombre_apellido) + '</td>' +
                         '<td>' + escapeHtml(socio.dni) + '</td>' +

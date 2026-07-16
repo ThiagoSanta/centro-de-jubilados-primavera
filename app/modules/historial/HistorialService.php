@@ -1,17 +1,21 @@
 <?php
+
 namespace CJP\Modules\Historial;
 
 use CJP\Config\Database;
 use PDO;
 
-class HistorialService {
+class HistorialService
+{
     private \PDO $db;
 
-    public function __construct() {
-        $this->db = Database::getInstance()->getConnection();
+    public function __construct()
+    {
+        $this->db = Database::getConnection();
     }
 
-    public function getBySocio(string $socioId): array {
+    public function getBySocio(string $socioId): array
+    {
         $historial = [];
 
         // Pagos
@@ -64,7 +68,7 @@ class HistorialService {
             ];
         }
 
-        usort($historial, function($a, $b) {
+        usort($historial, function ($a, $b) {
             return strtotime($b['fecha']) - strtotime($a['fecha']);
         });
 

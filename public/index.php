@@ -54,6 +54,18 @@ $router->get('/api/ping', function () {
     ]);
 });
 
+$router->get('/dashboard', function () {
+    $file = __DIR__ . '/views/dashboard/index.html';
+    if (!file_exists($file)) {
+        ResponseHelper::error('Página no encontrada', 404);
+        return;
+    }
+
+    header('Content-Type: text/html; charset=utf-8');
+    readfile($file);
+    exit;
+});
+
 // Authentication routes
 $router->post('/api/auth/login', [AuthController::class, 'login']);
 $router->post('/api/auth/logout', [AuthController::class, 'logout']);

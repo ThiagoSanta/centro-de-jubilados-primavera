@@ -18,6 +18,17 @@ class Database
      */
     public static function getInstance(): PDO
     {
+        return self::getConnection();
+    }
+
+    /**
+     * Alias kept for compatibility with repositories that call getConnection().
+     *
+     * @return PDO
+     * @throws RuntimeException
+     */
+    public static function getConnection(): PDO
+    {
         if (self::$instance === null) {
             $host = Config::get('DB_HOST', 'localhost');
             $dbName = Config::get('DB_NAME');

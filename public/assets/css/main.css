@@ -21,7 +21,9 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -525,8 +527,15 @@ a {
 }
 
 @keyframes modalIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Drawer (panel lateral) */
@@ -1066,7 +1075,9 @@ a {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .loading-row td {
@@ -1076,29 +1087,57 @@ a {
 }
 
 .sidebar__footer {
-  padding: 1rem;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  margin-top: auto;
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: auto;
+}
+
+.sidebar__footer-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.625rem;
+    padding: 0.75rem 0.875rem;
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.sidebar__footer-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.sidebar__footer-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 .btn--secondary {
-  background-color: transparent;
-  color: var(--text-primary, #1F2937);
-  border: 1px solid var(--border, #E5E7EB);
+    background-color: transparent;
+    color: var(--text-primary, #1F2937);
+    border: 1px solid var(--border, #E5E7EB);
 }
 
 .btn--secondary:hover {
-  background-color: var(--surface-2, #F9FAFB);
+    background-color: var(--surface-2, #F9FAFB);
 }
 
 .sidebar__footer .btn--secondary {
-  color: rgba(255,255,255,0.8);
-  border-color: rgba(255,255,255,0.2);
-  width: 100%;
+    color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
+    width: 100%;
 }
 
 .sidebar__footer .btn--secondary:hover {
-  background-color: rgba(255,255,255,0.1);
-  color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
 }
-

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,7 @@
             margin: 0;
             padding: 0;
         }
+
         .notif-item {
             display: flex;
             align-items: flex-start;
@@ -25,30 +27,37 @@
             border-bottom: 1px solid var(--color-border);
             transition: background 0.12s;
         }
+
         .notif-item:last-child {
             border-bottom: none;
         }
+
         .notif-item--no_leida {
             background: rgba(59, 130, 246, 0.04);
         }
+
         .notif-item__left {
             display: flex;
             align-items: flex-start;
             gap: 0.875rem;
         }
+
         .notif-item__icon {
             font-size: 1.375rem;
             line-height: 1;
             flex-shrink: 0;
             margin-top: 0.125rem;
         }
+
         .notif-item__body {}
+
         .notif-item__mensaje {
             font-size: 0.9375rem;
             font-weight: 500;
             color: var(--color-text);
             margin-bottom: 0.25rem;
         }
+
         .notif-item__meta {
             font-size: 0.8125rem;
             color: var(--color-text-muted);
@@ -57,22 +66,26 @@
             gap: 0.625rem;
             flex-wrap: wrap;
         }
+
         .notif-item__expiry {
             font-size: 0.8125rem;
             color: #d97706;
             margin-top: 0.25rem;
         }
+
         .notif-item__actions {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             flex-shrink: 0;
         }
+
         .empty-state {
             padding: 3rem 1rem;
         }
     </style>
 </head>
+
 <body>
     <div class="layout">
         <!-- Sidebar -->
@@ -81,40 +94,72 @@
                 <div class="sidebar__brand-title">Centro Primavera</div>
                 <div class="sidebar__brand-sub">Sistema de Gestión</div>
             </div>
-                    <nav class="sidebar__nav">
-            <a href="/centro-de-jubilados-primavera/public/views/dashboard/index.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                Dashboard
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Socios
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Cobranza
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                Planillas y Ruteo
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/notificaciones/index.html" class="sidebar-nav-item sidebar-nav-item--active">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                Notificaciones
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/auditoria/index.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Auditoría
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/usuarios/index.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Usuarios
-            </a>
-            <a href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html" class="sidebar-nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                Configuración
-            </a>
-        </nav>
+            <nav class="sidebar__nav">
+                <a href="/centro-de-jubilados-primavera/public/views/dashboard/index.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    Socios
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                    Cobranza
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                    </svg>
+                    Planillas y Ruteo
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/notificaciones/index.html"
+                    class="sidebar-nav-item sidebar-nav-item--active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                    Notificaciones
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/auditoria/index.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    Auditoría
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/usuarios/index.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Usuarios
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html"
+                    class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3" />
+                        <path
+                            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                    Configuración
+                </a>
+            </nav>
         </aside>
 
         <!-- Contenido principal -->
@@ -140,7 +185,9 @@
 
             <div class="table-wrapper">
                 <ul class="notif-list" id="listaNotificaciones">
-                    <li class="loading-row" style="list-style:none;text-align:center;padding:2rem;color:var(--color-text-muted);">Cargando…</li>
+                    <li class="loading-row"
+                        style="list-style:none;text-align:center;padding:2rem;color:var(--color-text-muted);">Cargando…
+                    </li>
                 </ul>
             </div>
         </main>
@@ -153,7 +200,8 @@
                 <h2 class="modal__title" id="modalTitle">Confirmar reversión</h2>
             </div>
             <div class="modal__body">
-                <p class="modal__message">Esta operación restaurará los datos a su estado anterior. ¿Confirmar la reversión?</p>
+                <p class="modal__message">Esta operación restaurará los datos a su estado anterior. ¿Confirmar la
+                    reversión?</p>
             </div>
             <div class="modal__footer">
                 <button type="button" class="btn btn--secondary" id="btnCancelarRevertir">Cancelar</button>
@@ -183,15 +231,14 @@
             if (estado) url += `?estado=${encodeURIComponent(estado)}`;
 
             try {
-                const res = await fetch(url);
-                const data = await res.json();
+                const data = await fetchJson(url, { credentials: 'same-origin' });
                 if (data.success) {
-                    renderNotificaciones(data.data);
+                    renderNotificaciones(data.data || []);
                 } else {
                     showAlert('error', data.message || 'Error al obtener notificaciones.');
                 }
             } catch (e) {
-                showAlert('error', 'Error de red al cargar notificaciones.');
+                showAlert('error', e.message || 'Error de red al cargar notificaciones.');
             }
         }
 
@@ -267,8 +314,7 @@
         // ── Acciones individuales ──────────────────────────────────────────────
         async function accionLeida(id) {
             try {
-                const res = await fetch(`${API_BASE}/notificaciones/${id}/leida`, { method: 'POST' });
-                const data = await res.json();
+                const data = await fetchJson(`${API_BASE}/notificaciones/${id}/leida`, { method: 'POST', credentials: 'same-origin' });
                 if (data.success) fetchNotificaciones();
                 else showAlert('error', data.message || 'Error al marcar como leída.');
             } catch { showAlert('error', 'Error de red.'); }
@@ -276,8 +322,7 @@
 
         async function accionArchivar(id) {
             try {
-                const res = await fetch(`${API_BASE}/notificaciones/${id}/archivar`, { method: 'POST' });
-                const data = await res.json();
+                const data = await fetchJson(`${API_BASE}/notificaciones/${id}/archivar`, { method: 'POST', credentials: 'same-origin' });
                 if (data.success) fetchNotificaciones();
                 else showAlert('error', data.message || 'Error al archivar.');
             } catch { showAlert('error', 'Error de red.'); }
@@ -301,8 +346,7 @@
             const id = notificacionPendiente;
             cerrarModal();
             try {
-                const res = await fetch(`${API_BASE}/notificaciones/${id}/revertir`, { method: 'POST' });
-                const data = await res.json();
+                const data = await fetchJson(`${API_BASE}/notificaciones/${id}/revertir`, { method: 'POST', credentials: 'same-origin' });
                 if (data.success) {
                     showAlert('success', 'Reversión ejecutada correctamente.');
                     fetchNotificaciones();
@@ -323,4 +367,5 @@
         document.addEventListener('DOMContentLoaded', fetchNotificaciones);
     </script>
 </body>
+
 </html>
