@@ -5,6 +5,7 @@ namespace CJP\Modules\Planillas;
 use PDO;
 use Exception;
 use CJP\Config\Database;
+use Ramsey\Uuid\Uuid;
 
 class PlanillaRepository
 {
@@ -195,18 +196,18 @@ class PlanillaRepository
 
     public function registerAuditEvent(string $usuarioId, string $accion, string $entidad, string $entidadId, array $detalles = []): void
     {
-        $sql = "INSERT INTO auditoria (usuario_id, accion, entidad, entidad_id, detalles, ip, user_agent) 
-                VALUES (:usuario_id, :accion, :entidad, :entidad_id, :detalles, :ip, :user_agent)";
+        $sql = "INSERT INTO auditoria (id, usuario_id, accion, entidad_afectada, valor_anterior, valor_nuevo, fecha_hora, motivo) 
+                VALUES (:id, :usuario_id, :accion, :entidad_afectada, :valor_anterior, :valor_nuevo, NOW(), :motivo)";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
+            ':id' => Uuid::uuid4()->toString(),
             ':usuario_id' => $usuarioId,
             ':accion' => $accion,
-            ':entidad' => $entidad,
-            ':entidad_id' => $entidadId,
-            ':detalles' => json_encode($detalles),
-            ':ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
-            ':user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown'
+            ':entidad_afectada' => $entidad,
+            ':valor_anterior' => null,
+            ':valor_nuevo' => !empty($detalles) ? json_encode($detalles) : null,
+            ':motivo' => $detalles['motivo'] ?? null
         ]);
     }
 }

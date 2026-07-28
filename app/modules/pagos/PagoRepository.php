@@ -148,18 +148,18 @@ class PagoRepository
 
     public function registerAuditEvent(string $entidad, string $entidadId, string $accion, ?string $usuarioId, array $detalles = []): void
     {
-        $sql = "INSERT INTO auditoria (id, entidad, entidad_id, accion, usuario_id, detalles, fecha_hora, ip) 
-                VALUES (:id, :entidad, :entidad_id, :accion, :usuario_id, :detalles, NOW(), :ip)";
+        $sql = "INSERT INTO auditoria (id, usuario_id, accion, entidad_afectada, valor_anterior, valor_nuevo, fecha_hora, motivo) 
+                VALUES (:id, :usuario_id, :accion, :entidad_afectada, :valor_anterior, :valor_nuevo, NOW(), :motivo)";
                 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'id' => Uuid::uuid4()->toString(),
-            'entidad' => $entidad,
-            'entidad_id' => $entidadId,
-            'accion' => $accion,
             'usuario_id' => $usuarioId,
-            'detalles' => !empty($detalles) ? json_encode($detalles) : null,
-            'ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
+            'accion' => $accion,
+            'entidad_afectada' => $entidad,
+            'valor_anterior' => null,
+            'valor_nuevo' => !empty($detalles) ? json_encode($detalles) : null,
+            'motivo' => $detalles['motivo'] ?? null
         ]);
     }
 

@@ -25,7 +25,7 @@ class PlanillaController
                 return;
             }
 
-            $usuarioId = $_SESSION['user']['id'];
+            $usuarioId = $_SESSION['usuario_id'];
             $resultado = $this->planillaService->generar($input['zona_id'], $input['cobrador_id'], $usuarioId);
             
             ResponseHelper::json([
@@ -51,7 +51,7 @@ class PlanillaController
             $pagina = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
             $resultado = $this->planillaService->getHistorico($filtros, $pagina);
-            ResponseHelper::json(['success' => true, 'data' => $resultado]);
+            ResponseHelper::json(['success' => true] + $resultado);
         } catch (Exception $e) {
             ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
         }

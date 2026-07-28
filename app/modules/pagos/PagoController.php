@@ -38,7 +38,7 @@ class PagoController
             $id = $params['id'] ?? null;
             $input = json_decode(file_get_contents('php://input'), true);
             $motivo = $input['motivo'] ?? '';
-            $usuarioId = $_SESSION['user_id'] ?? 'sistema';
+            $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
 
             $this->pagoService->anular($id, $motivo, $usuarioId);
 

@@ -49,7 +49,7 @@ class SocioController
 
         try {
             $result = $this->socioService->listar($filtros, $pagina);
-            ResponseHelper::success($result, 'Socios obtenidos exitosamente.');
+            ResponseHelper::json(['success' => true] + $result);
         } catch (Exception $e) {
             ResponseHelper::error($e->getMessage(), 400);
         }

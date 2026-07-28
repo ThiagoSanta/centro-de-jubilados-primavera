@@ -281,7 +281,7 @@ class ConfiguracionCuotaRepository
 
     public function getHistorico(): array
     {
-        $sql = "SELECT c.*, u.nombre_apellido as usuario_nombre 
+        $sql = "SELECT c.*, CONCAT(u.nombre, ' ', u.apellido) as usuario_nombre 
                 FROM configuracion_cuota c
                 LEFT JOIN usuarios u ON c.usuario_id = u.id
                 ORDER BY fecha_vigencia_desde DESC";

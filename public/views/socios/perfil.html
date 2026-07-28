@@ -491,7 +491,7 @@
 
         /* --- Observaciones (endpoint placeholder) --- */
         function cargarObservaciones() {
-            apiFetchOptional(BASE_URL + '/api/socios/' + socioId + '/observaciones').then(function (data) {
+            apiFetchOptional(BASE_URL + '/api/observaciones/socio/' + socioId).then(function (data) {
                 var container = document.getElementById('listaObservaciones');
                 var items = data || [];
                 if (items.length === 0) {
@@ -511,10 +511,10 @@
             var texto = document.getElementById('inputObservacion').value.trim();
             if (!texto) { showAlert('Ingrese una observación.'); return; }
 
-            fetch(BASE_URL + '/api/socios/' + socioId + '/observaciones', {
+            fetch(BASE_URL + '/api/observaciones', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify({ texto: texto })
+                body: JSON.stringify({ socio_id: socioId, contenido: texto })
             }).then(function (res) { return res.json(); })
             .then(function (data) {
                 if (!data.success) throw new Error(data.message || 'Error al agregar observación.');
@@ -528,7 +528,7 @@
 
         /* --- Pagos (endpoint placeholder) --- */
         function cargarPagos() {
-            apiFetchOptional(BASE_URL + '/api/socios/' + socioId + '/pagos').then(function (data) {
+            apiFetchOptional(BASE_URL + '/api/pagos/socio/' + socioId).then(function (data) {
                 var tbody = document.getElementById('tablaPagos');
                 var empty = document.getElementById('pagosEmpty');
                 var pagos = data || [];
@@ -559,7 +559,7 @@
                 tbody.querySelectorAll('.btn-anular-pago').forEach(function (btn) {
                     btn.addEventListener('click', function () {
                         if (!confirm('¿Confirma anular este pago?')) return;
-                        fetch(BASE_URL + '/api/socios/' + socioId + '/pagos/' + btn.dataset.id + '/anular', {
+                        fetch(BASE_URL + '/api/pagos/' + btn.dataset.id + '/anular', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
                         }).then(function (res) { return res.json(); })
@@ -579,7 +579,7 @@
             var content = document.getElementById('historialContent');
             content.innerHTML = '<p style="color:var(--color-text-muted);">Cargando historial...</p>';
 
-            apiFetchOptional(BASE_URL + '/api/socios/' + socioId + '/historial').then(function (data) {
+            apiFetchOptional(BASE_URL + '/api/historial/socio/' + socioId).then(function (data) {
                 var items = data || [];
                 if (items.length === 0) {
                     content.innerHTML = '<div class="empty-state"><div class="empty-state__text">No hay eventos en el historial.</div></div>';
