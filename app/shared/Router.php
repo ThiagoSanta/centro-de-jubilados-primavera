@@ -4,6 +4,7 @@ namespace CJP\Shared;
 
 use CJP\Shared\Helpers\ResponseHelper;
 use CJP\Config\Config;
+use CJP\Shared\ExceptionHandler;
 
 class Router
 {
@@ -122,20 +123,25 @@ class Router
 
                 $handler = $route['handler'];
 
-                if (is_callable($handler)) {
-                    call_user_func($handler, $params);
-                    return;
-                }
+                try {
+                    if (is_callable($handler)) {
+                        call_user_func($handler, $params);
+                        return;
+                    }
 
-                if (is_array($handler) && count($handler) === 2) {
-                    [$class, $method] = $handler;
-                    if (class_exists($class)) {
-                        $controller = new $class();
-                        if (method_exists($controller, $method)) {
-                            call_user_func([$controller, $method], $params);
-                            return;
+                    if (is_array($handler) && count($handler) === 2) {
+                        [$class, $method] = $handler;
+                        if (class_exists($class)) {
+                            $controller = new $class();
+                            if (method_exists($controller, $method)) {
+                                call_user_func([$controller, $method], $params);
+                                return;
+                            }
                         }
                     }
+                } catch (\Throwable $e) {
+                    ExceptionHandler::handle($e);
+                    return;
                 }
 
                 ResponseHelper::error('Error interno del servidor: Handler no válido', 500);

@@ -4,7 +4,6 @@ namespace CJP\Modules\Zonas;
 
 use CJP\Shared\AuthMiddleware;
 use CJP\Shared\Helpers\ResponseHelper;
-use RuntimeException;
 
 class ZonaController
 {
@@ -56,18 +55,14 @@ class ZonaController
         $lat = (float) $input['lat'];
         $lng = (float) $input['lng'];
 
-        try {
-            $zonaId = $this->zonaService->asignarZona($lat, $lng);
-            $nombreZona = $this->zonaService->getNombreZona($zonaId);
+        $zonaId = $this->zonaService->asignarZona($lat, $lng);
+        $nombreZona = $this->zonaService->getNombreZona($zonaId);
 
-            ResponseHelper::success([
-                'zona_id' => $zonaId,
-                'nombre'  => $nombreZona,
-                'lat'     => $lat,
-                'lng'     => $lng,
-            ], 'Zona calculada exitosamente.');
-        } catch (RuntimeException $e) {
-            ResponseHelper::error($e->getMessage(), 404);
-        }
+        ResponseHelper::success([
+            'zona_id' => $zonaId,
+            'nombre'  => $nombreZona,
+            'lat'     => $lat,
+            'lng'     => $lng,
+        ], 'Zona calculada exitosamente.');
     }
 }

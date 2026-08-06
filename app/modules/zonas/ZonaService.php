@@ -3,6 +3,7 @@
 namespace CJP\Modules\Zonas;
 
 use RuntimeException;
+use CJP\Shared\Exceptions\AppException;
 
 class ZonaService
 {
@@ -86,7 +87,7 @@ class ZonaService
         $zona = $this->repository->findById($zonaId);
 
         if ($zona === null) {
-            throw new RuntimeException("La zona con ID '{$zonaId}' no existe.");
+            throw new AppException("La zona con ID '{$zonaId}' no existe.", 404);
         }
 
         return $zona['nombre'];

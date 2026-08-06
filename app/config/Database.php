@@ -50,7 +50,7 @@ class Database
             try {
                 self::$instance = new PDO($dsn, $username, $password, $options);
             } catch (PDOException $e) {
-                throw new RuntimeException("Database connection failed: " . $e->getMessage(), (int)$e->getCode(), $e);
+                throw new RuntimeException("Error al conectar con la base de datos", (int)$e->getCode(), $e);
             }
         }
 

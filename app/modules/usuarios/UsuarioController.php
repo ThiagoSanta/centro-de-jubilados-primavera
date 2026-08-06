@@ -2,7 +2,6 @@
 
 namespace CJP\Modules\Usuarios;
 
-use Exception;
 use CJP\Shared\AuthMiddleware;
 use CJP\Shared\Helpers\ResponseHelper;
 
@@ -10,9 +9,9 @@ class UsuarioController
 {
     private UsuarioService $service;
 
-    public function __construct()
+    public function __construct(?UsuarioService $service = null)
     {
-        $this->service = new UsuarioService();
+        $this->service = $service ?? new UsuarioService();
     }
 
     /**
@@ -26,16 +25,12 @@ class UsuarioController
     {
         AuthMiddleware::requireAuth('administrador');
 
-        try {
-            $usuarios = $this->service->getAll();
+        $usuarios = $this->service->getAll();
 
-            ResponseHelper::json([
-                'success' => true,
-                'data'    => $usuarios,
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        ResponseHelper::json([
+            'success' => true,
+            'data'    => $usuarios,
+        ]);
     }
 
     /**
@@ -49,17 +44,13 @@ class UsuarioController
     {
         AuthMiddleware::requireAuth('administrador');
 
-        try {
-            $id      = $params['id'] ?? '';
-            $usuario = $this->service->getOne($id);
+        $id      = $params['id'] ?? '';
+        $usuario = $this->service->getOne($id);
 
-            ResponseHelper::json([
-                'success' => true,
-                'data'    => $usuario,
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 404);
-        }
+        ResponseHelper::json([
+            'success' => true,
+            'data'    => $usuario,
+        ]);
     }
 
     /**
@@ -73,20 +64,16 @@ class UsuarioController
     {
         AuthMiddleware::requireAuth('administrador');
 
-        try {
-            $input     = json_decode(file_get_contents('php://input'), true) ?? [];
-            $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
+        $input     = json_decode(file_get_contents('php://input'), true) ?? [];
+        $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
 
-            $usuario = $this->service->crear($input, $usuarioId);
+        $usuario = $this->service->crear($input, $usuarioId);
 
-            ResponseHelper::json([
-                'success' => true,
-                'message' => 'Usuario creado correctamente.',
-                'data'    => $usuario,
-            ], 201);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        ResponseHelper::json([
+            'success' => true,
+            'message' => 'Usuario creado correctamente.',
+            'data'    => $usuario,
+        ], 201);
     }
 
     /**
@@ -100,21 +87,17 @@ class UsuarioController
     {
         AuthMiddleware::requireAuth('administrador');
 
-        try {
-            $id        = $params['id'] ?? '';
-            $input     = json_decode(file_get_contents('php://input'), true) ?? [];
-            $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
+        $id        = $params['id'] ?? '';
+        $input     = json_decode(file_get_contents('php://input'), true) ?? [];
+        $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
 
-            $usuario = $this->service->editar($id, $input, $usuarioId);
+        $usuario = $this->service->editar($id, $input, $usuarioId);
 
-            ResponseHelper::json([
-                'success' => true,
-                'message' => 'Usuario actualizado correctamente.',
-                'data'    => $usuario,
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        ResponseHelper::json([
+            'success' => true,
+            'message' => 'Usuario actualizado correctamente.',
+            'data'    => $usuario,
+        ]);
     }
 
     /**
@@ -129,21 +112,17 @@ class UsuarioController
     {
         AuthMiddleware::requireAuth('administrador');
 
-        try {
-            $id             = $params['id'] ?? '';
-            $input          = json_decode(file_get_contents('php://input'), true) ?? [];
-            $nuevaPassword  = $input['nueva_password'] ?? '';
-            $usuarioId      = $_SESSION['usuario_id'] ?? 'sistema';
+        $id            = $params['id'] ?? '';
+        $input         = json_decode(file_get_contents('php://input'), true) ?? [];
+        $nuevaPassword = $input['nueva_password'] ?? '';
+        $usuarioId     = $_SESSION['usuario_id'] ?? 'sistema';
 
-            $this->service->cambiarPassword($id, $nuevaPassword, $usuarioId);
+        $this->service->cambiarPassword($id, $nuevaPassword, $usuarioId);
 
-            ResponseHelper::json([
-                'success' => true,
-                'message' => 'Contraseña actualizada correctamente.',
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        ResponseHelper::json([
+            'success' => true,
+            'message' => 'Contraseña actualizada correctamente.',
+        ]);
     }
 
     /**
@@ -157,19 +136,15 @@ class UsuarioController
     {
         AuthMiddleware::requireAuth('administrador');
 
-        try {
-            $id        = $params['id'] ?? '';
-            $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
+        $id        = $params['id'] ?? '';
+        $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
 
-            $this->service->desactivar($id, $usuarioId);
+        $this->service->desactivar($id, $usuarioId);
 
-            ResponseHelper::json([
-                'success' => true,
-                'message' => 'Usuario desactivado correctamente.',
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        ResponseHelper::json([
+            'success' => true,
+            'message' => 'Usuario desactivado correctamente.',
+        ]);
     }
 
     /**
@@ -183,18 +158,14 @@ class UsuarioController
     {
         AuthMiddleware::requireAuth('administrador');
 
-        try {
-            $id        = $params['id'] ?? '';
-            $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
+        $id        = $params['id'] ?? '';
+        $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
 
-            $this->service->reactivar($id, $usuarioId);
+        $this->service->reactivar($id, $usuarioId);
 
-            ResponseHelper::json([
-                'success' => true,
-                'message' => 'Usuario reactivado correctamente.',
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        ResponseHelper::json([
+            'success' => true,
+            'message' => 'Usuario reactivado correctamente.',
+        ]);
     }
 }

@@ -58,4 +58,20 @@ class NotificacionRepository
             ':motivo' => $motivo
         ]);
     }
+
+    public function create(array $datos): void
+    {
+        $sql = "INSERT INTO notificaciones (id, tipo, mensaje, fecha, estado, referencia, fecha_expiracion_reversion) 
+                VALUES (:id, :tipo, :mensaje, :fecha, 'pendiente', :referencia, :fecha_expiracion_reversion)";
+                
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'id' => \Ramsey\Uuid\Uuid::uuid4()->toString(),
+            'tipo' => $datos['tipo'],
+            'mensaje' => $datos['mensaje'],
+            'fecha' => date('Y-m-d H:i:s'),
+            'referencia' => isset($datos['referencia']) ? json_encode($datos['referencia']) : null,
+            'fecha_expiracion_reversion' => $datos['fecha_expiracion_reversion'] ?? null
+        ]);
+    }
 }

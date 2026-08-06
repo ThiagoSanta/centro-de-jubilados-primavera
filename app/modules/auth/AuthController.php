@@ -3,7 +3,6 @@
 namespace CJP\Modules\Auth;
 
 use CJP\Shared\Helpers\ResponseHelper;
-use Exception;
 
 class AuthController
 {
@@ -27,21 +26,17 @@ class AuthController
      */
     public function login(array $params): void
     {
-        try {
-            $input = json_decode(file_get_contents('php://input'), true) ?? [];
-            $username = $input['username'] ?? '';
-            $password = $input['password'] ?? '';
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        $username = $input['username'] ?? '';
+        $password = $input['password'] ?? '';
 
-            if (empty($username) || empty($password)) {
-                ResponseHelper::error('El usuario y la contraseña son obligatorios.', 400);
-                return;
-            }
-
-            $user = $this->authService->login($username, $password);
-            ResponseHelper::success($user, 'Inicio de sesión exitoso.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 401);
+        if (empty($username) || empty($password)) {
+            ResponseHelper::error('El usuario y la contraseña son obligatorios.', 400);
+            return;
         }
+
+        $user = $this->authService->login($username, $password);
+        ResponseHelper::success($user, 'Inicio de sesión exitoso.');
     }
 
     /**

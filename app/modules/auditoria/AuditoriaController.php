@@ -3,7 +3,6 @@ namespace CJP\Modules\Auditoria;
 
 use CJP\Shared\Helpers\ResponseHelper;
 use CJP\Shared\AuthMiddleware;
-use Exception;
 
 class AuditoriaController {
     private AuditoriaService $service;
@@ -29,11 +28,7 @@ class AuditoriaController {
 
     public function getOne(array $params): void {
         AuthMiddleware::requireAuth();
-        try {
-            $auditoria = $this->service->getOne($params['id']);
-            ResponseHelper::json(['success' => true, 'data' => $auditoria]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 404);
-        }
+        $auditoria = $this->service->getOne($params['id']);
+        ResponseHelper::json(['success' => true, 'data' => $auditoria]);
     }
 }

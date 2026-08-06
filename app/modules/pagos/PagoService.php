@@ -2,10 +2,14 @@
 
 namespace CJP\Modules\Pagos;
 
+use PDO;
 use Exception;
+use CJP\Shared\Exceptions\AppException;
 use CJP\Config\Database;
 use CJP\Modules\Deuda\DeudaRepository;
 use CJP\Modules\Socios\SocioRepository;
+use CJP\Modules\Notificaciones\NotificacionService;
+use CJP\Shared\Services\WhatsAppService;
 use FPDF;
 
 class PagoService
@@ -13,12 +17,24 @@ class PagoService
     private PagoRepository $pagoRepository;
     private DeudaRepository $deudaRepository;
     private SocioRepository $socioRepository;
+    private NotificacionService $notificacionService;
+    private WhatsAppService $whatsAppService;
+    private PDO $db;
 
-    public function __construct()
-    {
-        $this->pagoRepository = new PagoRepository();
-        $this->deudaRepository = new DeudaRepository();
-        $this->socioRepository = new SocioRepository();
+    public function __construct(
+        ?PagoRepository $pagoRepository = null,
+        ?DeudaRepository $deudaRepository = null,
+        ?SocioRepository $socioRepository = null,
+        ?NotificacionService $notificacionService = null,
+        ?WhatsAppService $whatsAppService = null,
+        ?PDO $db = null
+    ) {
+        $this->pagoRepository = $pagoRepository ?? new PagoRepository();
+        $this->deudaRepository = $deudaRepository ?? new DeudaRepository();
+        $this->socioRepository = $socioRepository ?? new SocioRepository();
+        $this->notificacionService = $notificacionService ?? new NotificacionService();
+        $this->whatsAppService = $whatsAppService ?? new WhatsAppService();
+        $this->db = $db ?? Database::getInstance();
     }
 
     public function registrar(array $datos, string $usuarioId): array
@@ -29,7 +45,7 @@ class PagoService
         $observacion = $datos['observacion'] ?? '';
 
         if (empty($deudaIds)) {
-            throw new Exception("Debe seleccionar al menos una deuda para pagar.");
+            throw new AppException("Debe seleccionar al menos una deuda para pagar.", 400);
         }
 
         // Obtener todas las deudas pendientes del socio en orden de cascada
@@ -48,11 +64,11 @@ class PagoService
         // Validar que las deudas seleccionadas sean las primeras N en cascada
         foreach ($deudaIds as $index => $deudaId) {
             if (!isset($pendientesPorId[$deudaId])) {
-                throw new Exception("La deuda seleccionada no existe, no pertenece al socio o no está pendiente.");
+                throw new AppException("La deuda seleccionada no existe, no pertenece al socio o no está pendiente.", 400);
             }
 
             if ($ordenCascadaIds[$index] !== $deudaId) {
-                throw new Exception("Debe respetar el orden cronológico de las deudas (Cascada). No puede saltear períodos anteriores.");
+                throw new AppException("Debe respetar el orden cronológico de las deudas (Cascada). No puede saltear períodos anteriores.", 400);
             }
 
             $montoTotal += (float) $pendientesPorId[$deudaId]['monto'];
@@ -68,6 +84,7 @@ class PagoService
             'fecha_hora' => date('Y-m-d H:i:s')
         ];
 
+        $this->db->beginTransaction();
         try {
             $pagoId = $this->pagoRepository->create($datosPago);
             $this->pagoRepository->asociarDeudas($pagoId, $deudaIds);
@@ -75,15 +92,6 @@ class PagoService
             foreach ($deudaIds as $deudaId) {
                 $this->deudaRepository->updateEstado($deudaId, 'pagada');
             }
-
-            $socio = $this->socioRepository->findById($socioId);
-            $pago = clone (object)$datosPago; 
-            // In a real app we might fetch it back from DB, let's just use what we have or fetch it
-            $pagoInfo = $this->pagoRepository->findById($pagoId);
-            $cobradorNombre = $pagoInfo['cobrador_nombre'] ?? 'Administrador';
-
-            $comprobantePath = $this->generarComprobante($pagoId, $socio, $deudasSeleccionadas, $pagoInfo, $cobradorNombre);
-            $linkWhatsApp = $this->generarLinkWhatsApp($socio, $deudasSeleccionadas, $pagoInfo);
 
             $this->pagoRepository->registerAuditEvent(
                 'pagos',
@@ -93,14 +101,27 @@ class PagoService
                 ['monto_total' => $montoTotal, 'deudas_pagadas' => count($deudaIds)]
             );
 
-            return [
-                'pago' => $pagoInfo,
-                'comprobante_url' => $comprobantePath,
-                'whatsapp_url' => $linkWhatsApp
-            ];
+            $this->db->commit();
         } catch (Exception $e) {
-            throw new Exception("Error al registrar el pago: " . $e->getMessage());
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
         }
+
+        // Operaciones de lectura y generación de comprobantes fuera de la transacción DB
+        $socio = $this->socioRepository->findById($socioId);
+        $pagoInfo = $this->pagoRepository->findById($pagoId);
+        $cobradorNombre = $pagoInfo['cobrador_nombre'] ?? 'Administrador';
+
+        $comprobantePath = $this->generarComprobante($pagoId, $socio, $deudasSeleccionadas, $pagoInfo, $cobradorNombre);
+        $linkWhatsApp = $this->whatsAppService->generarLinkPago($socio, $deudasSeleccionadas, $pagoInfo);
+
+        return [
+            'pago' => $pagoInfo,
+            'comprobante_url' => $comprobantePath,
+            'whatsapp_url' => $linkWhatsApp
+        ];
     }
 
     public function anular(string $pagoId, string $motivo, string $usuarioId): void
@@ -108,37 +129,33 @@ class PagoService
         $pago = $this->pagoRepository->findById($pagoId);
         
         if (!$pago) {
-            throw new Exception("El pago no existe.");
+            throw new AppException("El pago no existe.", 404);
         }
         
         if ($pago['estado'] !== 'registrado') {
-            throw new Exception("Solo se pueden anular pagos registrados.");
+            throw new AppException("Solo se pueden anular pagos registrados.", 400);
         }
 
         if (empty($motivo)) {
-            throw new Exception("Debe especificar un motivo para la anulación.");
+            throw new AppException("Debe especificar un motivo para la anulación.", 400);
         }
 
+        $this->db->beginTransaction();
         try {
             $this->pagoRepository->anular($pagoId);
             
             $deudaIds = $this->pagoRepository->getDeudaIdsByPago($pagoId);
             foreach ($deudaIds as $deudaId) {
-                // Update to pendiente directly via SQL if repository doesn't support reverting exactly, but we can use updateEstado
-                // Wait, DeudaRepository::updateEstado might set fecha_pago... Let's use it or run custom SQL.
-                // We'll update it to 'pendiente'
                 $this->deudaRepository->updateEstado($deudaId, 'pendiente');
-                // The prompt says "Revertir deudas asociadas a 'pendiente', fecha_pago=null". The updateEstado sets fecha_pago to NOW only if 'pagada'. Let's ensure it resets to null. We should do it via DeudaRepository or direct.
-                // Since I cannot change DeudaRepository easily without risking conflict, I will use a direct method if DeudaRepository doesn't have it, but wait I CAN change DeudaRepository or use Database directly here. I will just execute an update here.
-                $db = Database::getInstance();
-                $stmt = $db->prepare("UPDATE deudas SET fecha_pago = NULL WHERE id = :id");
+                $stmt = $this->db->prepare("UPDATE deudas SET fecha_pago = NULL WHERE id = :id");
                 $stmt->execute(['id' => $deudaId]);
             }
 
             $expiracion = date('Y-m-d H:i:s', strtotime('+7 days'));
-            $this->pagoRepository->createNotificacion([
+            $socioNombre = $pago['socio_nombre'] ?? 'Socio';
+            $this->notificacionService->crear([
                 'tipo' => 'anulacion_pago',
-                'mensaje' => "Pago de {$pago['socio_nombre']} {$pago['socio_apellido']} por $ {$pago['monto_total']} anulado. Motivo: {$motivo}",
+                'mensaje' => "Pago de {$socioNombre} por $ {$pago['monto_total']} anulado. Motivo: {$motivo}",
                 'referencia' => ['pago_id' => $pagoId],
                 'fecha_expiracion_reversion' => $expiracion
             ]);
@@ -150,8 +167,13 @@ class PagoService
                 $usuarioId,
                 ['motivo' => $motivo]
             );
+
+            $this->db->commit();
         } catch (Exception $e) {
-            throw new Exception("Error al anular el pago: " . $e->getMessage());
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
         }
     }
 
@@ -204,17 +226,7 @@ class PagoService
 
     public function generarLinkWhatsApp(array $socio, array $deudas, array $pago): string
     {
-        $texto = "Hola {$socio['nombre']}, confirmamos su pago en el Centro de Jubilados Primavera.\n\n";
-        $texto .= "Monto Total: $" . number_format($pago['monto_total'], 2, ',', '.') . "\n";
-        $texto .= "Períodos abonados:\n";
-        foreach ($deudas as $deuda) {
-            $periodoLabel = $deuda['periodo'] === 'deuda_anterior' ? 'Deuda Anterior' : date('m/Y', strtotime($deuda['periodo'] . '-01'));
-            $texto .= "- {$periodoLabel}\n";
-        }
-        $texto .= "\n¡Muchas gracias!";
-
-        $encodedText = urlencode($texto);
-        return "https://wa.me/?text=" . $encodedText;
+        return $this->whatsAppService->generarLinkPago($socio, $deudas, $pago);
     }
 
     public function getPagosBySocio(string $socioId): array
@@ -231,7 +243,7 @@ class PagoService
     {
         $pago = $this->pagoRepository->findById($id);
         if (!$pago) {
-            throw new Exception("Pago no encontrado.");
+            throw new AppException("Pago no encontrado.", 404);
         }
         return $pago;
     }

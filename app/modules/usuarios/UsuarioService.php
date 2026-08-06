@@ -3,14 +3,15 @@
 namespace CJP\Modules\Usuarios;
 
 use Exception;
+use CJP\Shared\Exceptions\AppException;
 
 class UsuarioService
 {
     private UsuarioRepository $repository;
 
-    public function __construct()
+    public function __construct(?UsuarioRepository $repository = null)
     {
-        $this->repository = new UsuarioRepository();
+        $this->repository = $repository ?? new UsuarioRepository();
     }
 
     /**
@@ -35,7 +36,7 @@ class UsuarioService
         $usuario = $this->repository->findById($id);
 
         if ($usuario === null) {
-            throw new Exception('Usuario no encontrado.');
+            throw new AppException('Usuario no encontrado.', 404);
         }
 
         return $usuario;
@@ -60,29 +61,29 @@ class UsuarioService
         $rol       = $datos['rol'] ?? '';
 
         if (empty($nombre)) {
-            throw new Exception('El nombre es obligatorio.');
+            throw new AppException('El nombre es obligatorio.', 400);
         }
 
         if (empty($apellido)) {
-            throw new Exception('El apellido es obligatorio.');
+            throw new AppException('El apellido es obligatorio.', 400);
         }
 
         if (empty($username)) {
-            throw new Exception('El nombre de usuario es obligatorio.');
+            throw new AppException('El nombre de usuario es obligatorio.', 400);
         }
 
         if (empty($password) || strlen($password) < 8) {
-            throw new Exception('La contraseña debe tener al menos 8 caracteres.');
+            throw new AppException('La contraseña debe tener al menos 8 caracteres.', 400);
         }
 
         if (!in_array($rol, ['administrador', 'cobrador'], true)) {
-            throw new Exception('El rol debe ser "administrador" o "cobrador".');
+            throw new AppException('El rol debe ser "administrador" o "cobrador".', 400);
         }
 
         // Validar username único
         $existente = $this->repository->findByUsername($username);
         if ($existente !== null) {
-            throw new Exception('El nombre de usuario ya está en uso.');
+            throw new AppException('El nombre de usuario ya está en uso.', 409);
         }
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
@@ -122,7 +123,7 @@ class UsuarioService
         $usuario = $this->repository->findById($id);
 
         if ($usuario === null) {
-            throw new Exception('Usuario no encontrado.');
+            throw new AppException('Usuario no encontrado.', 404);
         }
 
         // No permitir cambiar rol ni username — se ignoran silenciosamente
@@ -136,7 +137,7 @@ class UsuarioService
         }
 
         if (empty($actualizar)) {
-            throw new Exception('No se proporcionaron campos válidos para actualizar.');
+            throw new AppException('No se proporcionaron campos válidos para actualizar.', 400);
         }
 
         $this->repository->update($id, $actualizar);
@@ -168,11 +169,11 @@ class UsuarioService
         $usuario = $this->repository->findById($id);
 
         if ($usuario === null) {
-            throw new Exception('Usuario no encontrado.');
+            throw new AppException('Usuario no encontrado.', 404);
         }
 
         if (strlen($nuevaPassword) < 8) {
-            throw new Exception('La nueva contraseña debe tener al menos 8 caracteres.');
+            throw new AppException('La nueva contraseña debe tener al menos 8 caracteres.', 400);
         }
 
         $hash = password_hash($nuevaPassword, PASSWORD_BCRYPT);
@@ -199,17 +200,17 @@ class UsuarioService
     public function desactivar(string $id, string $usuarioId): void
     {
         if ($id === $usuarioId) {
-            throw new Exception('No puede desactivar su propio usuario.');
+            throw new AppException('No puede desactivar su propio usuario.', 400);
         }
 
         $usuario = $this->repository->findById($id);
 
         if ($usuario === null) {
-            throw new Exception('Usuario no encontrado.');
+            throw new AppException('Usuario no encontrado.', 404);
         }
 
         if ($usuario['estado'] === 'desactivado') {
-            throw new Exception('El usuario ya se encuentra desactivado.');
+            throw new AppException('El usuario ya se encuentra desactivado.', 400);
         }
 
         $this->repository->deactivate($id);
@@ -237,11 +238,11 @@ class UsuarioService
         $usuario = $this->repository->findById($id);
 
         if ($usuario === null) {
-            throw new Exception('Usuario no encontrado.');
+            throw new AppException('Usuario no encontrado.', 404);
         }
 
         if ($usuario['estado'] === 'activo') {
-            throw new Exception('El usuario ya se encuentra activo.');
+            throw new AppException('El usuario ya se encuentra activo.', 400);
         }
 
         $this->repository->reactivate($id);

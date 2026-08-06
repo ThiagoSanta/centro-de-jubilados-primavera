@@ -3,7 +3,6 @@ namespace CJP\Modules\Notificaciones;
 
 use CJP\Shared\Helpers\ResponseHelper;
 use CJP\Shared\AuthMiddleware;
-use Exception;
 
 class NotificacionController {
     private NotificacionService $service;
@@ -23,31 +22,19 @@ class NotificacionController {
 
     public function marcarLeida(array $params): void {
         AuthMiddleware::requireAuth();
-        try {
-            $this->service->marcarLeida($params['id']);
-            ResponseHelper::json(['success' => true]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        $this->service->marcarLeida($params['id']);
+        ResponseHelper::json(['success' => true]);
     }
 
     public function archivar(array $params): void {
         AuthMiddleware::requireAuth();
-        try {
-            $this->service->archivar($params['id']);
-            ResponseHelper::json(['success' => true]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        $this->service->archivar($params['id']);
+        ResponseHelper::json(['success' => true]);
     }
 
     public function revertir(array $params): void {
         $user = AuthMiddleware::requireAuth();
-        try {
-            $this->service->revertir($params['id'], $user['id']);
-            ResponseHelper::json(['success' => true]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['success' => false, 'message' => $e->getMessage()], 400);
-        }
+        $this->service->revertir($params['id'], $user['id']);
+        ResponseHelper::json(['success' => true]);
     }
 }

@@ -3,6 +3,7 @@
 namespace CJP\Modules\Planillas;
 
 use Exception;
+use CJP\Shared\Exceptions\AppException;
 use CJP\Modules\Zonas\ZonaRepository;
 
 class PlanillaService
@@ -20,7 +21,7 @@ class PlanillaService
     {
         $zona = $this->zonaRepo->findById($zonaId);
         if (!$zona) {
-            throw new Exception("La zona especificada no existe.");
+            throw new AppException("La zona especificada no existe.", 404);
         }
 
         $cobradores = $this->planillaRepo->getCobradores();
@@ -32,12 +33,12 @@ class PlanillaService
             }
         }
         if (!$cobrador) {
-            throw new Exception("El cobrador especificado no es válido.");
+            throw new AppException("El cobrador especificado no es válido.", 400);
         }
 
         $sociosOriginales = $this->planillaRepo->getSociosConDeudaDomiciliaria($zonaId);
         if (empty($sociosOriginales)) {
-            throw new Exception("No hay socios con deuda domiciliaria en esta zona.");
+            throw new AppException("No hay socios con deuda domiciliaria en esta zona.", 404);
         }
 
         $geolocalizados = [];
@@ -181,7 +182,7 @@ class PlanillaService
     {
         $planilla = $this->planillaRepo->findById($id);
         if (!$planilla) {
-            throw new Exception("Planilla no encontrada");
+            throw new AppException("Planilla no encontrada", 404);
         }
         return $planilla;
     }

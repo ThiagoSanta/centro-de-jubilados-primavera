@@ -3,6 +3,7 @@
 namespace CJP\Modules\Deuda;
 
 use Exception;
+use CJP\Shared\Exceptions\AppException;
 use DateTime;
 use CJP\Config\Database;
 
@@ -23,13 +24,13 @@ class DeudaService
     {
         // 1. Validar formato de período 'AAAA-MM'
         if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periodo)) {
-            throw new Exception("Formato de período inválido. Debe ser AAAA-MM.");
+            throw new AppException("Formato de período inválido. Debe ser AAAA-MM.", 400);
         }
 
         // 2. Obtener cuota vigente
         $cuotaVigente = $this->cuotaRepository->getVigente();
         if (!$cuotaVigente) {
-            throw new Exception("No hay una cuota configurada y vigente para generar la deuda.");
+            throw new AppException("No hay una cuota configurada y vigente para generar la deuda.", 400);
         }
         $monto = (float)$cuotaVigente['monto'];
 
@@ -104,13 +105,13 @@ class DeudaService
         $estado = $stmt->fetchColumn();
 
         if (!$estado || $estado !== 'activo') {
-            throw new Exception("El socio no existe o no está activo.");
+            throw new AppException("El socio no existe o no está activo.", 404);
         }
 
         // 2. Verificar que no existe ya una 'deuda_anterior'
         $deudaAnterior = $this->deudaRepository->findBySocioAndPeriodo($socioId, 'deuda_anterior');
         if ($deudaAnterior) {
-            throw new Exception("El socio ya tiene una deuda anterior registrada.");
+            throw new AppException("El socio ya tiene una deuda anterior registrada.", 409);
         }
 
         // 3. Insertar deuda
@@ -135,7 +136,7 @@ class DeudaService
     public function exonerarDeuda(string $deudaId, string $motivo, string $usuarioId): void
     {
         if (empty(trim($motivo))) {
-            throw new Exception("El motivo de exoneración es obligatorio.");
+            throw new AppException("El motivo de exoneración es obligatorio.", 400);
         }
 
         $db = Database::getInstance();
@@ -145,11 +146,11 @@ class DeudaService
 
         // 1. Verificar que la deuda existe y está pendiente
         if (!$deuda) {
-            throw new Exception("La deuda no existe.");
+            throw new AppException("La deuda no existe.", 404);
         }
 
         if ($deuda['estado'] !== 'pendiente') {
-            throw new Exception("Solo se pueden exonerar deudas en estado pendiente.");
+            throw new AppException("Solo se pueden exonerar deudas en estado pendiente.", 400);
         }
 
         // 2. Actualizar estado a 'exonerada'
@@ -179,11 +180,11 @@ class DeudaService
     public function registrarCuota(array $datos, string $usuarioId): array
     {
         if (!isset($datos['monto']) || (float)$datos['monto'] <= 0) {
-            throw new Exception("El monto debe ser mayor a 0.");
+            throw new AppException("El monto debe ser mayor a 0.", 400);
         }
 
         if (!isset($datos['fecha_vigencia_desde']) || !strtotime($datos['fecha_vigencia_desde'])) {
-            throw new Exception("La fecha de vigencia es inválida.");
+            throw new AppException("La fecha de vigencia es inválida.", 400);
         }
 
         $datos['usuario_id'] = $usuarioId;

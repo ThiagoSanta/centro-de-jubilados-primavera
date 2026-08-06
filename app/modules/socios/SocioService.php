@@ -3,6 +3,7 @@
 namespace CJP\Modules\Socios;
 
 use Exception;
+use CJP\Shared\Exceptions\AppException;
 use DateTime;
 use CJP\Config\Config;
 use CJP\Shared\Helpers\DateHelper;
@@ -43,7 +44,7 @@ class SocioService
 
         $dni = trim($datos['dni']);
         if ($this->repository->findByDni($dni) !== null) {
-            throw new Exception("El DNI ingresado ya pertenece a un socio.");
+            throw new AppException("El DNI ingresado ya pertenece a un socio.", 409);
         }
 
         // 2. Generate sequential number
@@ -116,7 +117,7 @@ class SocioService
     {
         $socio = $this->repository->findById($id);
         if ($socio === null) {
-            throw new Exception("Socio no encontrado.");
+            throw new AppException("Socio no encontrado.", 404);
         }
 
         $payload = [];
@@ -126,7 +127,7 @@ class SocioService
         if (isset($datos['nombre_apellido'])) {
             $val = trim($datos['nombre_apellido']);
             if (empty($val)) {
-                throw new Exception("El nombre y apellido son obligatorios.");
+                throw new AppException("El nombre y apellido son obligatorios.", 400);
             }
             $payload['nombre_apellido'] = $val;
             $valAnterior['nombre_apellido'] = $socio['nombre_apellido'];
@@ -134,7 +135,7 @@ class SocioService
 
         if (isset($datos['fecha_nacimiento'])) {
             if (!$this->validarFecha($datos['fecha_nacimiento'])) {
-                throw new Exception("Formato de fecha de nacimiento incorrecto (debe ser YYYY-MM-DD).");
+                throw new AppException("Formato de fecha de nacimiento incorrecto (debe ser YYYY-MM-DD).", 400);
             }
             $payload['fecha_nacimiento'] = $datos['fecha_nacimiento'];
             $valAnterior['fecha_nacimiento'] = $socio['fecha_nacimiento'];
@@ -143,7 +144,7 @@ class SocioService
         if (isset($datos['telefono'])) {
             $val = trim($datos['telefono']);
             if (empty($val)) {
-                throw new Exception("El teléfono es obligatorio.");
+                throw new AppException("El teléfono es obligatorio.", 400);
             }
             $payload['telefono'] = $val;
             $valAnterior['telefono'] = $socio['telefono'];
@@ -157,7 +158,7 @@ class SocioService
         if (isset($datos['modalidad_cobranza'])) {
             $val = $datos['modalidad_cobranza'];
             if ($val !== 'cobranza_domiciliaria' && $val !== 'cobranza_en_sede') {
-                throw new Exception("La modalidad de cobranza debe ser 'cobranza_domiciliaria' o 'cobranza_en_sede'.");
+                throw new AppException("La modalidad de cobranza debe ser 'cobranza_domiciliaria' o 'cobranza_en_sede'.", 400);
             }
             $payload['modalidad_cobranza'] = $val;
             $valAnterior['modalidad_cobranza'] = $socio['modalidad_cobranza'];
@@ -167,23 +168,23 @@ class SocioService
         if (isset($datos['dni']) && trim($datos['dni']) !== $socio['dni']) {
             $newDni = trim($datos['dni']);
             if (empty($newDni)) {
-                throw new Exception("El DNI es obligatorio.");
+                throw new AppException("El DNI es obligatorio.", 400);
             }
 
             // Role verification
             $rol = $this->repository->getUserRole($usuarioId);
             if ($rol !== 'administrador') {
-                throw new Exception("Solo los administradores pueden modificar el DNI de un socio.");
+                throw new AppException("Solo los administradores pueden modificar el DNI de un socio.", 403);
             }
 
             // Double confirmation check
             if (!isset($datos['confirmar_cambio_dni']) || $datos['confirmar_cambio_dni'] !== true) {
-                throw new Exception("Se requiere doble confirmación para modificar el DNI.");
+                throw new AppException("Se requiere doble confirmación para modificar el DNI.", 400);
             }
 
             // Uniqueness check
             if ($this->repository->findByDni($newDni) !== null) {
-                throw new Exception("El DNI ingresado ya pertenece a otro socio.");
+                throw new AppException("El DNI ingresado ya pertenece a otro socio.", 409);
             }
 
             $payload['dni'] = $newDni;
@@ -194,7 +195,7 @@ class SocioService
         if (isset($datos['direccion']) && trim($datos['direccion']) !== $socio['direccion']) {
             $newAddress = trim($datos['direccion']);
             if (empty($newAddress)) {
-                throw new Exception("La dirección es obligatoria.");
+                throw new AppException("La dirección es obligatoria.", 400);
             }
 
             $payload['direccion'] = $newAddress;
@@ -252,7 +253,7 @@ class SocioService
     {
         $socio = $this->repository->findById($id);
         if ($socio === null) {
-            throw new Exception("Socio no encontrado.");
+            throw new AppException("Socio no encontrado.", 404);
         }
 
         $this->repository->suspend($id);
@@ -279,7 +280,7 @@ class SocioService
     {
         $socio = $this->repository->findById($id);
         if ($socio === null) {
-            throw new Exception("Socio no encontrado.");
+            throw new AppException("Socio no encontrado.", 404);
         }
 
         $this->repository->reactivate($id);
@@ -307,11 +308,11 @@ class SocioService
     {
         $socio = $this->repository->findById($id);
         if ($socio === null) {
-            throw new Exception("Socio no encontrado.");
+            throw new AppException("Socio no encontrado.", 404);
         }
 
         if (empty(trim($motivo))) {
-            throw new Exception("El motivo de la baja es obligatorio.");
+            throw new AppException("El motivo de la baja es obligatorio.", 400);
         }
 
         // 1. DB logical delete
@@ -349,21 +350,21 @@ class SocioService
     {
         $socio = $this->repository->findById($id);
         if ($socio === null) {
-            throw new Exception("Socio no encontrado.");
+            throw new AppException("Socio no encontrado.", 404);
         }
 
         if ($socio['estado'] !== 'eliminado') {
-            throw new Exception("El socio no se encuentra en estado eliminado.");
+            throw new AppException("El socio no se encuentra en estado eliminado.", 400);
         }
 
         // Check if 7 days have passed
         if (empty($socio['fecha_baja'])) {
-            throw new Exception("Fecha de baja no registrada.");
+            throw new AppException("Fecha de baja no registrada.", 400);
         }
 
         $fechaExpiracion = DateHelper::addDays($socio['fecha_baja'], 7);
         if (DateHelper::isExpired($fechaExpiracion)) {
-            throw new Exception("El plazo de 7 días para revertir la eliminación ha expirado.");
+            throw new AppException("El plazo de 7 días para revertir la eliminación ha expirado.", 400);
         }
 
         // Reactivate
@@ -394,12 +395,12 @@ class SocioService
     {
         $rol = $this->repository->getUserRole($usuarioId);
         if ($rol !== 'administrador') {
-            throw new Exception("Solo los administradores pueden corregir manualmente la geolocalización.");
+            throw new AppException("Solo los administradores pueden corregir manualmente la geolocalización.", 403);
         }
 
         $socio = $this->repository->findById($id);
         if ($socio === null) {
-            throw new Exception("Socio no encontrado.");
+            throw new AppException("Socio no encontrado.", 404);
         }
 
         $zonaId = $this->zonaService->asignarZona($lat, $lng);
@@ -442,12 +443,12 @@ class SocioService
     public function importarCSV(string $rutaArchivo, string $usuarioId): array
     {
         if (!file_exists($rutaArchivo)) {
-            throw new Exception("Archivo CSV no encontrado.");
+            throw new AppException("Archivo CSV no encontrado.", 400);
         }
 
         $file = fopen($rutaArchivo, 'r');
         if (!$file) {
-            throw new Exception("No se pudo abrir el archivo CSV.");
+            throw new AppException("No se pudo abrir el archivo CSV.", 400);
         }
 
         // Clean UTF-8 BOM if present
@@ -471,7 +472,7 @@ class SocioService
         foreach ($requiredHeaders as $req) {
             if (!in_array($req, $header, true)) {
                 fclose($file);
-                throw new Exception("El archivo CSV no contiene las columnas requeridas: " . implode(', ', $requiredHeaders));
+                throw new AppException("El archivo CSV no contiene las columnas requeridas: " . implode(', ', $requiredHeaders), 400);
             }
         }
 
@@ -626,7 +627,7 @@ class SocioService
     {
         $socio = $this->repository->findById($id);
         if ($socio === null) {
-            throw new Exception("Socio no encontrado.");
+            throw new AppException("Socio no encontrado.", 404);
         }
         return $socio;
     }
@@ -667,32 +668,32 @@ class SocioService
     private function validarDatosSocio(array $datos): void
     {
         if (empty($datos['nombre_apellido'])) {
-            throw new Exception("El nombre y apellido son obligatorios.");
+            throw new AppException("El nombre y apellido son obligatorios.", 400);
         }
 
         if (empty($datos['dni'])) {
-            throw new Exception("El DNI es obligatorio.");
+            throw new AppException("El DNI es obligatorio.", 400);
         }
 
         if (empty($datos['fecha_nacimiento']) || !$this->validarFecha($datos['fecha_nacimiento'])) {
-            throw new Exception("Formato de fecha de nacimiento incorrecto (debe ser YYYY-MM-DD).");
+            throw new AppException("Formato de fecha de nacimiento incorrecto (debe ser YYYY-MM-DD).", 400);
         }
 
         if (empty($datos['telefono'])) {
-            throw new Exception("El teléfono es obligatorio.");
+            throw new AppException("El teléfono es obligatorio.", 400);
         }
 
         if (empty($datos['direccion'])) {
-            throw new Exception("La dirección es obligatoria.");
+            throw new AppException("La dirección es obligatoria.", 400);
         }
 
         if (empty($datos['modalidad_cobranza'])) {
-            throw new Exception("La modalidad de cobranza es obligatoria.");
+            throw new AppException("La modalidad de cobranza es obligatoria.", 400);
         }
 
         $mod = $datos['modalidad_cobranza'];
         if ($mod !== 'cobranza_domiciliaria' && $mod !== 'cobranza_en_sede') {
-            throw new Exception("La modalidad de cobranza debe ser 'cobranza_domiciliaria' o 'cobranza_en_sede'.");
+            throw new AppException("La modalidad de cobranza debe ser 'cobranza_domiciliaria' o 'cobranza_en_sede'.", 400);
         }
     }
 

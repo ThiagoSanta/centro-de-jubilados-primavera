@@ -2,6 +2,7 @@
 namespace CJP\Modules\Observaciones;
 
 use Exception;
+use CJP\Shared\Exceptions\AppException;
 
 class ObservacionService {
     private ObservacionRepository $repository;
@@ -16,10 +17,10 @@ class ObservacionService {
 
     public function agregar(string $socioId, string $contenido, string $usuarioId): array {
         if (empty(trim($contenido))) {
-            throw new Exception("El contenido de la observación no puede estar vacío.");
+            throw new AppException("El contenido de la observación no puede estar vacío.", 400);
         }
         if (strlen($contenido) > 1000) {
-            throw new Exception("El contenido no puede superar los 1000 caracteres.");
+            throw new AppException("El contenido no puede superar los 1000 caracteres.", 400);
         }
 
         $id = $this->repository->create([

@@ -3,6 +3,7 @@
 namespace CJP\Modules\Auth;
 
 use Exception;
+use CJP\Shared\Exceptions\AppException;
 use CJP\Config\Config;
 
 class AuthService
@@ -31,8 +32,9 @@ class AuthService
     {
         // 1. Check if username is blocked
         if ($this->repository->isBlocked($username)) {
-            throw new Exception(
-                "El usuario se encuentra bloqueado temporalmente por exceso de intentos fallidos. Intente más tarde."
+            throw new AppException(
+                "El usuario se encuentra bloqueado temporalmente por exceso de intentos fallidos. Intente más tarde.",
+                403
             );
         }
 
@@ -60,12 +62,12 @@ class AuthService
                 );
             }
 
-            throw new Exception("Credenciales incorrectas.");
+            throw new AppException("Credenciales incorrectas.", 401);
         }
 
         // 3. Verify user is active
         if ($user['estado'] !== 'activo') {
-            throw new Exception("El usuario se encuentra desactivado.");
+            throw new AppException("El usuario se encuentra desactivado.", 403);
         }
 
         // 4. Verify password
@@ -91,7 +93,7 @@ class AuthService
                 );
             }
 
-            throw new Exception("Credenciales incorrectas.");
+            throw new AppException("Credenciales incorrectas.", 401);
         }
 
         // 5. Initialize session, regenerate ID

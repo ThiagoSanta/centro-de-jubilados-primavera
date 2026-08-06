@@ -2,7 +2,6 @@
 
 namespace CJP\Modules\Socios;
 
-use Exception;
 use CJP\Shared\AuthMiddleware;
 use CJP\Modules\Auth\AuthService;
 use CJP\Shared\Helpers\ResponseHelper;
@@ -47,12 +46,8 @@ class SocioController
             'busqueda'           => $_GET['busqueda'] ?? null,
         ];
 
-        try {
-            $result = $this->socioService->listar($filtros, $pagina);
-            ResponseHelper::json(['success' => true] + $result);
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
-        }
+        $result = $this->socioService->listar($filtros, $pagina);
+        ResponseHelper::json(['success' => true] + $result);
     }
 
     /**
@@ -71,12 +66,8 @@ class SocioController
             return;
         }
 
-        try {
-            $socio = $this->socioService->obtener($id);
-            ResponseHelper::success($socio, 'Socio obtenido exitosamente.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 404);
-        }
+        $socio = $this->socioService->obtener($id);
+        ResponseHelper::success($socio, 'Socio obtenido exitosamente.');
     }
 
     /**
@@ -91,13 +82,9 @@ class SocioController
         $session = $this->authService->checkSession();
         $usuarioId = $session['usuario_id'];
 
-        try {
-            $input = json_decode(file_get_contents('php://input'), true) ?? [];
-            $socio = $this->socioService->crear($input, $usuarioId);
-            ResponseHelper::success($socio, 'Socio creado exitosamente.', 201);
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
-        }
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        $socio = $this->socioService->crear($input, $usuarioId);
+        ResponseHelper::success($socio, 'Socio creado exitosamente.', 201);
     }
 
     /**
@@ -118,13 +105,9 @@ class SocioController
             return;
         }
 
-        try {
-            $input = json_decode(file_get_contents('php://input'), true) ?? [];
-            $socio = $this->socioService->editar($id, $input, $usuarioId);
-            ResponseHelper::success($socio, 'Socio actualizado exitosamente.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
-        }
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        $socio = $this->socioService->editar($id, $input, $usuarioId);
+        ResponseHelper::success($socio, 'Socio actualizado exitosamente.');
     }
 
     /**
@@ -145,12 +128,8 @@ class SocioController
             return;
         }
 
-        try {
-            $this->socioService->suspender($id, $usuarioId);
-            ResponseHelper::success(null, 'Socio suspendido exitosamente.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
-        }
+        $this->socioService->suspender($id, $usuarioId);
+        ResponseHelper::success(null, 'Socio suspendido exitosamente.');
     }
 
     /**
@@ -171,12 +150,8 @@ class SocioController
             return;
         }
 
-        try {
-            $this->socioService->reactivar($id, $usuarioId);
-            ResponseHelper::success(null, 'Socio reactivado exitosamente.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
-        }
+        $this->socioService->reactivar($id, $usuarioId);
+        ResponseHelper::success(null, 'Socio reactivado exitosamente.');
     }
 
     /**
@@ -197,19 +172,15 @@ class SocioController
             return;
         }
 
-        try {
-            $input = json_decode(file_get_contents('php://input'), true) ?? [];
-            $motivo = $input['motivo'] ?? '';
-            if (empty(trim($motivo))) {
-                ResponseHelper::error('El motivo de la baja es obligatorio.', 400);
-                return;
-            }
-
-            $this->socioService->eliminar($id, $motivo, $usuarioId);
-            ResponseHelper::success(null, 'Socio dado de baja exitosamente.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        $motivo = $input['motivo'] ?? '';
+        if (empty(trim($motivo))) {
+            ResponseHelper::error('El motivo de la baja es obligatorio.', 400);
+            return;
         }
+
+        $this->socioService->eliminar($id, $motivo, $usuarioId);
+        ResponseHelper::success(null, 'Socio dado de baja exitosamente.');
     }
 
     /**
@@ -230,12 +201,8 @@ class SocioController
             return;
         }
 
-        try {
-            $this->socioService->revertirEliminacion($id, $usuarioId);
-            ResponseHelper::success(null, 'Baja de socio revertida exitosamente.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
-        }
+        $this->socioService->revertirEliminacion($id, $usuarioId);
+        ResponseHelper::success(null, 'Baja de socio revertida exitosamente.');
     }
 
     /**
@@ -256,21 +223,17 @@ class SocioController
             return;
         }
 
-        try {
-            $input = json_decode(file_get_contents('php://input'), true) ?? [];
-            if (!isset($input['lat']) || !isset($input['lng'])) {
-                ResponseHelper::error('Los campos "lat" y "lng" son obligatorios.', 400);
-                return;
-            }
-
-            $lat = (float)$input['lat'];
-            $lng = (float)$input['lng'];
-
-            $this->socioService->corregirGeolocalizacion($id, $lat, $lng, $usuarioId);
-            ResponseHelper::success(null, 'Geolocalización corregida exitosamente.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
+        $input = json_decode(file_get_contents('php://input'), true) ?? [];
+        if (!isset($input['lat']) || !isset($input['lng'])) {
+            ResponseHelper::error('Los campos "lat" y "lng" son obligatorios.', 400);
+            return;
         }
+
+        $lat = (float)$input['lat'];
+        $lng = (float)$input['lng'];
+
+        $this->socioService->corregirGeolocalizacion($id, $lat, $lng, $usuarioId);
+        ResponseHelper::success(null, 'Geolocalización corregida exitosamente.');
     }
 
     /**
@@ -294,12 +257,8 @@ class SocioController
 
         $tmpPath = $_FILES[$fileField]['tmp_name'];
 
-        try {
-            $result = $this->socioService->importarCSV($tmpPath, $usuarioId);
-            ResponseHelper::success($result, 'Importación CSV procesada con éxito.');
-        } catch (Exception $e) {
-            ResponseHelper::error($e->getMessage(), 400);
-        }
+        $result = $this->socioService->importarCSV($tmpPath, $usuarioId);
+        ResponseHelper::success($result, 'Importación CSV procesada con éxito.');
     }
 
     /**
@@ -322,14 +281,9 @@ class SocioController
         $path = $dir . '/' . $id . '.png';
 
         if (!file_exists($path)) {
-            try {
-                // Try to generate it if the partner exists
-                $this->socioService->obtener($id);
-                $this->socioService->generarQR($id);
-            } catch (Exception $e) {
-                ResponseHelper::error('Socio no encontrado.', 404);
-                return;
-            }
+            // Try to generate it if the partner exists
+            $this->socioService->obtener($id);
+            $this->socioService->generarQR($id);
         }
 
         if (file_exists($path)) {

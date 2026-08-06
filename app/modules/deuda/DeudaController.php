@@ -2,7 +2,6 @@
 
 namespace CJP\Modules\Deuda;
 
-use Exception;
 use CJP\Shared\AuthMiddleware;
 use CJP\Shared\Helpers\ResponseHelper;
 
@@ -26,17 +25,14 @@ class DeudaController
 
         if (!$usuarioId) {
             ResponseHelper::json(['error' => 'Usuario no autenticado'], 401);
+            return;
         }
 
-        try {
-            $resultado = $this->deudaService->generarDeudaMensual($periodo, $confirmarDuplicado, $usuarioId);
-            ResponseHelper::json([
-                'success' => true,
-                'resultado' => $resultado
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['error' => $e->getMessage()], 400);
-        }
+        $resultado = $this->deudaService->generarDeudaMensual($periodo, $confirmarDuplicado, $usuarioId);
+        ResponseHelper::json([
+            'success' => true,
+            'resultado' => $resultado
+        ]);
     }
 
     public function cargarAnterior(array $params): void
@@ -50,17 +46,14 @@ class DeudaController
 
         if (!$usuarioId) {
             ResponseHelper::json(['error' => 'Usuario no autenticado'], 401);
+            return;
         }
 
-        try {
-            $this->deudaService->cargarDeudaAnterior($socioId, $monto, $usuarioId);
-            ResponseHelper::json([
-                'success' => true,
-                'message' => 'Deuda anterior cargada correctamente'
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['error' => $e->getMessage()], 400);
-        }
+        $this->deudaService->cargarDeudaAnterior($socioId, $monto, $usuarioId);
+        ResponseHelper::json([
+            'success' => true,
+            'message' => 'Deuda anterior cargada correctamente'
+        ]);
     }
 
     public function exonerar(array $params): void
@@ -74,17 +67,14 @@ class DeudaController
 
         if (!$usuarioId) {
             ResponseHelper::json(['error' => 'Usuario no autenticado'], 401);
+            return;
         }
 
-        try {
-            $this->deudaService->exonerarDeuda($id, $motivo, $usuarioId);
-            ResponseHelper::json([
-                'success' => true,
-                'message' => 'Deuda exonerada correctamente'
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['error' => $e->getMessage()], 400);
-        }
+        $this->deudaService->exonerarDeuda($id, $motivo, $usuarioId);
+        ResponseHelper::json([
+            'success' => true,
+            'message' => 'Deuda exonerada correctamente'
+        ]);
     }
 
     public function getBySocio(array $params): void
@@ -92,15 +82,11 @@ class DeudaController
         AuthMiddleware::requireAuth();
         $socioId = $params['socioId'] ?? '';
 
-        try {
-            $deudas = $this->deudaService->getDeudaSocio($socioId);
-            ResponseHelper::json([
-                'success' => true,
-                'data' => $deudas
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['error' => $e->getMessage()], 400);
-        }
+        $deudas = $this->deudaService->getDeudaSocio($socioId);
+        ResponseHelper::json([
+            'success' => true,
+            'data' => $deudas
+        ]);
     }
 
     public function getPendientesBySocio(array $params): void
@@ -108,15 +94,11 @@ class DeudaController
         AuthMiddleware::requireAuth();
         $socioId = $params['socioId'] ?? '';
 
-        try {
-            $deudas = $this->deudaService->getDeudaPendienteSocio($socioId);
-            ResponseHelper::json([
-                'success' => true,
-                'data' => $deudas
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['error' => $e->getMessage()], 400);
-        }
+        $deudas = $this->deudaService->getDeudaPendienteSocio($socioId);
+        ResponseHelper::json([
+            'success' => true,
+            'data' => $deudas
+        ]);
     }
 
     public function registrarCuota(array $params): void
@@ -128,47 +110,36 @@ class DeudaController
 
         if (!$usuarioId) {
             ResponseHelper::json(['error' => 'Usuario no autenticado'], 401);
+            return;
         }
 
-        try {
-            $resultado = $this->deudaService->registrarCuota($data, $usuarioId);
-            ResponseHelper::json([
-                'success' => true,
-                'id' => $resultado['id'],
-                'message' => 'Cuota registrada correctamente'
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['error' => $e->getMessage()], 400);
-        }
+        $resultado = $this->deudaService->registrarCuota($data, $usuarioId);
+        ResponseHelper::json([
+            'success' => true,
+            'id' => $resultado['id'],
+            'message' => 'Cuota registrada correctamente'
+        ]);
     }
 
     public function getCuotaVigente(array $params): void
     {
         AuthMiddleware::requireAuth();
 
-        try {
-            $cuota = $this->deudaService->getCuotaVigente();
-            ResponseHelper::json([
-                'success' => true,
-                'data' => $cuota
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['error' => $e->getMessage()], 400);
-        }
+        $cuota = $this->deudaService->getCuotaVigente();
+        ResponseHelper::json([
+            'success' => true,
+            'data' => $cuota
+        ]);
     }
 
     public function getHistoricoCuotas(array $params): void
     {
         AuthMiddleware::requireAuth();
 
-        try {
-            $historico = $this->deudaService->getHistoricoCuotas();
-            ResponseHelper::json([
-                'success' => true,
-                'data' => $historico
-            ]);
-        } catch (Exception $e) {
-            ResponseHelper::json(['error' => $e->getMessage()], 400);
-        }
+        $historico = $this->deudaService->getHistoricoCuotas();
+        ResponseHelper::json([
+            'success' => true,
+            'data' => $historico
+        ]);
     }
 }

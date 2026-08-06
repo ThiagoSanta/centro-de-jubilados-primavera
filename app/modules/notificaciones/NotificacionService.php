@@ -4,6 +4,7 @@ namespace CJP\Modules\Notificaciones;
 
 use CJP\Config\Database;
 use Exception;
+use CJP\Shared\Exceptions\AppException;
 
 class NotificacionService
 {
@@ -17,6 +18,11 @@ class NotificacionService
     public function getAll(array $filtros): array
     {
         return $this->repository->findAll($filtros);
+    }
+
+    public function crear(array $datos): void
+    {
+        $this->repository->create($datos);
     }
 
     public function marcarLeida(string $id): void
@@ -33,18 +39,18 @@ class NotificacionService
     {
         $notificacion = $this->repository->findById($id);
         if (!$notificacion) {
-            throw new Exception("Notificación no encontrada.");
+            throw new AppException("Notificación no encontrada.", 404);
         }
         if ($notificacion['estado'] === 'archivada') {
-            throw new Exception("No se puede revertir una notificación archivada.");
+            throw new AppException("No se puede revertir una notificación archivada.", 400);
         }
         if (strtotime($notificacion['fecha_expiracion_reversion']) < time()) {
-            throw new Exception("El tiempo para revertir esta acción ha expirado.");
+            throw new AppException("El tiempo para revertir esta acción ha expirado.", 400);
         }
 
         $referencia = json_decode($notificacion['referencia'], true);
         if (!$referencia || !isset($referencia['entidad']) || !isset($referencia['id'])) {
-            throw new Exception("Referencia inválida en la notificación.");
+            throw new AppException("Referencia inválida en la notificación.", 400);
         }
 
         $entidad = $referencia['entidad'];
@@ -71,7 +77,7 @@ class NotificacionService
 
                 $this->repository->registerAuditEvent($usuarioId, 'reversion_anulacion', 'pagos', json_encode(['estado' => 'anulado']), json_encode(['estado' => 'registrado']), 'Reversión desde notificaciones');
             } else {
-                throw new Exception("Entidad no soportada para reversión.");
+                throw new AppException("Entidad no soportada para reversión.", 400);
             }
 
             $this->archivar($id);

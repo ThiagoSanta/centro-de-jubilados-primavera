@@ -3,6 +3,8 @@
 session_start();
 
 use CJP\Shared\Router;
+use CJP\Shared\ExceptionHandler;
+use Ramsey\Uuid\Uuid;
 use CJP\Shared\Helpers\ResponseHelper;
 use CJP\Modules\Auth\AuthController;
 use CJP\Shared\AuthMiddleware;
@@ -22,6 +24,12 @@ use CJP\Modules\Usuarios\UsuarioController;
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../app/config/Config.php';
 require_once __DIR__ . '/../app/config/Database.php';
+
+// Inicialización de Correlation ID por Request y Manejador Global
+$correlationId = Uuid::uuid4()->toString();
+ExceptionHandler::setCorrelationId($correlationId);
+header("X-Correlation-ID: {$correlationId}");
+set_exception_handler([ExceptionHandler::class, 'handle']);
 
 // Set basic CORS headers for local development
 header("Access-Control-Allow-Origin: *");
