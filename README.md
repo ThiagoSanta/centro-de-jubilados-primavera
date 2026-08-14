@@ -131,8 +131,6 @@ centro-de-jubilados-primavera/
 │   │   ├── historial/           # Historial de cambios por socio
 │   │   ├── observaciones/       # Observaciones por socio
 │   │   ├── zonas/               # Zonas geográficas
-│   │   ├── configuracion/       # Configuración del sistema
-│   │   ├── importacion_csv/     # Importación masiva de socios
 │   │   ├── dashboard/           # Métricas del panel de control
 │   │   └── usuarios/            # Gestión de usuarios del sistema
 │   └── shared/                  # Router, AuthMiddleware, Helpers

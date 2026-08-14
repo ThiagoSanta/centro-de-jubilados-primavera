@@ -605,6 +605,17 @@ class SocioService
     }
 
     /**
+     * Retrieve CSV import inconsistencies.
+     *
+     * @param array $filtros  Accepted keys: 'estado' ('pendiente'|'resuelto')
+     * @return array
+     */
+    public function getInconsistencias(array $filtros): array
+    {
+        return $this->repository->getInconsistencias($filtros);
+    }
+
+    /**
      * List partners with filters and pagination.
      *
      * @param array $filtros

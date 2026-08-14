@@ -2,6 +2,7 @@
 
 namespace CJP\Modules\Pagos;
 
+use CJP\Shared\AuthMiddleware;
 use CJP\Shared\Helpers\ResponseHelper;
 
 class PagoController
@@ -15,20 +16,20 @@ class PagoController
 
     public function registrar(array $params = []): void
     {
+        AuthMiddleware::requireAuth();
+
         $input = json_decode(file_get_contents('php://input'), true);
         $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
 
         $resultado = $this->pagoService->registrar($input, $usuarioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'message' => 'Pago registrado correctamente.',
-            'data' => $resultado
-        ]);
+        ResponseHelper::success($resultado, 'Pago registrado correctamente.');
     }
 
     public function anular(array $params): void
     {
+        AuthMiddleware::requireAuth();
+
         $id = $params['id'] ?? null;
         $input = json_decode(file_get_contents('php://input'), true);
         $motivo = $input['motivo'] ?? '';
@@ -36,25 +37,23 @@ class PagoController
 
         $this->pagoService->anular($id, $motivo, $usuarioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'message' => 'Pago anulado correctamente.'
-        ]);
+        ResponseHelper::success(null, 'Pago anulado correctamente.');
     }
 
     public function getBySocio(array $params): void
     {
+        AuthMiddleware::requireAuth();
+
         $socioId = $params['socioId'] ?? null;
         $pagos = $this->pagoService->getPagosBySocio($socioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'data' => $pagos
-        ]);
+        ResponseHelper::success($pagos, 'Pagos del socio obtenidos correctamente.');
     }
 
     public function getAll(array $params = []): void
     {
+        AuthMiddleware::requireAuth();
+
         $filtros = [
             'socio_id'    => $_GET['socio_id'] ?? null,
             'estado'      => $_GET['estado'] ?? null,
@@ -65,36 +64,36 @@ class PagoController
 
         $resultado = $this->pagoService->getPagos($filtros, $pagina);
 
-        ResponseHelper::json([
-            'success' => true,
-            'data' => $resultado['data'],
+        ResponseHelper::success([
+            'items' => $resultado['data'],
             'meta' => [
-                'total'        => $resultado['total'],
-                'paginas'      => $resultado['paginas'],
+                'total'         => $resultado['total'],
+                'paginas'       => $resultado['paginas'],
                 'pagina_actual' => $pagina
             ]
-        ]);
+        ], 'Listado de pagos obtenido correctamente.');
     }
 
     public function getOne(array $params): void
     {
+        AuthMiddleware::requireAuth();
+
         $id = $params['id'] ?? null;
         $pago = $this->pagoService->getPago($id);
 
-        ResponseHelper::json([
-            'success' => true,
-            'data' => $pago
-        ]);
+        ResponseHelper::success($pago, 'Pago obtenido correctamente.');
     }
 
     public function getComprobante(array $params): void
     {
+        AuthMiddleware::requireAuth();
+
         $id = $params['id'] ?? null;
 
         $filepath = __DIR__ . '/../../../storage/comprobantes/' . $id . '.pdf';
 
         if (!file_exists($filepath)) {
-            ResponseHelper::json(['success' => false, 'message' => 'Comprobante no encontrado.'], 404);
+            ResponseHelper::error('Comprobante no encontrado.', 404);
             return;
         }
 

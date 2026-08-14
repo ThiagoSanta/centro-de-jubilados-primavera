@@ -84,8 +84,9 @@ $router->get('/api/zonas', [ZonaController::class, 'index']);
 $router->post('/api/zonas/calcular', [ZonaController::class, 'calcular']);
 
 // Socios routes (order is critical: static before parameterized)
-$router->post('/api/socios/importar', [SocioController::class, 'importarCSV']);
-$router->get('/api/socios', [SocioController::class, 'index']);
+$router->post('/api/socios/importar',       [SocioController::class, 'importarCSV']);
+$router->get('/api/socios/inconsistencias', [SocioController::class, 'getInconsistencias']);
+$router->get('/api/socios',                 [SocioController::class, 'index']);
 $router->post('/api/socios', [SocioController::class, 'create']);
 $router->get('/api/socios/{id}', [SocioController::class, 'show']);
 $router->put('/api/socios/{id}', [SocioController::class, 'update']);

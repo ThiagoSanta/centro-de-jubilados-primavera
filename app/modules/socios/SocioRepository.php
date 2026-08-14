@@ -52,7 +52,11 @@ class SocioRepository
      */
     public function findAll(array $filtros, int $pagina): array
     {
-        $porPagina = 25;
+        $porPagina = isset($filtros['limit']) && (int)$filtros['limit'] > 0 ? (int)$filtros['limit'] : 25;
+        $maxLimit = 10000;
+        if ($porPagina > $maxLimit) {
+            $porPagina = $maxLimit;
+        }
         $offset = ($pagina - 1) * $porPagina;
 
         $conditions = [];
@@ -416,6 +420,32 @@ class SocioRepository
             'motivo_rechazo' => $datos['motivo_rechazo'],
             'now'            => $now
         ]);
+    }
+
+    /**
+     * Retrieve CSV import inconsistencies, optionally filtered by estado.
+     *
+     * @param array $filtros  Accepted keys: 'estado' ('pendiente'|'resuelto')
+     * @return array
+     */
+    public function getInconsistencias(array $filtros): array
+    {
+        $where  = [];
+        $params = [];
+
+        if (!empty($filtros['estado'])) {
+            $where[]          = 'estado = :estado';
+            $params['estado'] = $filtros['estado'];
+        }
+
+        $sql = 'SELECT id, datos_registro, motivo_rechazo, estado, fecha_importacion
+                FROM importacion_inconsistencias'
+             . ($where ? ' WHERE ' . implode(' AND ', $where) : '')
+             . ' ORDER BY fecha_importacion DESC';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     /**

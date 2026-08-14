@@ -199,18 +199,38 @@
         let periodoActual = '';
 
         document.addEventListener('DOMContentLoaded', () => {
-            cargarInfoCuota();
+            fetch(API_BASE + '/auth/me')
+                .then(res => {
+                    if (!res.ok) throw new Error('No autenticado');
+                    return res.json();
+                })
+                .then(res => {
+                    if (!res.success || !res.data) {
+                        window.location.href = BASE_URL + '/views/auth/login.html';
+                        return;
+                    }
+                    if (res.data.rol !== 'administrador') {
+                        window.location.replace(res.data.rol === 'cobrador'
+                            ? BASE_URL + '/views/cobrador/index.html'
+                            : BASE_URL + '/views/auth/login.html');
+                        return;
+                    }
+                    cargarInfoCuota();
 
-            document.getElementById('formGenerar').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                periodoActual = document.getElementById('inputPeriodo').value;
-                await procesarGeneracion(false);
-            });
+                    document.getElementById('formGenerar').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        periodoActual = document.getElementById('inputPeriodo').value;
+                        await procesarGeneracion(false);
+                    });
 
-            document.getElementById('btnConfirmarDuplicados').addEventListener('click', async () => {
-                cerrarModal();
-                await procesarGeneracion(true);
-            });
+                    document.getElementById('btnConfirmarDuplicados').addEventListener('click', async () => {
+                        cerrarModal();
+                        await procesarGeneracion(true);
+                    });
+                })
+                .catch(() => {
+                    window.location.replace(BASE_URL + '/views/auth/login.html');
+                });
         });
 
         async function cargarInfoCuota() {
@@ -248,7 +268,7 @@
                 });
 
                 if (data.success) {
-                    const result = data.resultado;
+                    const result = data.data;
 
                     if (result.advertencias && result.advertencias.length > 0 && !confirmarDuplicado) {
                         // Mostrar advertencia
@@ -262,7 +282,7 @@
                         mostrarAlerta('Proceso completado.', 'success');
                     }
                 } else {
-                    mostrarAlerta(data.error || 'Error al generar deuda.', 'error');
+                    mostrarAlerta(data.message || 'Error al generar deuda.', 'error');
                 }
             } catch (err) {
                 mostrarAlerta('Error de red al generar deuda.', 'error');

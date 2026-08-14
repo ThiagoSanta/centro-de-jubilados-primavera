@@ -133,34 +133,54 @@
     <script>
 
         document.addEventListener('DOMContentLoaded', () => {
-            cargarCuotaVigente();
-            cargarHistorico();
-
-            document.getElementById('formCuota').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const monto = document.getElementById('inputMonto').value;
-                const fecha = document.getElementById('inputFechaVigencia').value;
-
-                try {
-                    const res = await fetch(`${BASE_URL}/api/cuota`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ monto, fecha_vigencia_desde: fecha })
-                    });
-                    const data = await res.json();
-                    
-                    if (data.success) {
-                        mostrarAlerta('Cuota registrada correctamente.', 'success');
-                        document.getElementById('formCuota').reset();
-                        cargarCuotaVigente();
-                        cargarHistorico();
-                    } else {
-                        mostrarAlerta(data.error || 'Error al registrar cuota.', 'error');
+            fetch(API_BASE + '/auth/me')
+                .then(res => {
+                    if (!res.ok) throw new Error('No autenticado');
+                    return res.json();
+                })
+                .then(res => {
+                    if (!res.success || !res.data) {
+                        window.location.href = BASE_URL + '/views/auth/login.html';
+                        return;
                     }
-                } catch (err) {
-                    mostrarAlerta('Error de red al registrar cuota.', 'error');
-                }
-            });
+                    if (res.data.rol !== 'administrador') {
+                        window.location.replace(res.data.rol === 'cobrador'
+                            ? BASE_URL + '/views/cobrador/index.html'
+                            : BASE_URL + '/views/auth/login.html');
+                        return;
+                    }
+                    cargarCuotaVigente();
+                    cargarHistorico();
+
+                    document.getElementById('formCuota').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const monto = document.getElementById('inputMonto').value;
+                        const fecha = document.getElementById('inputFechaVigencia').value;
+
+                        try {
+                            const res = await fetch(`${BASE_URL}/api/cuota`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ monto, fecha_vigencia_desde: fecha })
+                            });
+                            const data = await res.json();
+                            
+                            if (data.success) {
+                                mostrarAlerta('Cuota registrada correctamente.', 'success');
+                                document.getElementById('formCuota').reset();
+                                cargarCuotaVigente();
+                                cargarHistorico();
+                            } else {
+                                mostrarAlerta(data.message || 'Error al registrar cuota.', 'error');
+                            }
+                        } catch (err) {
+                            mostrarAlerta('Error de red al registrar cuota.', 'error');
+                        }
+                    });
+                })
+                .catch(() => {
+                    window.location.replace(BASE_URL + '/views/auth/login.html');
+                });
         });
 
         async function cargarCuotaVigente() {

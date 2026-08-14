@@ -408,55 +408,6 @@
                 ];
                 fields.forEach(function (f) {
                     var el = document.getElementById(f[0]);
-                    if (el) {
-                        el.textContent = f[1];
-                        el.classList.remove('kpi-card__value--loading');
-                    }
-                });
-            })
-            .catch(function () {
-                showAlert('No se pudieron cargar las métricas. Verifique su conexión.', 'error');
-            });
-    }
-
-    // ─── Cargar actividad reciente ────────────────────────────────────────────
-    function cargarActividad() {
-        fetch(BASE_URL + '/api/auditoria?limit=5', { credentials: 'same-origin' })
-            .then(function (r) { return r.json(); })
-            .then(function (res) {
-                var body = document.getElementById('actividadBody');
-                if (!res.success || !res.data || res.data.length === 0) {
-                    body.innerHTML = '<p style="font-size:.875rem;color:var(--color-text-muted);">Sin actividad reciente.</p>';
-                    return;
-                }
-                var html = '';
-                var items = res.data.slice(0, 5);
-                items.forEach(function (ev) {
-                    var usuario = (ev.usuario_nombre && ev.usuario_apellido)
-                        ? (ev.usuario_nombre + ' ' + ev.usuario_apellido)
-                        : (ev.usuario_id ? ev.usuario_id : 'Sistema');
-                    html += '<div class="activity-item">' +
-                        '<div class="activity-item__icon">' +
-                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' +
-                        '</div>' +
-                        '<div class="activity-item__body">' +
-                        '<div class="activity-item__accion">' + escHtml(ev.accion) + '</div>' +
-                        '<div class="activity-item__meta">' + escHtml(usuario) + ' &middot; ' + fmtFecha(ev.fecha_hora) + '</div>' +
-                        '</div>' +
-                        '</div>';
-                });
-                body.innerHTML = html;
-            })
-            .catch(function () {
-                document.getElementById('actividadBody').innerHTML =
-                    '<p style="font-size:.875rem;color:var(--color-text-muted);">No se pudo cargar la actividad.</p>';
-            });
-    }
-
-    function escHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
@@ -464,8 +415,29 @@
 
     // ─── Inicializar ──────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function () {
-        cargarMetricas();
-        cargarActividad();
+        fetch(API_BASE + '/auth/me')
+            .then(function (res) {
+                if (!res.ok) throw new Error('No autenticado');
+                return res.json();
+            })
+            .then(function (res) {
+                if (!res.success || !res.data) {
+                    window.location.href = BASE_URL + '/views/auth/login.html';
+                    return;
+                }
+                var user = res.data;
+                if (user.rol !== 'administrador') {
+                    window.location.replace(user.rol === 'cobrador'
+                        ? BASE_URL + '/views/cobrador/index.html'
+                        : BASE_URL + '/views/auth/login.html');
+                    return;
+                }
+                cargarMetricas();
+                cargarActividad();
+            })
+            .catch(function () {
+                window.location.replace(BASE_URL + '/views/auth/login.html');
+            });
     });
 </script>
 </body>

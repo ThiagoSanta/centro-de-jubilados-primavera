@@ -173,7 +173,7 @@
 
 
         var selectedFile = null;
-        var INCONSISTENCIAS_URL = BASE_URL + '/api/socios/importar';
+        var INCONSISTENCIAS_URL = BASE_URL + '/api/socios/inconsistencias';
 
         function showAlert(message, type) {
             var container = document.getElementById('alertContainer');
@@ -353,7 +353,28 @@
 
         document.getElementById('filtroInconsistencia').addEventListener('change', cargarInconsistencias);
 
-        cargarInconsistencias();
+        fetch(API_BASE + '/auth/me')
+            .then(function (res) {
+                if (!res.ok) throw new Error('No autenticado');
+                return res.json();
+            })
+            .then(function (res) {
+                if (!res.success || !res.data) {
+                    window.location.href = BASE_URL + '/views/auth/login.html';
+                    return;
+                }
+                var user = res.data;
+                if (user.rol !== 'administrador') {
+                    window.location.replace(user.rol === 'cobrador'
+                        ? BASE_URL + '/views/cobrador/index.html'
+                        : BASE_URL + '/views/auth/login.html');
+                    return;
+                }
+                cargarInconsistencias();
+            })
+            .catch(function () {
+                window.location.replace(BASE_URL + '/views/auth/login.html');
+            });
     })();
     </script>
 </body>

@@ -17,24 +17,24 @@ class NotificacionController {
             'estado' => $_GET['estado'] ?? null
         ];
         $notificaciones = $this->service->getAll($filtros);
-        ResponseHelper::json(['success' => true, 'data' => $notificaciones]);
+        ResponseHelper::success($notificaciones, 'Notificaciones obtenidas correctamente.');
     }
 
     public function marcarLeida(array $params): void {
         AuthMiddleware::requireAuth();
         $this->service->marcarLeida($params['id']);
-        ResponseHelper::json(['success' => true]);
+        ResponseHelper::success(null, 'Notificación marcada como leída.');
     }
 
     public function archivar(array $params): void {
         AuthMiddleware::requireAuth();
         $this->service->archivar($params['id']);
-        ResponseHelper::json(['success' => true]);
+        ResponseHelper::success(null, 'Notificación archivada correctamente.');
     }
 
     public function revertir(array $params): void {
         $user = AuthMiddleware::requireAuth();
         $this->service->revertir($params['id'], $user['id']);
-        ResponseHelper::json(['success' => true]);
+        ResponseHelper::success(null, 'Acción revertida correctamente.');
     }
 }

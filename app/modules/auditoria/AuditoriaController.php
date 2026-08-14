@@ -12,23 +12,27 @@ class AuditoriaController {
     }
 
     public function getAll(array $params): void {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $filtros = [
             'usuario_id' => $_GET['usuario_id'] ?? null,
             'accion' => $_GET['accion'] ?? null,
             'entidad_afectada' => $_GET['entidad_afectada'] ?? null,
             'fecha_desde' => $_GET['fecha_desde'] ?? null,
             'fecha_hasta' => $_GET['fecha_hasta'] ?? null,
+            'limit' => isset($_GET['limit']) ? (int)$_GET['limit'] : null,
         ];
         $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
         
         $result = $this->service->getAll($filtros, $pagina);
-        ResponseHelper::json(['success' => true, 'data' => $result['data'], 'meta' => ['total' => $result['total'], 'paginas' => $result['paginas']]]);
+        ResponseHelper::success([
+            'items' => $result['data'],
+            'meta'  => ['total' => $result['total'], 'paginas' => $result['paginas']]
+        ], 'Registros de auditoría obtenidos correctamente.');
     }
 
     public function getOne(array $params): void {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $auditoria = $this->service->getOne($params['id']);
-        ResponseHelper::json(['success' => true, 'data' => $auditoria]);
+        ResponseHelper::success($auditoria, 'Registro de auditoría obtenido correctamente.');
     }
 }

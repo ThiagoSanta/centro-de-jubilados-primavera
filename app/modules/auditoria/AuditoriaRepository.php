@@ -16,7 +16,11 @@ class AuditoriaRepository
 
     public function findAll(array $filtros, int $pagina): array
     {
-        $limit = 25;
+        $limit = isset($filtros['limit']) && (int)$filtros['limit'] > 0 ? (int)$filtros['limit'] : 25;
+        $maxLimit = 1000;
+        if ($limit > $maxLimit) {
+            $limit = $maxLimit;
+        }
         $offset = ($pagina - 1) * $limit;
 
         $query = "SELECT a.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido 

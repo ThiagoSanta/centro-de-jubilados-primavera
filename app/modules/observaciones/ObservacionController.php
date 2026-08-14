@@ -15,7 +15,7 @@ class ObservacionController {
     public function getBySocio(array $params): void {
         AuthMiddleware::requireAuth();
         $observaciones = $this->service->getBySocio($params['socioId']);
-        ResponseHelper::json(['success' => true, 'data' => $observaciones]);
+        ResponseHelper::success($observaciones, 'Observaciones del socio obtenidas correctamente.');
     }
 
     public function agregar(array $params): void {
@@ -26,6 +26,6 @@ class ObservacionController {
             throw new AppException("Faltan datos requeridos.", 400);
         }
         $observacion = $this->service->agregar($data['socio_id'], $data['contenido'], $user['id']);
-        ResponseHelper::json(['success' => true, 'data' => $observacion], 201);
+        ResponseHelper::success($observacion, 'Observación registrada correctamente.', 201);
     }
 }

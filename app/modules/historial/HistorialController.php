@@ -14,6 +14,6 @@ class HistorialController {
     public function getBySocio(array $params): void {
         AuthMiddleware::requireAuth();
         $historial = $this->service->getBySocio($params['socioId']);
-        ResponseHelper::json(['success' => true, 'data' => $historial]);
+        ResponseHelper::success($historial, 'Histórico del socio obtenido correctamente.');
     }
 }

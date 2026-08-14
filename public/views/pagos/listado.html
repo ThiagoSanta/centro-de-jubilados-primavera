@@ -221,7 +221,27 @@
         let paginaActual = 1;
 
         document.addEventListener('DOMContentLoaded', () => {
-            cargarPagos(1);
+            fetch(API_BASE + '/auth/me')
+                .then(res => {
+                    if (!res.ok) throw new Error('No autenticado');
+                    return res.json();
+                })
+                .then(res => {
+                    if (!res.success || !res.data) {
+                        window.location.href = BASE_URL + '/views/auth/login.html';
+                        return;
+                    }
+                    if (res.data.rol !== 'administrador') {
+                        window.location.replace(res.data.rol === 'cobrador'
+                            ? BASE_URL + '/views/cobrador/index.html'
+                            : BASE_URL + '/views/auth/login.html');
+                        return;
+                    }
+                    cargarPagos(1);
+                })
+                .catch(() => {
+                    window.location.replace(BASE_URL + '/views/auth/login.html');
+                });
         });
 
         async function cargarPagos(pagina) {
@@ -241,8 +261,8 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    renderizarTabla(data.data);
-                    renderizarPaginacion(data.meta);
+                    renderizarTabla(data.data.items || []);
+                    renderizarPaginacion(data.data.meta || {});
                 } else {
                     tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${data.message}</td></tr>`;
                 }

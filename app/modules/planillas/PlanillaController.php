@@ -17,22 +17,18 @@ class PlanillaController
 
     public function generar(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
 
         $input = json_decode(file_get_contents('php://input'), true) ?? [];
         if (empty($input['zona_id']) || empty($input['cobrador_id'])) {
-            ResponseHelper::json(['success' => false, 'message' => 'Faltan parámetros requeridos (zona_id, cobrador_id).'], 400);
+            ResponseHelper::error('Faltan parámetros requeridos (zona_id, cobrador_id).', 400);
             return;
         }
 
         $usuarioId = $_SESSION['usuario_id'];
         $resultado = $this->planillaService->generar($input['zona_id'], $input['cobrador_id'], $usuarioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'message' => 'Planilla generada con éxito.',
-            'data' => $resultado
-        ], 201);
+        ResponseHelper::success($resultado, 'Planilla generada con éxito.', 201);
     }
 
     public function getAll(array $params): void
@@ -48,7 +44,7 @@ class PlanillaController
         $pagina = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
         $resultado = $this->planillaService->getHistorico($filtros, $pagina);
-        ResponseHelper::json(['success' => true] + $resultado);
+        ResponseHelper::success($resultado, 'Planillas obtenidas con éxito.');
     }
 
     public function getOne(array $params): void
@@ -56,7 +52,7 @@ class PlanillaController
         AuthMiddleware::requireAuth();
 
         $planilla = $this->planillaService->getPlanilla($params['id']);
-        ResponseHelper::json(['success' => true, 'data' => $planilla]);
+        ResponseHelper::success($planilla, 'Planilla obtenida con éxito.');
     }
 
     public function getPdf(array $params): void
@@ -83,6 +79,6 @@ class PlanillaController
         AuthMiddleware::requireAuth();
 
         $cobradores = $this->planillaService->getCobradores();
-        ResponseHelper::json(['success' => true, 'data' => $cobradores]);
+        ResponseHelper::success($cobradores, 'Listado de cobradores obtenido con éxito.');
     }
 }

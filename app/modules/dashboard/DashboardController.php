@@ -85,16 +85,13 @@ class DashboardController
         $stmt->execute();
         $notificacionesSinLeer = (int) $stmt->fetchColumn();
 
-        ResponseHelper::json([
-            'success' => true,
-            'data'    => [
-                'socios_activos'           => $sociosActivos,
-                'socios_con_deuda'         => $sociosConDeuda,
-                'monto_adeudado_total'     => $montoAdeudadoTotal,
-                'pagos_del_mes'            => $pagosDelMes,
-                'cobranzas_hoy'            => $cobranzasHoy,
-                'notificaciones_sin_leer'  => $notificacionesSinLeer,
-            ],
-        ]);
+        ResponseHelper::success([
+            'socios_activos'           => $sociosActivos,
+            'socios_con_deuda'         => $sociosConDeuda,
+            'monto_adeudado_total'     => $montoAdeudadoTotal,
+            'pagos_del_mes'            => $pagosDelMes,
+            'cobranzas_hoy'            => $cobranzasHoy,
+            'notificaciones_sin_leer'  => $notificacionesSinLeer,
+        ], 'Métricas del dashboard obtenidas correctamente.');
     }
 }

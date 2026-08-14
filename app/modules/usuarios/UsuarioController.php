@@ -27,10 +27,7 @@ class UsuarioController
 
         $usuarios = $this->service->getAll();
 
-        ResponseHelper::json([
-            'success' => true,
-            'data'    => $usuarios,
-        ]);
+        ResponseHelper::success($usuarios, 'Usuarios obtenidos correctamente.');
     }
 
     /**
@@ -47,10 +44,7 @@ class UsuarioController
         $id      = $params['id'] ?? '';
         $usuario = $this->service->getOne($id);
 
-        ResponseHelper::json([
-            'success' => true,
-            'data'    => $usuario,
-        ]);
+        ResponseHelper::success($usuario, 'Usuario obtenido correctamente.');
     }
 
     /**
@@ -69,11 +63,7 @@ class UsuarioController
 
         $usuario = $this->service->crear($input, $usuarioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'message' => 'Usuario creado correctamente.',
-            'data'    => $usuario,
-        ], 201);
+        ResponseHelper::success($usuario, 'Usuario creado correctamente.', 201);
     }
 
     /**
@@ -93,11 +83,7 @@ class UsuarioController
 
         $usuario = $this->service->editar($id, $input, $usuarioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'message' => 'Usuario actualizado correctamente.',
-            'data'    => $usuario,
-        ]);
+        ResponseHelper::success($usuario, 'Usuario actualizado correctamente.');
     }
 
     /**
@@ -119,10 +105,7 @@ class UsuarioController
 
         $this->service->cambiarPassword($id, $nuevaPassword, $usuarioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'message' => 'Contraseña actualizada correctamente.',
-        ]);
+        ResponseHelper::success(null, 'Contraseña actualizada correctamente.');
     }
 
     /**
@@ -141,10 +124,7 @@ class UsuarioController
 
         $this->service->desactivar($id, $usuarioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'message' => 'Usuario desactivado correctamente.',
-        ]);
+        ResponseHelper::success(null, 'Usuario desactivado correctamente.');
     }
 
     /**
@@ -163,9 +143,6 @@ class UsuarioController
 
         $this->service->reactivar($id, $usuarioId);
 
-        ResponseHelper::json([
-            'success' => true,
-            'message' => 'Usuario reactivado correctamente.',
-        ]);
+        ResponseHelper::success(null, 'Usuario reactivado correctamente.');
     }
 }

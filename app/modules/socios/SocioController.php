@@ -44,6 +44,7 @@ class SocioController
             'modalidad_cobranza' => $_GET['modalidad_cobranza'] ?? null,
             'con_deuda'          => isset($_GET['con_deuda']) ? $_GET['con_deuda'] : null,
             'busqueda'           => $_GET['busqueda'] ?? null,
+            'limit'              => isset($_GET['limit']) ? (int)$_GET['limit'] : null,
         ];
 
         $result = $this->socioService->listar($filtros, $pagina);
@@ -78,7 +79,7 @@ class SocioController
      */
     public function create(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $session = $this->authService->checkSession();
         $usuarioId = $session['usuario_id'];
 
@@ -259,6 +260,25 @@ class SocioController
 
         $result = $this->socioService->importarCSV($tmpPath, $usuarioId);
         ResponseHelper::success($result, 'Importación CSV procesada con éxito.');
+    }
+
+    /**
+     * GET /api/socios/inconsistencias — List CSV import inconsistencies.
+     * Accepts optional ?estado=pendiente|resuelto query param.
+     *
+     * @param array $params
+     * @return void
+     */
+    public function getInconsistencias(array $params): void
+    {
+        AuthMiddleware::requireAuth('administrador');
+
+        $filtros = [
+            'estado' => $_GET['estado'] ?? null,
+        ];
+
+        $items = $this->socioService->getInconsistencias($filtros);
+        ResponseHelper::success($items, 'Inconsistencias obtenidas correctamente.');
     }
 
     /**
