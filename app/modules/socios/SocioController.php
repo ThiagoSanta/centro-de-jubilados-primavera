@@ -48,7 +48,7 @@ class SocioController
         ];
 
         $result = $this->socioService->listar($filtros, $pagina);
-        ResponseHelper::json(['success' => true] + $result);
+        ResponseHelper::success($result, 'Socios obtenidos exitosamente.');
     }
 
     /**

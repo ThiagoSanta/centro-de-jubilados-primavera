@@ -333,10 +333,10 @@
             apiFetch(BASE_URL + '/api/socios?' + buildQueryParams())
                 .then(function (result) {
                     var data = result.data;
-                    state.socios = data.data || [];
-                    state.total = data.total || 0;
-                    state.porPagina = data.por_pagina || 25;
-                    state.pagina = data.pagina || 1;
+                    state.socios = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
+                    state.total = (data && data.total !== undefined) ? data.total : (result.total || 0);
+                    state.porPagina = (data && data.por_pagina) ? data.por_pagina : (result.por_pagina || 25);
+                    state.pagina = (data && data.pagina) ? data.pagina : (result.pagina || 1);
                     renderTabla();
                     renderPaginacion();
                 })

@@ -157,21 +157,50 @@ class PlanillaRepository
     {
         $sql = "SELECT s.id as socio_id, s.numero_socio, s.nombre_apellido, s.direccion, 
                        s.latitud, s.longitud, s.geolocalizacion_pendiente,
-                       SUM(d.monto) as deuda_total,
-                       JSON_ARRAYAGG(
-                           JSON_OBJECT('id', d.id, 'periodo', d.periodo, 'monto', d.monto)
-                       ) as detalle_deudas
+                       d.id as deuda_id, d.periodo, d.monto as deuda_monto
                 FROM socios s
                 JOIN deudas d ON s.id = d.socio_id
                 WHERE s.zona_id = :zona_id 
                   AND s.estado = 'activo'
                   AND s.modalidad_cobranza = 'cobranza_domiciliaria'
                   AND d.estado = 'pendiente'
-                GROUP BY s.id
-                HAVING COUNT(d.id) > 0";
+                ORDER BY s.id, d.periodo ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':zona_id' => $zonaId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sociosMap = [];
+        foreach ($rows as $row) {
+            $socioId = $row['socio_id'];
+            if (!isset($sociosMap[$socioId])) {
+                $sociosMap[$socioId] = [
+                    'socio_id' => $socioId,
+                    'numero_socio' => $row['numero_socio'],
+                    'nombre_apellido' => $row['nombre_apellido'],
+                    'direccion' => $row['direccion'],
+                    'latitud' => $row['latitud'],
+                    'longitud' => $row['longitud'],
+                    'geolocalizacion_pendiente' => $row['geolocalizacion_pendiente'],
+                    'deuda_total' => 0.0,
+                    'deudas' => []
+                ];
+            }
+            $sociosMap[$socioId]['deuda_total'] += (float)$row['deuda_monto'];
+            $sociosMap[$socioId]['deudas'][] = [
+                'id' => $row['deuda_id'],
+                'periodo' => $row['periodo'],
+                'monto' => (float)$row['deuda_monto']
+            ];
+        }
+
+        $resultado = [];
+        foreach ($sociosMap as $socio) {
+            $socio['detalle_deudas'] = json_encode($socio['deudas']);
+            unset($socio['deudas']);
+            $resultado[] = $socio;
+        }
+
+        return $resultado;
     }
 
     public function getCobradores(): array

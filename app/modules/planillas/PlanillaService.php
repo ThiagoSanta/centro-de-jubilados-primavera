@@ -38,7 +38,7 @@ class PlanillaService
 
         $sociosOriginales = $this->planillaRepo->getSociosConDeudaDomiciliaria($zonaId);
         if (empty($sociosOriginales)) {
-            throw new AppException("No hay socios con deuda domiciliaria en esta zona.", 404);
+            throw new AppException("No hay socios con deuda domiciliaria en esta zona.", 422);
         }
 
         $geolocalizados = [];
@@ -133,7 +133,7 @@ class PlanillaService
         
         $pdf->SetFont('Arial', '', 12);
         $pdf->Cell(0, 8, utf8_decode('Fecha: ' . date('d/m/Y')), 0, 1);
-        $pdf->Cell(0, 8, utf8_decode('Zona: ' . $zona['nombre'] . ' (' . $zona['codigo'] . ')'), 0, 1);
+        $pdf->Cell(0, 8, utf8_decode('Zona: ' . $zona['nombre']), 0, 1);
         $pdf->Cell(0, 8, utf8_decode('Cobrador: ' . $cobrador['nombre'] . ' ' . $cobrador['apellido']), 0, 1);
         $pdf->Ln(5);
 

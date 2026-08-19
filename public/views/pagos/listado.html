@@ -294,7 +294,7 @@
 
                 tr.innerHTML = `
                     <td>${fecha}</td>
-                    <td>${pago.socio_nombre} ${pago.socio_apellido} (#${pago.numero_socio})</td>
+                    <td>${pago.socio_nombre || '—'} (#${pago.numero_socio})</td>
                     <td>$${parseFloat(pago.monto_total).toFixed(2)}</td>
                     <td style="text-transform: capitalize;">${pago.metodo_pago}</td>
                     <td><span class="badge ${badgeClass}">${pago.estado.toUpperCase()}</span></td>
