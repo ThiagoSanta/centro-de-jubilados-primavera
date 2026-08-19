@@ -57,7 +57,7 @@ a {
     color: #ffffff;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .sidebar__brand {
@@ -80,6 +80,7 @@ a {
 .sidebar__nav {
     padding: 0.75rem 0;
     flex: 1;
+    overflow-y: auto;
 }
 
 .sidebar-nav-item {
