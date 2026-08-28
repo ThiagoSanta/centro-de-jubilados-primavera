@@ -65,6 +65,12 @@ class AuthController
             return;
         }
 
+        // Liberar el lock de sesión lo antes posible para evitar que requests
+        // concurrentes (ej. navegación rápida entre páginas del cobrador) queden
+        // bloqueados esperando que este script termine. checkSession() ya leyó
+        // todo lo necesario de $_SESSION.
+        session_write_close();
+
         ResponseHelper::success($session);
     }
 }

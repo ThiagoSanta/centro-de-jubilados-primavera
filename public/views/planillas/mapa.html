@@ -93,10 +93,123 @@
             height: 25px;
             margin-right: 0.5rem;
         }
+
+        /* ── Mobile Responsive (Mapa) ─────────────────────────── */
+        .mobile-header-bar {
+            display: none;
+        }
+
+        .btn-hamburger {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            padding: 0.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-hamburger svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 1050;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .mobile-header-bar {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem 1rem;
+                background: var(--color-sidebar);
+                color: #ffffff;
+                flex-shrink: 0;
+                z-index: 100;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .mobile-header-bar__title {
+                font-size: 0.9375rem;
+                font-weight: 700;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 1100;
+                transform: translateX(-100%);
+                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .sidebar.sidebar--open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: block;
+            }
+
+            .sidebar-overlay.sidebar-overlay--visible {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .map-header {
+                padding: 0.75rem 1rem;
+            }
+
+            .map-header h1 {
+                font-size: 1rem;
+            }
+
+            .map-overlay {
+                top: 10px;
+                right: 10px;
+                width: 170px;
+                padding: 0.65rem;
+            }
+
+            .legend {
+                bottom: 10px;
+                left: 10px;
+                right: auto;
+                padding: 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="layout">
+        <!-- Mobile Header Bar -->
+        <div class="mobile-header-bar">
+            <button class="btn-hamburger" id="btnToggleSidebar" aria-label="Abrir menú">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <span class="mobile-header-bar__title">Mapa de Ruteo</span>
+        </div>
+
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
@@ -203,7 +316,7 @@
                 icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
             },
             {
-                href: '/centro-de-jubilados-primavera/public/views/cobrador/index.html#socios', label: 'Socios',
+                href: '/centro-de-jubilados-primavera/public/views/cobrador/socios.html', label: 'Socios',
                 icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
             },
             {
@@ -211,7 +324,7 @@
                 icon: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
             },
             {
-                href: '/centro-de-jubilados-primavera/public/views/cobrador/index.html#planillas', label: 'Mis planillas',
+                href: '/centro-de-jubilados-primavera/public/views/cobrador/planillas.html', label: 'Mis planillas',
                 icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'
             },
             {
@@ -327,11 +440,42 @@
                     }
                     renderSidebar(res.data.rol);
                     init();
+                    initMobileSidebar();
                 })
                 .catch(function () {
                     window.location.replace(BASE_URL + '/views/auth/login.html');
                 });
         });
+
+        function initMobileSidebar() {
+            var toggleBtn = document.getElementById('btnToggleSidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            var sidebar = document.querySelector('.sidebar');
+            if (!toggleBtn || !overlay || !sidebar) return;
+
+            function toggle() {
+                var isOpen = sidebar.classList.toggle('sidebar--open');
+                overlay.classList.toggle('sidebar-overlay--visible', isOpen);
+                if (map) {
+                    setTimeout(function () { map.invalidateSize(); }, 300);
+                }
+            }
+            function close() {
+                sidebar.classList.remove('sidebar--open');
+                overlay.classList.remove('sidebar-overlay--visible');
+                if (map) {
+                    setTimeout(function () { map.invalidateSize(); }, 300);
+                }
+            }
+
+            toggleBtn.addEventListener('click', toggle);
+            overlay.addEventListener('click', close);
+            sidebar.addEventListener('click', function (e) {
+                if (e.target.closest('.sidebar-nav-item')) {
+                    close();
+                }
+            });
+        }
     </script>
 </body>
 </html>

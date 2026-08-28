@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inicio Cobrador - Centro de Jubilados Primavera</title>
-    <meta name="description"
-        content="Pantalla de inicio del cobrador. Permite visualizar planillas asignadas e identificar socios por DNI.">
+    <meta name="description" content="Pantalla de inicio del cobrador. Accesos directos a planillas, socios, cobro en sede y ruteo.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -66,283 +65,226 @@
 
         /* ── Section titles ───────────────────────────────────── */
         .section-title {
-            font-size: 1rem;
+            font-size: 1.125rem;
             font-weight: 700;
             color: var(--color-primary);
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .section-title svg {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             color: var(--color-accent);
             flex-shrink: 0;
         }
 
-        /* ── Planillas table ──────────────────────────────────── */
-        .planilla-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
+        /* ── Module Cards Grid ────────────────────────────────── */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
         }
 
-        .planilla-table th {
-            background-color: var(--color-bg-subtle);
-            padding: 0.75rem 1rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 600;
-            color: var(--color-text-muted);
-            border-bottom: 1px solid var(--color-border);
-            text-align: left;
-        }
-
-        .planilla-table td {
-            padding: 0.875rem 1rem;
-            border-bottom: 1px solid var(--color-border);
-            color: var(--color-text);
-            vertical-align: middle;
-        }
-
-        .planilla-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .planilla-table tr:hover td {
-            background-color: rgba(59, 130, 246, 0.02);
-        }
-
-        .btn-pdf {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            color: #dc2626;
-            background: rgba(220, 38, 38, 0.08);
-            border: 1px solid rgba(220, 38, 38, 0.15);
-            padding: 0.35rem 0.75rem;
-            border-radius: var(--radius);
-            font-size: 0.8125rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            text-decoration: none;
-        }
-
-        .btn-pdf:hover {
-            background: #dc2626;
-            color: #ffffff;
-            border-color: #dc2626;
-            box-shadow: 0 2px 5px rgba(220, 38, 38, 0.22);
-        }
-
-        .btn-pdf svg,
-        .btn-ver svg {
-            width: 14px;
-            height: 14px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2.2;
-        }
-
-        /* ── Search box (DNI) ────────────────────────────────── */
-        .search-box {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .search-box input {
-            flex: 1;
-            padding: 0.55rem 0.75rem;
+        .module-card {
+            background: var(--color-content);
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
-            font-size: 0.875rem;
-            font-family: inherit;
-            outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
-        }
-
-        .search-box input:focus {
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-        }
-
-        .search-box button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .search-box button svg {
-            width: 15px;
-            height: 15px;
-            stroke: currentColor;
-            fill: none;
-            stroke-width: 2.2;
-        }
-
-        /* ── DNI result card ─────────────────────────────────── */
-        .search-result {
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius);
-            background: var(--color-bg-subtle);
-            padding: 1.25rem;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            margin-bottom: 1.5rem;
+            gap: 0.875rem;
+            text-decoration: none;
+            color: var(--color-text);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            position: relative;
         }
 
-        .search-result__row {
+        .module-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-accent);
+        }
+
+        .module-card__icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+            justify-content: center;
+            margin-bottom: 0.25rem;
         }
 
-        .search-result__row:last-of-type {
-            border-bottom: none;
-            padding-bottom: 0;
+        .module-card__icon svg {
+            width: 22px;
+            height: 22px;
         }
 
-        .search-result__label {
-            font-size: 0.8125rem;
-            color: var(--color-text-muted);
-            font-weight: 500;
+        .module-card__icon--blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: #2563eb;
         }
 
-        .search-result__value {
-            font-size: 0.875rem;
-            font-weight: 600;
+        .module-card__icon--green {
+            background: rgba(22, 163, 74, 0.1);
+            color: #16a34a;
+        }
+
+        .module-card__icon--amber {
+            background: rgba(217, 119, 6, 0.1);
+            color: #d97706;
+        }
+
+        .module-card__icon--purple {
+            background: rgba(124, 58, 237, 0.1);
+            color: #7c3aed;
+        }
+
+        .module-card__title {
+            font-size: 1.0625rem;
+            font-weight: 700;
             color: var(--color-text);
         }
 
-        .search-result__actions {
+        .module-card__desc {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            line-height: 1.45;
+            flex: 1;
+        }
+
+        .module-card__action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--color-accent);
             margin-top: 0.5rem;
         }
 
-        /* ── Status & alert helpers ──────────────────────────── */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.125rem 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            border-radius: 999px;
+        .module-card__action svg {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.15s ease;
         }
 
-        .status-badge--activo {
-            background: rgba(22, 163, 74, 0.1);
-            color: var(--color-estado-activo);
+        .module-card:hover .module-card__action svg {
+            transform: translateX(3px);
         }
 
-        .status-badge--suspendido {
-            background: rgba(217, 119, 6, 0.1);
-            color: var(--color-estado-suspendido);
+        /* ── Mobile Responsive & Hamburguesa ─────────────────── */
+        .mobile-header-bar {
+            display: none;
         }
 
-        .alert-box {
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius);
-            font-size: 0.85rem;
+        .btn-hamburger {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            padding: 0.25rem;
+            cursor: pointer;
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .alert-box--error {
-            background-color: #fef2f2;
-            color: var(--color-estado-eliminado);
-            border: 1px solid #fee2e2;
-        }
-
-        .alert-box--info {
-            background-color: #eff6ff;
-            color: #1e40af;
-            border: 1px solid #dbeafe;
-        }
-
-        /* ── Empty placeholder ───────────────────────────────── */
-        .empty-placeholder {
-            text-align: center;
-            color: var(--color-text-muted);
-            font-size: 0.875rem;
-            padding: 2rem 1rem;
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
         }
 
-        .empty-placeholder svg {
-            width: 32px;
-            height: 32px;
-            opacity: 0.45;
+        .btn-hamburger svg {
+            width: 22px;
+            height: 22px;
         }
 
-        /* ── Socios table btn-ver ────────────────────────────── */
-        .btn-ver {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            color: var(--color-accent);
-            background: rgba(59, 130, 246, 0.08);
-            border: 1px solid rgba(59, 130, 246, 0.18);
-            padding: 0.35rem 0.75rem;
-            border-radius: var(--radius);
-            font-size: 0.8125rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            cursor: pointer;
-            font-family: inherit;
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 1050;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
         }
 
-        .btn-ver:hover {
-            background: var(--color-accent);
-            color: #ffffff;
-            border-color: var(--color-accent);
-            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.25);
-        }
-
-        /* ── Separator between sections ─────────────────────── */
-        .section-block {
-            margin-bottom: 2.5rem;
-        }
-
-        /* ── Animations ──────────────────────────────────────── */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
             }
 
-            to {
+            .mobile-header-bar {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem 1rem;
+                background: var(--color-sidebar);
+                color: #ffffff;
+                flex-shrink: 0;
+                z-index: 100;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            }
+
+            .mobile-header-bar__title {
+                font-size: 0.9375rem;
+                font-weight: 700;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 1100;
+                transform: translateX(-100%);
+                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--shadow-lg);
+            }
+
+            .sidebar.sidebar--open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: block;
+            }
+
+            .sidebar-overlay.sidebar-overlay--visible {
                 opacity: 1;
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
+                pointer-events: auto;
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            .content {
+                padding: 1rem;
+                width: 100%;
+            }
+
+            .welcome-card {
+                padding: 1.25rem;
+                gap: 1rem;
+            }
+
+            .welcome-card__title {
+                font-size: 1.25rem;
             }
         }
     </style>
 </head>
 
 <body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="layout">
+        <!-- Mobile Header Bar -->
+        <div class="mobile-header-bar">
+            <button class="btn-hamburger" id="btnToggleSidebar" aria-label="Abrir menú">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <span class="mobile-header-bar__title">Centro Primavera — Cobrador</span>
+        </div>
+
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
@@ -360,7 +302,7 @@
                     </svg>
                     Inicio
                 </a>
-                <a href="#socios" class="sidebar-nav-item">
+                <a href="/centro-de-jubilados-primavera/public/views/cobrador/socios.html" class="sidebar-nav-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                         <circle cx="9" cy="7" r="4" />
@@ -376,7 +318,7 @@
                     </svg>
                     Cobro en sede
                 </a>
-                <a href="#planillas" class="sidebar-nav-item">
+                <a href="/centro-de-jubilados-primavera/public/views/cobrador/planillas.html" class="sidebar-nav-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                         <polyline points="14 2 14 8 20 8" />
@@ -409,7 +351,7 @@
         <!-- Main content -->
         <main class="content">
 
-            <!-- Section 1: Welcome banner (no countdown) -->
+            <!-- Section 1: Welcome banner -->
             <section class="welcome-card" aria-label="Bienvenida">
                 <div class="welcome-card__info">
                     <h1 class="welcome-card__title">Bienvenido, <span id="welcome-user-name">...</span></h1>
@@ -417,138 +359,87 @@
                 </div>
             </section>
 
-            <!-- Section 2: Mis planillas -->
-            <section class="section-block" id="planillas" aria-label="Mis planillas">
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" y1="13" x2="8" y2="13" />
-                        <line x1="16" y1="17" x2="8" y2="17" />
-                    </svg>
-                    Mis planillas
-                </div>
-                <div class="table-wrapper">
-                    <table class="table" id="tablaPlanillas">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Zona</th>
-                                <th>Socios</th>
-                                <th class="table__actions"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="planillasBody">
-                            <tr class="loading-row">
-                                <td colspan="4">Cargando planillas...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div id="planillasEmpty" class="empty-state" style="display:none;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                        </svg>
-                        <div class="empty-state__title">Sin planillas asignadas</div>
-                        <div class="empty-state__text">No hay planillas asignadas. El administrador debe generar una
-                            planilla y asignártela.</div>
-                    </div>
-                </div>
-            </section>
+            <!-- Section 2: Accesos directos a módulos -->
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+                Accesos rápidos
+            </h2>
 
-            <!-- Section 3: Socios -->
-            <section class="section-block" id="socios" aria-label="Socios">
-                <div class="section-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                    Socios
-                </div>
-
-                <!-- DNI quick search -->
-                <div class="search-box">
-                    <input type="text" id="dni-input" placeholder="Búsqueda rápida por DNI exacto..."
-                        aria-label="Búsqueda por DNI">
-                    <button class="btn btn--primary" id="btn-search" onclick="buscarSocioDni()">
-                        <svg viewBox="0 0 24 24">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                        Buscar
-                    </button>
-                </div>
-                <div id="search-result-container" style="animation:fadeIn 0.25s ease;"></div>
-
-                <!-- Toolbar: filtros de la tabla -->
-                <div class="toolbar">
-                    <div class="toolbar__search">
-                        <span class="toolbar__search-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8" />
-                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                            </svg>
-                        </span>
-                        <input type="text" id="inputBusqueda" placeholder="Buscar por nombre, DNI o N° socio..."
-                            autocomplete="off">
-                    </div>
-                    <div class="filter-chips">
-                        <div class="filter-chip">
-                            <select id="filtroEstado">
-                                <option value="">Estado: Todos (activo+suspendido)</option>
-                                <option value="activo">Activo</option>
-                                <option value="suspendido">Suspendido</option>
-                            </select>
-                        </div>
-                        <div class="filter-chip">
-                            <select id="filtroZona">
-                                <option value="">Zona: Todas</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabla de socios paginada -->
-                <div class="table-wrapper">
-                    <table class="table" id="tablaSocios">
-                        <thead>
-                            <tr>
-                                <th>N°</th>
-                                <th>Nombre</th>
-                                <th>DNI</th>
-                                <th>Estado</th>
-                                <th>Zona</th>
-                                <th>Modalidad</th>
-                                <th class="table__actions"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="sociosBody">
-                            <tr class="loading-row">
-                                <td colspan="7">Cargando socios...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div id="sociosEmpty" class="empty-state" style="display:none;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <div class="modules-grid">
+                <!-- Card 1: Socios -->
+                <a href="/centro-de-jubilados-primavera/public/views/cobrador/socios.html" class="module-card">
+                    <div class="module-card__icon module-card__icon--blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                             <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
-                        <div class="empty-state__title">No se encontraron socios</div>
-                        <div class="empty-state__text">No hay socios que coincidan con los filtros aplicados.</div>
                     </div>
-                </div>
+                    <div class="module-card__title">Padrón de Socios</div>
+                    <div class="module-card__desc">Búsqueda rápida por DNI, consulta de estados, domicilios y perfiles completos.</div>
+                    <div class="module-card__action">
+                        Ver socios
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+                </a>
 
-                <!-- Paginación -->
-                <div class="pagination" id="paginacion" style="display:none;">
-                    <span id="paginacionInfo"></span>
-                    <div class="pagination__controls">
-                        <button type="button" class="btn btn--secondary btn--sm" id="btnPagAnterior">Anterior</button>
-                        <button type="button" class="btn btn--secondary btn--sm" id="btnPagSiguiente">Siguiente</button>
+                <!-- Card 2: Mis Planillas -->
+                <a href="/centro-de-jubilados-primavera/public/views/cobrador/planillas.html" class="module-card">
+                    <div class="module-card__icon module-card__icon--amber">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
                     </div>
-                </div>
-            </section>
+                    <div class="module-card__title">Mis Planillas</div>
+                    <div class="module-card__desc">Visualiza las planillas asignadas a tu recorrido y descarga las versiones en PDF.</div>
+                    <div class="module-card__action">
+                        Ver planillas
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+                </a>
+
+                <!-- Card 3: Cobro en Sede -->
+                <a href="/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html" class="module-card">
+                    <div class="module-card__icon module-card__icon--green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23" />
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                    </div>
+                    <div class="module-card__title">Cobro en Sede</div>
+                    <div class="module-card__desc">Registra pagos de cuotas y servicios efectuados directamente de manera presencial.</div>
+                    <div class="module-card__action">
+                        Cobrar en sede
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+                </a>
+
+                <!-- Card 4: Mapa de Ruteo -->
+                <a href="/centro-de-jubilados-primavera/public/views/planillas/mapa.html" class="module-card">
+                    <div class="module-card__icon module-card__icon--purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                            <line x1="9" y1="3" x2="9" y2="18" />
+                            <line x1="15" y1="6" x2="15" y2="21" />
+                        </svg>
+                    </div>
+                    <div class="module-card__title">Mapa de Ruteo</div>
+                    <div class="module-card__desc">Planifica el recorrido geográfico de socios para cobranza domiciliaria optimizada.</div>
+                    <div class="module-card__action">
+                        Abrir mapa
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+                </a>
+            </div>
 
         </main>
     </div>
@@ -557,61 +448,12 @@
         (function () {
             'use strict';
 
-            // ── State ─────────────────────────────────────────────────────────────────
-            var state = {
-                pagina: 1,
-                total: 0,
-                porPagina: 25,
-                socios: [],
-                zonasMap: {},
-                debounceTimer: null
-            };
-
-            // ── Helpers ───────────────────────────────────────────────────────────────
             function escapeHtml(str) {
                 if (str === null || str === undefined) return '—';
                 var d = document.createElement('div');
                 d.textContent = str;
                 return d.innerHTML;
             }
-
-            function fmtFecha(str) {
-                if (!str) return '—';
-                var parts = str.split(' ');
-                if (parts.length >= 1) {
-                    var dp = parts[0].split('-');
-                    if (dp.length === 3) {
-                        var formatted = dp[2] + '/' + dp[1] + '/' + dp[0];
-                        if (parts.length >= 2) {
-                            var tp = parts[1].split(':');
-                            if (tp.length >= 2) formatted += ' ' + tp[0] + ':' + tp[1];
-                        }
-                        return formatted;
-                    }
-                }
-                return str;
-            }
-
-            function estadoBadge(estado) {
-                var labels = { activo: 'Activo', suspendido: 'Suspendido', eliminado: 'Eliminado' };
-                var cls = 'badge badge--' + (estado || 'activo');
-                return '<span class="' + cls + '">' + escapeHtml(labels[estado] || estado) + '</span>';
-            }
-
-            function getZonaNombre(zonaId) {
-                if (!zonaId) return '—';
-                return escapeHtml(state.zonasMap[zonaId] || '—');
-            }
-
-            var ICON_CASA = '<span class="modalidad-icon" title="Domiciliaria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>';
-            var ICON_EDIFICIO = '<span class="modalidad-icon" title="En sede"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/></svg></span>';
-
-            function getModalidadIcon(modalidad) {
-                return modalidad === 'cobranza_en_sede' ? ICON_EDIFICIO : ICON_CASA;
-            }
-
-            // ── Auth ──────────────────────────────────────────────────────────────────
-            var currentUser = null;
 
             document.addEventListener('DOMContentLoaded', function () {
                 fetch(API_BASE + '/auth/me')
@@ -631,276 +473,39 @@
                                 : BASE_URL + '/views/auth/login.html');
                             return;
                         }
-                        currentUser = user;
                         const nombreCompleto = [user.nombre, user.apellido].filter(Boolean).join(' ').trim();
                         document.getElementById('welcome-user-name').textContent = nombreCompleto || user.nombre || 'Usuario';
-                        // Por defecto, filtrar socios activos en la primera carga
-                        var filtroEstadoEl = document.getElementById('filtroEstado');
-                        if (filtroEstadoEl) filtroEstadoEl.value = 'activo';
-                        cargarPlanillas(user.usuario_id);
-                        cargarZonas();
                     })
                     .catch(function () {
                         window.location.replace(BASE_URL + '/views/auth/login.html');
                     });
 
-                // Enter key in DNI input
-                document.getElementById('dni-input').addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') buscarSocioDni();
-                });
-
-                // Debounced search on tabla toolbar
-                document.getElementById('inputBusqueda').addEventListener('input', function () {
-                    clearTimeout(state.debounceTimer);
-                    state.debounceTimer = setTimeout(function () {
-                        state.pagina = 1;
-                        cargarSocios();
-                    }, 350);
-                });
-
-                document.getElementById('filtroEstado').addEventListener('change', function () {
-                    state.pagina = 1; cargarSocios();
-                });
-
-                document.getElementById('filtroZona').addEventListener('change', function () {
-                    state.pagina = 1; cargarSocios();
-                });
-
-                document.getElementById('btnPagAnterior').addEventListener('click', function () {
-                    if (state.pagina > 1) { state.pagina--; cargarSocios(); }
-                });
-
-                document.getElementById('btnPagSiguiente').addEventListener('click', function () {
-                    var totalPaginas = Math.ceil(state.total / state.porPagina) || 1;
-                    if (state.pagina < totalPaginas) { state.pagina++; cargarSocios(); }
-                });
+                initMobileSidebar();
             });
 
-            // ── Planillas ─────────────────────────────────────────────────────────────
-            function cargarPlanillas(cobradorId) {
-                var tbody = document.getElementById('planillasBody');
-                var emptyEl = document.getElementById('planillasEmpty');
+            function initMobileSidebar() {
+                var toggleBtn = document.getElementById('btnToggleSidebar');
+                var overlay = document.getElementById('sidebarOverlay');
+                var sidebar = document.querySelector('.sidebar');
+                if (!toggleBtn || !overlay || !sidebar) return;
 
-                fetch(API_BASE + '/planillas?cobrador_id=' + encodeURIComponent(cobradorId))
-                    .then(function (res) {
-                        if (!res.ok) throw new Error('Error al consultar planillas');
-                        return res.json();
-                    })
-                    .then(function (res) {
-                        var list = (res.success && res.data && res.data.data) ? res.data.data : [];
-                        if (list.length === 0) {
-                            tbody.innerHTML = '';
-                            emptyEl.style.display = 'flex';
-                            return;
-                        }
-                        emptyEl.style.display = 'none';
-                        tbody.innerHTML = list.map(function (p) {
-                            var pdfUrl = API_BASE + '/planillas/' + p.id + '/pdf';
-                            return '<tr>' +
-                                '<td>' + fmtFecha(p.fecha_generacion) + '</td>' +
-                                '<td><strong>' + escapeHtml(p.zona_nombre || 'Sin nombre') + '</strong></td>' +
-                                '<td>' + (p.cantidad_socios !== undefined ? p.cantidad_socios : 0) + '</td>' +
-                                '<td class="table__actions table__actions-cell">' +
-                                '<a href="' + pdfUrl + '" target="_blank" class="btn-pdf">' +
-                                '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
-                                'Ver PDF' +
-                                '</a>' +
-                                '</td>' +
-                                '</tr>';
-                        }).join('');
-                    })
-                    .catch(function () {
-                        // Mostrar el estado vacío con el mensaje solicitado cuando no hay planillas o hay error
-                        tbody.innerHTML = '';
-                        emptyEl.style.display = 'flex';
-                    });
-            }
-
-            // ── Zonas ─────────────────────────────────────────────────────────────────
-            function cargarZonas() {
-                fetch(API_BASE + '/zonas')
-                    .then(function (res) { return res.json(); })
-                    .then(function (result) {
-                        var select = document.getElementById('filtroZona');
-                        (result.data || []).forEach(function (zona) {
-                            state.zonasMap[zona.id] = zona.nombre;
-                            var opt = document.createElement('option');
-                            opt.value = zona.id;
-                            opt.textContent = zona.nombre;
-                            select.appendChild(opt);
-                        });
-                        cargarSocios();
-                    })
-                    .catch(function () { cargarSocios(); });
-            }
-
-            // ── Socios table ─────────────────────────────────────────────────────────
-            function buildQueryParams() {
-                var params = new URLSearchParams();
-                params.set('pagina', state.pagina);
-                var busqueda = document.getElementById('inputBusqueda').value.trim();
-                if (busqueda) params.set('busqueda', busqueda);
-                var estado = document.getElementById('filtroEstado').value;
-                // Si no hay filtro seleccionado, excluir eliminados por defecto
-                if (estado) {
-                    params.set('estado', estado);
-                } else {
-                    params.set('estado', 'activo,suspendido');
+                function toggle() {
+                    var isOpen = sidebar.classList.toggle('sidebar--open');
+                    overlay.classList.toggle('sidebar-overlay--visible', isOpen);
                 }
-                var zona = document.getElementById('filtroZona').value;
-                if (zona) params.set('zona_id', zona);
-                return params.toString();
-            }
-
-            function cargarSocios() {
-                var tbody = document.getElementById('sociosBody');
-                var emptyEl = document.getElementById('sociosEmpty');
-                tbody.innerHTML = '<tr class="loading-row"><td colspan="7">Cargando socios...</td></tr>';
-                emptyEl.style.display = 'none';
-
-                fetch(API_BASE + '/socios?' + buildQueryParams())
-                    .then(function (res) { return res.json(); })
-                    .then(function (result) {
-                        var data = result.data || {};
-                        state.socios = data.data || [];
-                        state.total = data.total || 0;
-                        state.porPagina = data.por_pagina || 25;
-                        state.pagina = data.pagina || 1;
-                        renderTabla();
-                        renderPaginacion();
-                    })
-                    .catch(function () {
-                        tbody.innerHTML = '';
-                        emptyEl.style.display = 'flex';
-                    });
-            }
-
-            function renderTabla() {
-                var tbody = document.getElementById('sociosBody');
-                var emptyEl = document.getElementById('sociosEmpty');
-
-                if (state.socios.length === 0) {
-                    tbody.innerHTML = '';
-                    emptyEl.style.display = 'flex';
-                    document.getElementById('paginacion').style.display = 'none';
-                    return;
+                function close() {
+                    sidebar.classList.remove('sidebar--open');
+                    overlay.classList.remove('sidebar-overlay--visible');
                 }
 
-                emptyEl.style.display = 'none';
-                tbody.innerHTML = state.socios.map(function (socio) {
-                    var profileUrl = BASE_URL + '/views/socios/perfil.html?id=' + encodeURIComponent(socio.id);
-                    return '<tr style="cursor:pointer;" onclick="window.location.replace(\'' + profileUrl + '\')">' +
-                        '<td>' + escapeHtml(socio.numero_socio) + '</td>' +
-                        '<td>' + escapeHtml(socio.nombre_apellido) + '</td>' +
-                        '<td>' + escapeHtml(socio.dni) + '</td>' +
-                        '<td>' + estadoBadge(socio.estado) + '</td>' +
-                        '<td>' + getZonaNombre(socio.zona_id) + '</td>' +
-                        '<td>' + getModalidadIcon(socio.modalidad_cobranza) + '</td>' +
-                        '<td class="table__actions table__actions-cell" onclick="event.stopPropagation()">' +
-                        '<a href="' + profileUrl + '" class="btn-ver">' +
-                        '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
-                        'Ver perfil' +
-                        '</a>' +
-                        '</td>' +
-                        '</tr>';
-                }).join('');
+                toggleBtn.addEventListener('click', toggle);
+                overlay.addEventListener('click', close);
+                sidebar.addEventListener('click', function (e) {
+                    if (e.target.closest('.sidebar-nav-item')) {
+                        close();
+                    }
+                });
             }
-
-            function renderPaginacion() {
-                var pag = document.getElementById('paginacion');
-                var info = document.getElementById('paginacionInfo');
-                var totalPaginas = Math.ceil(state.total / state.porPagina) || 1;
-                var desde = state.total === 0 ? 0 : (state.pagina - 1) * state.porPagina + 1;
-                var hasta = Math.min(state.pagina * state.porPagina, state.total);
-
-                pag.style.display = 'flex';
-                info.textContent = 'Mostrando ' + desde + '–' + hasta + ' de ' + state.total + ' socios';
-                document.getElementById('btnPagAnterior').disabled = state.pagina <= 1;
-                document.getElementById('btnPagSiguiente').disabled = state.pagina >= totalPaginas;
-            }
-
-            // ── DNI quick search ─────────────────────────────────────────────────────
-            window.buscarSocioDni = function () {
-                var dniInput = document.getElementById('dni-input');
-                var resultContainer = document.getElementById('search-result-container');
-                var dniClean = dniInput.value.trim();
-
-                if (!dniClean) {
-                    resultContainer.innerHTML =
-                        '<div class="alert-box alert-box--info">' +
-                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>' +
-                        '<span>Por favor, ingrese un DNI.</span>' +
-                        '</div>';
-                    return;
-                }
-
-                resultContainer.innerHTML =
-                    '<div class="empty-placeholder"><span>Buscando socio...</span></div>';
-
-                fetch(API_BASE + '/socios?busqueda=' + encodeURIComponent(dniClean) + '&estado=activo')
-                    .then(function (res) {
-                        if (!res.ok) throw new Error('Error al buscar socio');
-                        return res.json();
-                    })
-                    .then(function (res) {
-                        var list = (res.success && res.data && res.data.data) ? res.data.data : [];
-                        if (list.length === 0) {
-                            resultContainer.innerHTML =
-                                '<div class="alert-box alert-box--info">' +
-                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>' +
-                                '<span>Socio no encontrado</span>' +
-                                '</div>';
-                            return;
-                        }
-
-                        var numericSearch = dniClean.replace(/\D/g, '');
-                        var socio = list.find(function (s) {
-                            return (s.dni || '').replace(/\D/g, '') === numericSearch;
-                        }) || list[0];
-
-                        if (socio.estado === 'eliminado') {
-                            resultContainer.innerHTML =
-                                '<div class="alert-box alert-box--error">' +
-                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
-                                '<span>Socio no disponible</span>' +
-                                '</div>';
-                            return;
-                        }
-
-                        var statusText = socio.estado.charAt(0).toUpperCase() + socio.estado.slice(1);
-                        var profileUrl = BASE_URL + '/views/socios/perfil.html?id=' + socio.id;
-
-                        resultContainer.innerHTML =
-                            '<div class="search-result">' +
-                            '<div class="search-result__row">' +
-                            '<span class="search-result__label">Nombre</span>' +
-                            '<span class="search-result__value">' + escapeHtml(socio.nombre_apellido) + '</span>' +
-                            '</div>' +
-                            '<div class="search-result__row">' +
-                            '<span class="search-result__label">N° Socio</span>' +
-                            '<span class="search-result__value">' + escapeHtml(socio.numero_socio) + '</span>' +
-                            '</div>' +
-                            '<div class="search-result__row">' +
-                            '<span class="search-result__label">Estado</span>' +
-                            '<span class="status-badge status-badge--' + escapeHtml(socio.estado) + '">' + escapeHtml(statusText) + '</span>' +
-                            '</div>' +
-                            '<div class="search-result__actions">' +
-                            '<a href="' + profileUrl + '" class="btn-ver" style="width:100%;justify-content:center;">' +
-                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
-                            'Ver perfil' +
-                            '</a>' +
-                            '</div>' +
-                            '</div>';
-                    })
-                    .catch(function () {
-                        resultContainer.innerHTML =
-                            '<div class="alert-box alert-box--error">' +
-                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
-                            '<span>Error al buscar el socio.</span>' +
-                            '</div>';
-                    });
-            };
-
         }());
     </script>
 </body>

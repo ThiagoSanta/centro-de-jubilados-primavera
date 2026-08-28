@@ -5,6 +5,9 @@ namespace CJP\Modules\Planillas;
 use Exception;
 use CJP\Shared\Exceptions\AppException;
 use CJP\Modules\Zonas\ZonaRepository;
+use CJP\Config\Config;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 
 class PlanillaService
 {
@@ -126,10 +129,26 @@ class PlanillaService
         require_once __DIR__ . '/../../../vendor/setasign/fpdf/fpdf.php';
         
         $pdf = new \FPDF('P', 'mm', 'A4');
+        $pdf->SetMargins(10, 10, 10);
+        $pdf->SetAutoPageBreak(true, 10);
         $pdf->AddPage();
         
+        // Generación/Carga de QR de Login
+        $qrDir = dirname(__DIR__, 3) . '/storage/qr';
+        if (!is_dir($qrDir)) {
+            mkdir($qrDir, 0755, true);
+        }
+        $qrPath = $qrDir . '/login_qr.png';
+        if (!file_exists($qrPath)) {
+            $loginUrl = Config::get('APP_URL', 'http://localhost/centro-de-jubilados-primavera/public') . '/views/auth/login.html';
+            $qrCode = new QrCode($loginUrl);
+            $writer = new PngWriter();
+            $writer->write($qrCode)->saveToFile($qrPath);
+        }
+        $pdf->Image($qrPath, 175, 10, 25, 25);
+
         $pdf->SetFont('Arial', 'B', 16);
-        $pdf->Cell(0, 10, utf8_decode('Planilla de Cobranza Domiciliaria'), 0, 1, 'C');
+        $pdf->Cell(160, 10, utf8_decode('Planilla de Cobranza Domiciliaria'), 0, 1, 'L');
         
         $pdf->SetFont('Arial', '', 12);
         $pdf->Cell(0, 8, utf8_decode('Fecha: ' . date('d/m/Y')), 0, 1);
@@ -137,27 +156,29 @@ class PlanillaService
         $pdf->Cell(0, 8, utf8_decode('Cobrador: ' . $cobrador['nombre'] . ' ' . $cobrador['apellido']), 0, 1);
         $pdf->Ln(5);
 
-        // Cabecera tabla
-        $pdf->SetFont('Arial', 'B', 10);
-        $pdf->Cell(15, 8, 'Orden', 1, 0, 'C');
-        $pdf->Cell(60, 8, 'Nombre y Apellido', 1, 0, 'C');
-        $pdf->Cell(60, 8, utf8_decode('Dirección'), 1, 0, 'C');
+        // Cabecera tabla (Total: 190 mm)
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->Cell(10, 8, 'Orden', 1, 0, 'C');
+        $pdf->Cell(45, 8, 'Nombre y Apellido', 1, 0, 'C');
+        $pdf->Cell(45, 8, utf8_decode('Dirección'), 1, 0, 'C');
         $pdf->Cell(25, 8, 'Deuda', 1, 0, 'C');
-        $pdf->Cell(30, 8, 'Firma', 1, 1, 'C');
+        $pdf->Cell(40, 8, 'Observaciones', 1, 0, 'C');
+        $pdf->Cell(25, 8, 'Firma', 1, 1, 'C');
 
         $pdf->SetFont('Arial', '', 9);
         $orden = 1;
         foreach ($sociosOrdenados as $socio) {
-            $pdf->Cell(15, 10, $orden, 1, 0, 'C');
+            $pdf->Cell(10, 10, $orden, 1, 0, 'C');
             
-            $nombreCorto = substr($socio['nombre_apellido'], 0, 30);
-            $pdf->Cell(60, 10, utf8_decode($nombreCorto), 1, 0, 'L');
+            $nombreCorto = substr($socio['nombre_apellido'], 0, 24);
+            $pdf->Cell(45, 10, utf8_decode($nombreCorto), 1, 0, 'L');
             
-            $dirCorta = substr($socio['direccion'], 0, 30);
-            $pdf->Cell(60, 10, utf8_decode($dirCorta), 1, 0, 'L');
+            $dirCorta = substr($socio['direccion'], 0, 26);
+            $pdf->Cell(45, 10, utf8_decode($dirCorta), 1, 0, 'L');
             
             $pdf->Cell(25, 10, '$ ' . number_format($socio['deuda_total'], 2, ',', '.'), 1, 0, 'R');
-            $pdf->Cell(30, 10, '', 1, 1, 'C'); // Espacio firma
+            $pdf->Cell(40, 10, '', 1, 0, 'C'); // Espacio observaciones en blanco (recuadro)
+            $pdf->Cell(25, 10, '', 1, 1, 'C'); // Espacio firma en blanco (recuadro)
             $orden++;
         }
 
