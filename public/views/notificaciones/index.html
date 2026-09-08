@@ -276,12 +276,6 @@
                 const diffMs = expDate - now;
                 const diffDias = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-                const iconos = {
-                    eliminacion_socio: '🗑️',
-                    anulacion_pago: '💵'
-                };
-                const icono = iconos[n.tipo] ?? 'ℹ️';
-
                 const badgeClases = {
                     no_leida: 'badge--pendiente',
                     leida: 'badge--resuelto',
@@ -296,14 +290,13 @@
 
                 li.innerHTML = `
                     <div class="notif-item__left">
-                        <span class="notif-item__icon" aria-hidden="true">${icono}</span>
                         <div class="notif-item__body">
                             <div class="notif-item__mensaje">${escHtml(n.mensaje)}</div>
                             <div class="notif-item__meta">
                                 <time datetime="${n.fecha}">${new Date(n.fecha).toLocaleString('es-AR')}</time>
                                 <span class="badge ${badgeClases[n.estado] ?? ''}">${badgeTextos[n.estado] ?? n.estado}</span>
                             </div>
-                            ${mostrarRevertir ? `<div class="notif-item__expiry">⏳ Expira en ${diffDias} día${diffDias !== 1 ? 's' : ''}</div>` : ''}
+                            ${mostrarRevertir ? `<div class="notif-item__expiry">Expira en ${diffDias} día${diffDias !== 1 ? 's' : ''}</div>` : ''}
                         </div>
                     </div>
                     <div class="notif-item__actions">

@@ -112,6 +112,22 @@
             font-weight: 500;
         }
 
+        .socio-select-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .socio-select-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
         /* ── Mobile Responsive & Hamburguesa ─────────────────── */
         .mobile-header-bar {
             display: none;
@@ -242,10 +258,12 @@
 
             <div id="alertContainer"></div>
 
-            <div class="search-container">
-                <input type="text" id="inputDni" class="form-control" placeholder="Ingrese DNI del socio..."
-                    onkeypress="if(event.key === 'Enter') buscarSocio()">
-                <button type="button" class="btn btn--primary" onclick="buscarSocio()">Buscar Socio</button>
+            <div class="search-container" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 2rem; max-width: 800px;">
+                <input type="text" id="inputDni" class="form-control" placeholder="Buscar por DNI, nombre o n° de socio..." style="flex: 2; min-width: 220px;">
+                <select id="filtroZona" class="form-control" style="flex: 1; min-width: 180px;">
+                    <option value="">Todas las zonas</option>
+                </select>
+                <button type="button" class="btn btn--primary" id="btnBuscarSocio" onclick="buscarSocio()">Buscar Socio</button>
             </div>
 
             <div class="socio-card" id="socioCard">
@@ -286,6 +304,18 @@
                 <a href="#" target="_blank" class="btn-whatsapp" id="linkWhatsapp">Enviar por WhatsApp</a>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Selección de Socio (Múltiples Resultados) -->
+    <div class="modal-overlay" id="modalSeleccionSocio">
+        <div class="modal" style="max-width: 600px;">
+            <h2 style="margin-top: 0;">Seleccionar Socio</h2>
+            <p style="color: #64748b; font-size: 0.95rem;">Se encontraron múltiples coincidencias. Elija un socio para continuar:</p>
+            <div id="listaSociosEncontrados" style="max-height: 320px; overflow-y: auto; margin-bottom: 1.5rem;"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" onclick="cerrarModalSeleccionSocio()">Cancelar</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal de Confirmación -->
@@ -408,6 +438,17 @@
                 });
 
             initMobileSidebar();
+            cargarZonas();
+
+            var inputDni = document.getElementById('inputDni');
+            if (inputDni) {
+                inputDni.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        buscarSocio();
+                    }
+                });
+            }
         });
 
         function initMobileSidebar() {
@@ -434,24 +475,54 @@
             });
         }
 
+        function cargarZonas() {
+            fetch(BASE_URL + '/api/zonas')
+                .then(function (res) { return res.json(); })
+                .then(function (res) {
+                    if (res.success && Array.isArray(res.data)) {
+                        var select = document.getElementById('filtroZona');
+                        if (!select) return;
+                        select.innerHTML = '<option value="">Todas las zonas</option>';
+                        res.data.forEach(function (zona) {
+                            var opt = document.createElement('option');
+                            opt.value = zona.id;
+                            opt.textContent = zona.nombre;
+                            select.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(function () {});
+        }
+
         // ── Lógica de cobro en sede ───────────────────────────────────────────────
         let socioActual = null;
         let deudasPendientes = [];
         let deudasSeleccionadas = [];
 
         async function buscarSocio() {
-            const dni = document.getElementById('inputDni').value.trim();
-            if (!dni) return mostrarAlerta('Ingrese un DNI', 'error');
+            const termino = document.getElementById('inputDni').value.trim();
+            const zonaId = document.getElementById('filtroZona').value;
+
+            if (!termino && !zonaId) {
+                return mostrarAlerta('Ingrese DNI, nombre, n° de socio o seleccione una zona.', 'error');
+            }
 
             try {
-                // GET /api/socios?busqueda={dni}
-                const res = await fetch(`${BASE_URL}/api/socios?busqueda=${encodeURIComponent(dni)}`);
+                const params = new URLSearchParams();
+                if (termino) params.append('busqueda', termino);
+                if (zonaId) params.append('zona_id', zonaId);
+                params.append('estado', 'activo');
+
+                const res = await fetch(`${BASE_URL}/api/socios?${params.toString()}`);
                 const data = await res.json();
 
-                if (data.success && data.data.data && data.data.data.length > 0) {
-                    socioActual = data.data.data[0];
-                    mostrarSocio(socioActual);
-                    cargarDeudas(socioActual.id);
+                if (data.success && data.data && data.data.data && data.data.data.length > 0) {
+                    const socios = data.data.data;
+                    if (socios.length === 1) {
+                        seleccionarSocio(socios[0]);
+                    } else {
+                        mostrarModalSeleccionSocio(socios);
+                    }
                 } else {
                     mostrarAlerta('Socio no encontrado.', 'error');
                     ocultarPaneles();
@@ -459,6 +530,41 @@
             } catch (err) {
                 mostrarAlerta('Error al buscar socio.', 'error');
             }
+        }
+
+        function seleccionarSocio(socio) {
+            cerrarModalSeleccionSocio();
+            socioActual = socio;
+            mostrarSocio(socioActual);
+            cargarDeudas(socioActual.id);
+        }
+
+        function mostrarModalSeleccionSocio(socios) {
+            const container = document.getElementById('listaSociosEncontrados');
+            container.innerHTML = '';
+            socios.forEach(s => {
+                const item = document.createElement('div');
+                item.className = 'socio-select-item';
+                item.innerHTML = `
+                    <div>
+                        <strong style="color: #1e293b; font-size: 1rem;">${s.nombre_apellido}</strong>
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">
+                            DNI: <strong>${s.dni || 'S/D'}</strong> | Socio N°: <strong>${s.numero_socio}</strong> | Zona: <strong>${s.zona_nombre || 'N/A'}</strong>
+                        </div>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn--secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; pointer-events: none;">Seleccionar</button>
+                    </div>
+                `;
+                item.onclick = () => seleccionarSocio(s);
+                container.appendChild(item);
+            });
+            document.getElementById('modalSeleccionSocio').style.display = 'flex';
+        }
+
+        function cerrarModalSeleccionSocio() {
+            const modal = document.getElementById('modalSeleccionSocio');
+            if (modal) modal.style.display = 'none';
         }
 
         function mostrarSocio(socio) {
@@ -573,7 +679,7 @@
         function abrirModalConfirmacion() {
             if (deudasSeleccionadas.length === 0) return;
 
-            document.getElementById('modalSocio').textContent = `${socioActual.nombre} ${socioActual.apellido}`;
+            document.getElementById('modalSocio').textContent = socioActual.nombre_apellido || `${socioActual.nombre || ''} ${socioActual.apellido || ''}`.trim();
             document.getElementById('modalTotal').textContent = document.getElementById('montoTotal').textContent;
 
             const metodo = document.getElementById('metodoPago').value;

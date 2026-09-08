@@ -19,13 +19,14 @@ class ObservacionController {
     }
 
     public function agregar(array $params): void {
-        $user = AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth();
+        $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
         $data = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($data['socio_id']) || !isset($data['contenido'])) {
             throw new AppException("Faltan datos requeridos.", 400);
         }
-        $observacion = $this->service->agregar($data['socio_id'], $data['contenido'], $user['id']);
+        $observacion = $this->service->agregar($data['socio_id'], $data['contenido'], $usuarioId);
         ResponseHelper::success($observacion, 'Observación registrada correctamente.', 201);
     }
 }

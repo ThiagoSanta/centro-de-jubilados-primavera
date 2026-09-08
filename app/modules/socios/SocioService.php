@@ -74,6 +74,7 @@ class SocioService
         $payload = [
             'id'                        => $socioId,
             'numero_socio'              => $numeroSocio,
+            'tipo_documento'           => !empty($datos['tipo_documento']) ? $datos['tipo_documento'] : 'dni',
             'nombre_apellido'           => trim($datos['nombre_apellido']),
             'dni'                       => $dni,
             'fecha_nacimiento'          => $datos['fecha_nacimiento'],
@@ -164,27 +165,55 @@ class SocioService
             $valAnterior['modalidad_cobranza'] = $socio['modalidad_cobranza'];
         }
 
-        // 2. DNI check (Admin only, requires double confirmation)
-        if (isset($datos['dni']) && trim($datos['dni']) !== $socio['dni']) {
-            $newDni = trim($datos['dni']);
-            if (empty($newDni)) {
-                throw new AppException("El DNI es obligatorio.", 400);
-            }
+        // 2. DNI and Tipo de documento check
+        $dniCambiado = isset($datos['dni']) && trim($datos['dni']) !== $socio['dni'];
+        $tipoDocCambiado = isset($datos['tipo_documento']) && trim($datos['tipo_documento']) !== ($socio['tipo_documento'] ?? 'dni');
 
+        if ($tipoDocCambiado) {
+            $tipoDoc = trim($datos['tipo_documento']);
+            $tiposValidos = ['dni', 'libreta_civica', 'libreta_enrolamiento', 'pasaporte'];
+            if (!in_array($tipoDoc, $tiposValidos, true)) {
+                throw new AppException("Tipo de documento inválido.", 400);
+            }
+            $payload['tipo_documento'] = $tipoDoc;
+            $valAnterior['tipo_documento'] = $socio['tipo_documento'] ?? 'dni';
+        }
+
+        if ($dniCambiado || $tipoDocCambiado) {
             // Role verification
             $rol = $this->repository->getUserRole($usuarioId);
             if ($rol !== 'administrador') {
-                throw new AppException("Solo los administradores pueden modificar el DNI de un socio.", 403);
+                throw new AppException("Solo los administradores pueden modificar el documento o tipo de documento de un socio.", 403);
             }
 
-            // Double confirmation check
-            if (!isset($datos['confirmar_cambio_dni']) || $datos['confirmar_cambio_dni'] !== true) {
+            // Double confirmation check (if DNI changes or both change)
+            if ($dniCambiado && (!isset($datos['confirmar_cambio_dni']) || $datos['confirmar_cambio_dni'] !== true)) {
                 throw new AppException("Se requiere doble confirmación para modificar el DNI.", 400);
+            }
+        }
+
+        if ($dniCambiado) {
+            $newDni = trim($datos['dni']);
+            if (empty($newDni)) {
+                throw new AppException("El número de documento es obligatorio.", 400);
             }
 
             // Uniqueness check
             if ($this->repository->findByDni($newDni) !== null) {
-                throw new AppException("El DNI ingresado ya pertenece a otro socio.", 409);
+                throw new AppException("El documento ingresado ya pertenece a otro socio.", 409);
+            }
+
+            // Validate format based on active/new tipo_documento
+            $activeTipoDoc = $payload['tipo_documento'] ?? ($socio['tipo_documento'] ?? 'dni');
+            $dniLimpio = preg_replace('/[^0-9a-zA-Z]/', '', $newDni);
+            if ($activeTipoDoc === 'pasaporte') {
+                if (!preg_match('/^[a-zA-Z0-9]+$/', $dniLimpio)) {
+                    throw new AppException("El pasaporte solo puede contener caracteres alfanuméricos.", 400);
+                }
+            } else {
+                if (!ctype_digit($dniLimpio)) {
+                    throw new AppException("El número de documento debe ser exclusivamente numérico.", 400);
+                }
             }
 
             $payload['dni'] = $newDni;
@@ -559,6 +588,7 @@ class SocioService
                 $payload = [
                     'id'                        => $socioId,
                     'numero_socio'              => $numeroSocio,
+                    'tipo_documento'           => !empty($rowData['tipo_documento']) ? $rowData['tipo_documento'] : 'dni',
                     'nombre_apellido'           => $rowData['nombre_apellido'],
                     'dni'                       => $rowData['dni'],
                     'fecha_nacimiento'          => $rowData['fecha_nacimiento'],
@@ -682,8 +712,25 @@ class SocioService
             throw new AppException("El nombre y apellido son obligatorios.", 400);
         }
 
+        $tipoDoc = !empty($datos['tipo_documento']) ? $datos['tipo_documento'] : 'dni';
+        $tiposValidos = ['dni', 'libreta_civica', 'libreta_enrolamiento', 'pasaporte'];
+        if (!in_array($tipoDoc, $tiposValidos, true)) {
+            throw new AppException("Tipo de documento inválido.", 400);
+        }
+
         if (empty($datos['dni'])) {
-            throw new AppException("El DNI es obligatorio.", 400);
+            throw new AppException("El número de documento es obligatorio.", 400);
+        }
+
+        $dniLimpio = preg_replace('/[^0-9a-zA-Z]/', '', $datos['dni']);
+        if ($tipoDoc === 'pasaporte') {
+            if (!preg_match('/^[a-zA-Z0-9]+$/', $dniLimpio)) {
+                throw new AppException("El pasaporte solo puede contener caracteres alfanuméricos.", 400);
+            }
+        } else {
+            if (!ctype_digit($dniLimpio)) {
+                throw new AppException("El número de documento debe ser exclusivamente numérico.", 400);
+            }
         }
 
         if (empty($datos['fecha_nacimiento']) || !$this->validarFecha($datos['fecha_nacimiento'])) {

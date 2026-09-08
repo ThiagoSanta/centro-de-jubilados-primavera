@@ -85,8 +85,12 @@ class PagoRepository
             $params['socio_id'] = $filtros['socio_id'];
         }
         if (!empty($filtros['estado'])) {
-            $where[] = "p.estado = :estado";
-            $params['estado'] = $filtros['estado'];
+            if ($filtros['estado'] !== 'todos') {
+                $where[] = "p.estado = :estado";
+                $params['estado'] = $filtros['estado'];
+            }
+        } else {
+            $where[] = "p.estado != 'anulado'";
         }
         if (!empty($filtros['fecha_desde'])) {
             $where[] = "DATE(p.fecha_hora) >= :fecha_desde";

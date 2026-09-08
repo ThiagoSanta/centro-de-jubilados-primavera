@@ -49,6 +49,11 @@ class NotificacionService
         }
 
         $referencia = json_decode($notificacion['referencia'], true);
+        if (is_array($referencia) && (!isset($referencia['entidad']) || !isset($referencia['id'])) && isset($referencia['pago_id'])) {
+            $referencia['entidad'] = 'pagos';
+            $referencia['id'] = $referencia['pago_id'];
+        }
+
         if (!$referencia || !isset($referencia['entidad']) || !isset($referencia['id'])) {
             throw new AppException("Referencia inválida en la notificación.", 400);
         }

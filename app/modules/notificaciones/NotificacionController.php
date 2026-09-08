@@ -33,8 +33,9 @@ class NotificacionController {
     }
 
     public function revertir(array $params): void {
-        $user = AuthMiddleware::requireAuth();
-        $this->service->revertir($params['id'], $user['id']);
+        AuthMiddleware::requireAuth();
+        $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
+        $this->service->revertir($params['id'], $usuarioId);
         ResponseHelper::success(null, 'Acción revertida correctamente.');
     }
 }

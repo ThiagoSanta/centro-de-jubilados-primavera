@@ -156,7 +156,7 @@ class PagoService
             $this->notificacionService->crear([
                 'tipo' => 'anulacion_pago',
                 'mensaje' => "Pago de {$socioNombre} por $ {$pago['monto_total']} anulado. Motivo: {$motivo}",
-                'referencia' => ['pago_id' => $pagoId],
+                'referencia' => ['entidad' => 'pagos', 'id' => $pagoId],
                 'fecha_expiracion_reversion' => $expiracion
             ]);
 

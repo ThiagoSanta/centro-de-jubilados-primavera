@@ -55,9 +55,9 @@ class HistorialService
         }
 
         // Auditoría
-        $stmtAud = $this->db->prepare("SELECT id, accion, valor_anterior, valor_nuevo, fecha_hora as fecha FROM auditoria WHERE entidad_afectada = 'socios' AND (valor_anterior LIKE :like_id OR valor_nuevo LIKE :like_id)");
+        $stmtAud = $this->db->prepare("SELECT id, accion, valor_anterior, valor_nuevo, fecha_hora as fecha FROM auditoria WHERE entidad_afectada = 'socios' AND (valor_anterior LIKE :like_id1 OR valor_nuevo LIKE :like_id2)");
         $likeId = "%" . $socioId . "%";
-        $stmtAud->execute([':like_id' => $likeId]);
+        $stmtAud->execute([':like_id1' => $likeId, ':like_id2' => $likeId]);
         while ($row = $stmtAud->fetch(PDO::FETCH_ASSOC)) {
             // Verify if socio_id is indeed in the JSON to avoid false positives (though LIKE is usually enough with UUIDs)
             $historial[] = [

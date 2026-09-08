@@ -110,7 +110,7 @@ http://localhost/centro-de-jubilados-primavera/public/views/auth/login.html
 | Contraseña | `Admin1234!` |
 | Rol | Administrador |
 
-> ⚠️ **Cambie la contraseña del administrador inmediatamente** después del primer ingreso al sistema desde el módulo **Usuarios**.
+> **Importante:** Cambie la contraseña del administrador inmediatamente después del primer ingreso al sistema desde el módulo **Usuarios**.
 
 ---
 

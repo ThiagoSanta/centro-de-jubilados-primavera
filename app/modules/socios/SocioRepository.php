@@ -14,6 +14,7 @@ class SocioRepository
     private const ALLOWED_COLUMNS = [
         'id',
         'numero_socio',
+        'tipo_documento',
         'nombre_apellido',
         'dni',
         'fecha_nacimiento',
@@ -95,10 +96,14 @@ class SocioRepository
 
         // 5. Filter: busqueda (nombre, dni, numero_socio)
         if (!empty($filtros['busqueda'])) {
-            $conditions[] = "(s.nombre_apellido LIKE :busqueda1 OR s.dni LIKE :busqueda2 OR CAST(s.numero_socio AS CHAR) LIKE :busqueda3)";
-            $params['busqueda1'] = '%' . $filtros['busqueda'] . '%';
-            $params['busqueda2'] = '%' . $filtros['busqueda'] . '%';
-            $params['busqueda3'] = '%' . $filtros['busqueda'] . '%';
+            $busqueda = trim($filtros['busqueda']);
+            $busquedaClean = preg_replace('/[^0-9a-zA-Z]/', '', $busqueda);
+
+            $conditions[] = "(s.nombre_apellido LIKE :busqueda1 OR REPLACE(REPLACE(REPLACE(s.dni, '.', ''), ' ', ''), '-', '') LIKE :busqueda2 OR s.dni LIKE :busqueda3 OR CAST(s.numero_socio AS CHAR) LIKE :busqueda4)";
+            $params['busqueda1'] = '%' . $busqueda . '%';
+            $params['busqueda2'] = '%' . (!empty($busquedaClean) ? $busquedaClean : $busqueda) . '%';
+            $params['busqueda3'] = '%' . $busqueda . '%';
+            $params['busqueda4'] = '%' . $busqueda . '%';
         }
 
         $whereClause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
@@ -111,8 +116,10 @@ class SocioRepository
 
         // Fetch data
         $sql = "SELECT s.*, 
+                       z.nombre AS zona_nombre,
                        (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 2) AS con_deuda
                 FROM socios s 
+                LEFT JOIN zonas z ON s.zona_id = z.id
                 {$whereClause} 
                 ORDER BY s.numero_socio ASC 
                 LIMIT :limit OFFSET :offset";
@@ -155,8 +162,10 @@ class SocioRepository
     public function findById(string $id): ?array
     {
         $sql = "SELECT s.*, 
+                       z.nombre AS zona_nombre,
                        (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 2) AS con_deuda
                 FROM socios s 
+                LEFT JOIN zonas z ON s.zona_id = z.id
                 WHERE s.id = :id 
                 LIMIT 1";
 
@@ -184,14 +193,17 @@ class SocioRepository
      */
     public function findByDni(string $dni): ?array
     {
+        $dniClean = preg_replace('/[^0-9a-zA-Z]/', '', $dni);
         $sql = "SELECT s.*, 
+                       z.nombre AS zona_nombre,
                        (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 2) AS con_deuda
                 FROM socios s 
-                WHERE s.dni = :dni 
+                LEFT JOIN zonas z ON s.zona_id = z.id
+                WHERE s.dni = :dni OR REPLACE(REPLACE(REPLACE(s.dni, '.', ''), ' ', ''), '-', '') = :dniClean
                 LIMIT 1";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['dni' => $dni]);
+        $stmt->execute(['dni' => $dni, 'dniClean' => !empty($dniClean) ? $dniClean : $dni]);
         $row = $stmt->fetch();
 
         if ($row) {

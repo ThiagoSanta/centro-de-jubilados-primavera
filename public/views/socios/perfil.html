@@ -189,6 +189,15 @@
                     <input type="text" id="editNombre" class="form-control" required>
                 </div>
                 <div class="form-group">
+                    <label for="editTipoDoc">Tipo de documento</label>
+                    <select id="editTipoDoc" class="form-control">
+                        <option value="dni">DNI</option>
+                        <option value="libreta_civica">Libreta Cívica</option>
+                        <option value="libreta_enrolamiento">Libreta de Enrolamiento</option>
+                        <option value="pasaporte">Pasaporte</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="editTelefono">Teléfono</label>
                     <input type="tel" id="editTelefono" class="form-control" required>
                 </div>
@@ -382,8 +391,16 @@
             document.getElementById('btnSuspender').style.display = socio.estado === 'activo' ? 'inline-flex' : 'none';
             document.getElementById('btnReactivar').style.display = socio.estado === 'suspendido' ? 'inline-flex' : 'none';
 
+            var tipoDocMap = {
+                dni: 'DNI',
+                libreta_civica: 'Libreta Cívica',
+                libreta_enrolamiento: 'Libreta Enrolamiento',
+                pasaporte: 'Pasaporte'
+            };
+            var docLabel = tipoDocMap[socio.tipo_documento] || 'DNI';
+
             document.getElementById('datosPersonales').innerHTML =
-                '<dt>DNI</dt><dd>' + escapeHtml(socio.dni) + '</dd>' +
+                '<dt>' + docLabel + '</dt><dd>' + escapeHtml(socio.dni) + '</dd>' +
                 '<dt>Fecha nacimiento</dt><dd>' + formatDate(socio.fecha_nacimiento) + '</dd>' +
                 '<dt>Teléfono</dt><dd>' + escapeHtml(socio.telefono) + '</dd>' +
                 '<dt>Mutual</dt><dd>' + escapeHtml(socio.mutual || '—') + '</dd>' +
@@ -611,6 +628,7 @@
         /* --- Editar --- */
         document.getElementById('btnEditar').addEventListener('click', function () {
             document.getElementById('editNombre').value = socio.nombre_apellido;
+            document.getElementById('editTipoDoc').value = socio.tipo_documento || 'dni';
             document.getElementById('editTelefono').value = socio.telefono;
             document.getElementById('editMutual').value = socio.mutual || '';
             document.getElementById('editDireccion').value = socio.direccion;
@@ -629,6 +647,7 @@
             var modalidad = document.querySelector('input[name="editModalidad"]:checked');
             var payload = {
                 nombre_apellido: document.getElementById('editNombre').value.trim(),
+                tipo_documento: document.getElementById('editTipoDoc').value,
                 telefono: document.getElementById('editTelefono').value.trim(),
                 mutual: document.getElementById('editMutual').value.trim() || null,
                 direccion: document.getElementById('editDireccion').value.trim(),

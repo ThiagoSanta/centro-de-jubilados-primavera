@@ -118,3 +118,34 @@ Stack trace:
 #5 C:\xampp\htdocs\centro-de-jubilados-primavera\public\index.php(155): CJP\Shared\Router->dispatch()
 #6 {main}
 ----------------------------------------
+[2026-09-04 21:44:47] [CorrelationID: 8c60b0d3-ef97-433b-8701-ddcf97c09124] [POST /centro-de-jubilados-primavera/public/api/observaciones]
+Payload: {"socio_id":"68657d38-3319-42e4-a0bf-ec3a367b3da1","contenido":"TEST_ Observacion de prueba automatizada."}
+Excepcion: TypeError: CJP\Modules\Observaciones\ObservacionService::agregar(): Argument #3 ($usuarioId) must be of type string, null given, called in C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\observaciones\ObservacionController.php on line 28 en C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\observaciones\ObservacionService.php:18
+Stack trace:
+#0 C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\observaciones\ObservacionController.php(28): CJP\Modules\Observaciones\ObservacionService->agregar('68657d38-3319-4...', 'TEST_ Observaci...', NULL)
+#1 [internal function]: CJP\Modules\Observaciones\ObservacionController->agregar(Array)
+#2 C:\xampp\htdocs\centro-de-jubilados-primavera\app\shared\Router.php(137): call_user_func(Array, Array)
+#3 C:\xampp\htdocs\centro-de-jubilados-primavera\public\index.php(155): CJP\Shared\Router->dispatch()
+#4 {main}
+----------------------------------------
+[2026-09-04 21:44:48] [CorrelationID: eabde27d-6111-484b-b3e2-f91ee0d80065] [GET /centro-de-jubilados-primavera/public/api/historial/socio/68657d38-3319-42e4-a0bf-ec3a367b3da1]
+Payload: []
+Excepcion: PDOException: SQLSTATE[HY093]: Invalid parameter number en C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\historial\HistorialService.php:60
+Stack trace:
+#0 C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\historial\HistorialService.php(60): PDOStatement->execute(Array)
+#1 C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\historial\HistorialController.php(16): CJP\Modules\Historial\HistorialService->getBySocio('68657d38-3319-4...')
+#2 [internal function]: CJP\Modules\Historial\HistorialController->getBySocio(Array)
+#3 C:\xampp\htdocs\centro-de-jubilados-primavera\app\shared\Router.php(137): call_user_func(Array, Array)
+#4 C:\xampp\htdocs\centro-de-jubilados-primavera\public\index.php(155): CJP\Shared\Router->dispatch()
+#5 {main}
+----------------------------------------
+[2026-09-04 21:44:49] [CorrelationID: b9566d9b-cd4b-4a2e-89d1-f9562ccb4532] [POST /centro-de-jubilados-primavera/public/api/notificaciones/e06f9c7c-d41d-4c31-a3f9-db65734966c6/revertir]
+Payload: []
+Excepcion: TypeError: CJP\Modules\Notificaciones\NotificacionService::revertir(): Argument #2 ($usuarioId) must be of type string, null given, called in C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\notificaciones\NotificacionController.php on line 37 en C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\notificaciones\NotificacionService.php:38
+Stack trace:
+#0 C:\xampp\htdocs\centro-de-jubilados-primavera\app\modules\notificaciones\NotificacionController.php(37): CJP\Modules\Notificaciones\NotificacionService->revertir('e06f9c7c-d41d-4...', NULL)
+#1 [internal function]: CJP\Modules\Notificaciones\NotificacionController->revertir(Array)
+#2 C:\xampp\htdocs\centro-de-jubilados-primavera\app\shared\Router.php(137): call_user_func(Array, Array)
+#3 C:\xampp\htdocs\centro-de-jubilados-primavera\public\index.php(155): CJP\Shared\Router->dispatch()
+#4 {main}
+----------------------------------------
