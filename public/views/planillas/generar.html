@@ -263,6 +263,16 @@
             }).addTo(map).bindPopup('Sede Centro Jubilados Primavera');
         }
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         async function loadPreview() {
             const zonaId = document.getElementById('zonaSelect').value;
             const container = document.getElementById('previewContainer');
@@ -288,11 +298,13 @@
                     data.data.data.forEach(s => {
                         const tr = document.createElement('tr');
                         const geoOk = s.latitud && s.longitud && !s.geolocalizacion_pendiente;
+                        const sNombre = escapeHtml(s.nombre_apellido);
+                        const sDir = escapeHtml(s.direccion);
 
                         tr.innerHTML = `
-                            <td>${s.numero_socio}</td>
-                            <td>${s.nombre_apellido}</td>
-                            <td>${s.direccion}</td>
+                            <td>${escapeHtml(s.numero_socio)}</td>
+                            <td>${sNombre}</td>
+                            <td>${sDir}</td>
                             <td>
                                 ${geoOk
                                 ? '<span class="badge badge--resuelto">OK</span>'
@@ -308,7 +320,7 @@
                                     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
                                     iconSize: [25, 41], iconAnchor: [12, 41]
                                 })
-                            }).addTo(map).bindPopup(`${s.nombre_apellido}<br>${s.direccion}`);
+                            }).addTo(map).bindPopup(`${sNombre}<br>${sDir}`);
                             markers.push(marker);
                             bounds.extend([s.latitud, s.longitud]);
                         }

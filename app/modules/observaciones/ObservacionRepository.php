@@ -4,6 +4,7 @@ namespace CJP\Modules\Observaciones;
 
 use CJP\Config\Database;
 use PDO;
+use Ramsey\Uuid\Uuid;
 
 class ObservacionRepository
 {
@@ -23,17 +24,18 @@ class ObservacionRepository
 
     public function create(array $datos): string
     {
+        $id = Uuid::uuid4()->toString();
         $query = "INSERT INTO observaciones (id, socio_id, fecha, usuario_id, contenido) 
-                  VALUES (UUID(), :socio_id, NOW(), :usuario_id, :contenido)";
+                  VALUES (:id, :socio_id, NOW(), :usuario_id, :contenido)";
         $stmt = $this->db->prepare($query);
         $stmt->execute([
-            ':socio_id' => $datos['socio_id'],
+            ':id'         => $id,
+            ':socio_id'   => $datos['socio_id'],
             ':usuario_id' => $datos['usuario_id'],
-            ':contenido' => $datos['contenido']
+            ':contenido'  => $datos['contenido']
         ]);
 
-        $stmtId = $this->db->query("SELECT id FROM observaciones WHERE socio_id = '{$datos['socio_id']}' ORDER BY fecha DESC LIMIT 1");
-        return $stmtId->fetchColumn();
+        return $id;
     }
 
     public function registerAuditEvent(string $usuarioId, string $accion, string $entidad, ?string $valorAnterior, ?string $valorNuevo, string $motivo): void

@@ -370,6 +370,16 @@
             loadSocios();
         }
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         async function loadSocios() {
             markersGroup.clearLayers();
             
@@ -405,12 +415,18 @@
                                 })
                             });
                             
+                            const sNombre = escapeHtml(s.nombre_apellido);
+                            const sNum = escapeHtml(s.numero_socio);
+                            const sDir = escapeHtml(s.direccion);
+                            const sZona = escapeHtml(s.zona_nombre || 'N/A');
+                            const sId = encodeURIComponent(s.id);
+
                             marker.bindPopup(`
-                                <strong>${s.nombre_apellido}</strong><br>
-                                N°: ${s.numero_socio}<br>
-                                Dir: ${s.direccion}<br>
-                                Zona: ${s.zona_nombre || 'N/A'}<br>
-                                <a href="${BASE_URL}/views/socios/perfil.html?id=${s.id}" target="_blank" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Ver perfil</a>
+                                <strong>${sNombre}</strong><br>
+                                N°: ${sNum}<br>
+                                Dir: ${sDir}<br>
+                                Zona: ${sZona}<br>
+                                <a href="${BASE_URL}/views/socios/perfil.html?id=${sId}" target="_blank" style="color: var(--color-accent); font-weight: 600; text-decoration: underline;">Ver perfil</a>
                             `);
                             
                             markersGroup.addLayer(marker);

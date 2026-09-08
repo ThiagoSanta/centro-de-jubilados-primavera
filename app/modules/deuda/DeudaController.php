@@ -88,7 +88,7 @@ class DeudaController
 
     public function registrarCuota(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
 
         $data = json_decode(file_get_contents('php://input'), true);
         $usuarioId = $_SESSION['usuario_id'] ?? null;

@@ -175,6 +175,16 @@
             loadPlanillas();
         }
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         async function loadPlanillas() {
             const zona = document.getElementById('zonaFilter').value;
             const cobrador = document.getElementById('cobradorFilter').value;
@@ -195,14 +205,18 @@
                 data.data.data.forEach(p => {
                     const tr = document.createElement('tr');
                     const fecha = new Date(p.fecha_generacion).toLocaleString();
+                    const zonaNombre = escapeHtml(p.zona_nombre || 'N/A');
+                    const cobradorNombre = escapeHtml(p.cobrador_nombre || '');
+                    const cobradorApellido = escapeHtml(p.cobrador_apellido || '');
+                    const planillaId = encodeURIComponent(p.id);
                     
                     tr.innerHTML = `
                         <td>${fecha}</td>
-                        <td>${p.zona_nombre}</td>
-                        <td>${p.cobrador_apellido}, ${p.cobrador_nombre}</td>
-                        <td>${p.cantidad_socios}</td>
+                        <td>${zonaNombre}</td>
+                        <td>${cobradorApellido}, ${cobradorNombre}</td>
+                        <td>${escapeHtml(p.cantidad_socios)}</td>
                         <td>
-                            <a href="${API_BASE}/planillas/${p.id}/pdf" target="_blank" class="btn btn--primary btn--sm">Ver PDF</a>
+                            <a href="${API_BASE}/planillas/${planillaId}/pdf" target="_blank" class="btn btn--primary btn--sm">Ver PDF</a>
                         </td>
                     `;
                     tbody.appendChild(tr);

@@ -96,7 +96,7 @@ class SocioController
      */
     public function update(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $session = $this->authService->checkSession();
         $usuarioId = $session['usuario_id'];
 
@@ -119,7 +119,7 @@ class SocioController
      */
     public function suspend(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $session = $this->authService->checkSession();
         $usuarioId = $session['usuario_id'];
 
@@ -141,7 +141,7 @@ class SocioController
      */
     public function reactivate(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $session = $this->authService->checkSession();
         $usuarioId = $session['usuario_id'];
 
@@ -163,7 +163,7 @@ class SocioController
      */
     public function delete(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $session = $this->authService->checkSession();
         $usuarioId = $session['usuario_id'];
 
@@ -192,7 +192,7 @@ class SocioController
      */
     public function revertDelete(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $session = $this->authService->checkSession();
         $usuarioId = $session['usuario_id'];
 
@@ -245,7 +245,7 @@ class SocioController
      */
     public function importarCSV(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
         $session = $this->authService->checkSession();
         $usuarioId = $session['usuario_id'];
 

@@ -28,7 +28,7 @@ class PagoController
 
     public function anular(array $params): void
     {
-        AuthMiddleware::requireAuth();
+        AuthMiddleware::requireAuth('administrador');
 
         $id = $params['id'] ?? null;
         $input = json_decode(file_get_contents('php://input'), true);

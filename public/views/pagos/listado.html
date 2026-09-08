@@ -254,6 +254,16 @@
                 });
         });
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         async function cargarPagos(pagina) {
             paginaActual = pagina;
             const tbody = document.getElementById('tablaPagos');
@@ -274,7 +284,7 @@
                     renderizarTabla(data.data.items || []);
                     renderizarPaginacion(data.data.meta || {});
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${data.message}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${escapeHtml(data.message)}</td></tr>`;
                 }
             } catch (err) {
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error de conexión.</td></tr>';
@@ -295,19 +305,23 @@
                 
                 const fecha = new Date(pago.fecha_hora).toLocaleString('es-AR');
                 const badgeClass = pago.estado === 'registrado' ? 'badge--registrado' : 'badge--anulado';
-                const cobrador = pago.cobrador_nombre ? `${pago.cobrador_nombre} ${pago.cobrador_apellido}` : 'Sistema';
+                const cobrador = escapeHtml(pago.cobrador_nombre ? `${pago.cobrador_nombre} ${pago.cobrador_apellido}` : 'Sistema');
+                const socioNombre = escapeHtml(pago.socio_nombre || '—');
+                const numSocio = escapeHtml(pago.numero_socio);
+                const metodoPago = escapeHtml(pago.metodo_pago);
+                const pagoId = encodeURIComponent(pago.id);
                 
-                let acciones = `<a href="${BASE_URL}/api/pagos/${pago.id}/comprobante" target="_blank" class="action-link">PDF</a>`;
+                let acciones = `<a href="${BASE_URL}/api/pagos/${pagoId}/comprobante" target="_blank" class="action-link">PDF</a>`;
                 if (pago.estado === 'registrado') {
-                    acciones += `<a class="action-link text-danger" onclick="abrirModalAnular('${pago.id}')">Anular</a>`;
+                    acciones += `<a class="action-link text-danger" onclick="abrirModalAnular('${escapeHtml(pago.id)}')">Anular</a>`;
                 }
 
                 tr.innerHTML = `
                     <td>${fecha}</td>
-                    <td>${pago.socio_nombre || '—'} (#${pago.numero_socio})</td>
+                    <td>${socioNombre} (#${numSocio})</td>
                     <td>$${parseFloat(pago.monto_total).toFixed(2)}</td>
-                    <td style="text-transform: capitalize;">${pago.metodo_pago}</td>
-                    <td><span class="badge ${badgeClass}">${pago.estado.toUpperCase()}</span></td>
+                    <td style="text-transform: capitalize;">${metodoPago}</td>
+                    <td><span class="badge ${badgeClass}">${escapeHtml(pago.estado.toUpperCase())}</span></td>
                     <td>${cobrador}</td>
                     <td>${acciones}</td>
                 `;

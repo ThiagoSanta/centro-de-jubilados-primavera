@@ -197,24 +197,43 @@
             }
         }
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         function renderTable(list) {
             const tbody = document.getElementById('tablaAuditoria');
             tbody.innerHTML = '';
             
             list.forEach(item => {
                 const tr = document.createElement('tr');
+                const uNombre = escapeHtml(item.usuario_nombre || '');
+                const uApellido = escapeHtml(item.usuario_apellido || '');
+                const uId = escapeHtml(item.usuario_id || '');
+                const accion = escapeHtml(item.accion || '');
+                const entidad = escapeHtml(item.entidad_afectada || '');
+                const valAnt = escapeHtml(item.valor_anterior || 'N/A');
+                const valNue = escapeHtml(item.valor_nuevo || 'N/A');
+                const motivo = escapeHtml(item.motivo || '');
+
                 tr.innerHTML = `
                     <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">${new Date(item.fecha_hora).toLocaleString()}</td>
-                    <td class="px-3 py-2 whitespace-nowrap">${item.usuario_nombre || ''} ${item.usuario_apellido || ''} <span class="text-xs text-gray-400 block">${item.usuario_id}</span></td>
+                    <td class="px-3 py-2 whitespace-nowrap">${uNombre} ${uApellido} <span class="text-xs text-gray-400 block">${uId}</span></td>
                     <td class="px-3 py-2 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${item.accion}</span>
-                        <div class="text-xs text-gray-500 mt-1">${item.entidad_afectada}</div>
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${accion}</span>
+                        <div class="text-xs text-gray-500 mt-1">${entidad}</div>
                     </td>
-                    <td class="px-3 py-2 text-xs text-gray-500 max-w-xs truncate" title="${item.valor_anterior} -> ${item.valor_nuevo}">
-                        <div class="text-red-500 truncate">- ${item.valor_anterior || 'N/A'}</div>
-                        <div class="text-green-500 truncate">+ ${item.valor_nuevo || 'N/A'}</div>
+                    <td class="px-3 py-2 text-xs text-gray-500 max-w-xs truncate" title="${valAnt} -&gt; ${valNue}">
+                        <div class="text-red-500 truncate">- ${valAnt}</div>
+                        <div class="text-green-500 truncate">+ ${valNue}</div>
                     </td>
-                    <td class="px-3 py-2 text-xs text-gray-500">${item.motivo || ''}</td>
+                    <td class="px-3 py-2 text-xs text-gray-500">${motivo}</td>
                 `;
                 tbody.appendChild(tr);
             });
