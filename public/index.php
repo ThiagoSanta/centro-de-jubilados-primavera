@@ -32,6 +32,7 @@ use CJP\Modules\Historial\HistorialController;
 use CJP\Modules\Observaciones\ObservacionController;
 use CJP\Modules\Dashboard\DashboardController;
 use CJP\Modules\Usuarios\UsuarioController;
+use CJP\Modules\Backup\BackupController;
 
 // Load composer autoloader and explicitly require config/db classes
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -144,6 +145,10 @@ $router->post('/api/observaciones', [ObservacionController::class, 'agregar']);
 
 // Dashboard routes
 $router->get('/api/dashboard/metricas', [DashboardController::class, 'metricas']);
+
+// Backup routes
+$router->post('/api/backup/generar', [BackupController::class, 'generar']);
+$router->get('/api/backup/ultimo',   [BackupController::class, 'ultimo']);
 
 // Usuarios routes (order is critical: static before parameterized)
 $router->get('/api/usuarios', [UsuarioController::class, 'getAll']);

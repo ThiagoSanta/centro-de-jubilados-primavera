@@ -137,6 +137,26 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Backup de base de datos -->
+            <div class="card" style="margin-top: 2rem;" id="backupSection">
+                <div class="card__body" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+                    <div>
+                        <h2 style="font-size:1rem; font-weight:700; margin:0 0 0.25rem;">Backup de base de datos</h2>
+                        <p style="font-size:0.875rem; color:var(--color-text-muted); margin:0;" id="backupStatus">
+                            Verificando último backup...
+                        </p>
+                    </div>
+                    <button id="btnBackup" class="btn btn--primary" onclick="realizarBackup()" style="display:flex;align-items:center;gap:0.5rem;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Descargar backup ahora
+                    </button>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -161,6 +181,7 @@
                     }
                     cargarCuotaVigente();
                     cargarHistorico();
+                    cargarUltimoBackup();
 
                     document.getElementById('formCuota').addEventListener('submit', async (e) => {
                         e.preventDefault();
@@ -254,6 +275,55 @@
             container.appendChild(alert);
             
             setTimeout(() => { alert.remove(); }, 5000);
+        }
+
+        async function cargarUltimoBackup() {
+            try {
+                const res = await fetch(`${API_BASE}/backup/ultimo`);
+                const data = await res.json();
+                const el = document.getElementById('backupStatus');
+                if (data.success && data.data) {
+                    const d = data.data;
+                    const fecha = new Date(d.fecha_hora).toLocaleString('es-AR');
+                    el.textContent = `Último backup: ${fecha} — hace ${d.dias_transcurridos} día(s)${d.usuario_nombre ? ' por ' + d.usuario_nombre : ''}.`;
+                } else {
+                    el.textContent = 'No hay backups registrados aún.';
+                    el.style.color = 'var(--color-danger, #dc2626)';
+                }
+            } catch (e) {
+                document.getElementById('backupStatus').textContent = 'No se pudo verificar el último backup.';
+            }
+        }
+
+        async function realizarBackup() {
+            const btn = document.getElementById('btnBackup');
+            btn.disabled = true;
+            btn.textContent = 'Generando...';
+            try {
+                const res = await fetch(`${API_BASE}/backup/generar`, { method: 'POST' });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    mostrarAlerta(err.message || 'Error al generar el backup.', 'error');
+                    return;
+                }
+                const blob = await res.blob();
+                const cd = res.headers.get('Content-Disposition') || '';
+                const match = cd.match(/filename="?([^"]+)"?/);
+                const filename = match ? match[1] : 'backup.sql';
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+                mostrarAlerta('Backup generado y descargado con éxito.', 'success');
+                cargarUltimoBackup();
+            } catch (e) {
+                mostrarAlerta('Error de red al generar el backup.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar backup ahora';
+            }
         }
     </script>
 </body>

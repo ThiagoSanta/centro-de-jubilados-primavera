@@ -514,15 +514,25 @@ class SocioService
             $indices[$name] = $idx;
         }
 
+        $maxRows = 2000;
+        $totalProcesadas = 0;
+
         while (($row = fgetcsv($file, 0, str_contains($line, ';') ? ';' : ',')) !== false) {
             if (empty($row) || (count($row) === 1 && $row[0] === null)) {
                 continue;
             }
 
+            $totalProcesadas++;
+            if ($totalProcesadas > $maxRows) {
+                fclose($file);
+                throw new AppException("El archivo supera el límite máximo permitido de {$maxRows} filas por importación.", 400);
+            }
+
             // Map columns
             $rowData = [];
             foreach ($indices as $name => $idx) {
-                $rowData[$name] = isset($row[$idx]) ? trim($row[$idx]) : '';
+                $val = isset($row[$idx]) ? trim($row[$idx]) : '';
+                $rowData[$name] = $this->sanitizeFormulaInjection($val);
             }
 
             $errors = [];
@@ -808,5 +818,31 @@ class SocioService
             'lat' => (float)$data[0]['lat'],
             'lng' => (float)$data[0]['lon']
         ];
+    }
+
+    /**
+     * Sanitiza campos de texto contra CSV / Formula Injection (Excel / Sheets).
+     *
+     * @param string $val
+     * @return string
+     */
+    private function sanitizeFormulaInjection(string $val): string
+    {
+        if ($val === '') {
+            return $val;
+        }
+
+        $first = $val[0];
+        // Fórmulas estándar que inician con =, @, tabulación o retorno de carro
+        if ($first === '=' || $first === '@' || $first === "\t" || $first === "\r") {
+            return "'" . $val;
+        }
+
+        // + o - no seguidos de un número (para no alterar teléfonos como +54...)
+        if (($first === '+' || $first === '-') && isset($val[1]) && !ctype_digit($val[1])) {
+            return "'" . $val;
+        }
+
+        return $val;
     }
 }

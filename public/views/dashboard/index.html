@@ -281,6 +281,16 @@
 
         <div id="alertContainer"></div>
 
+        <!-- Aviso de backup desactualizado (solo administradores) -->
+        <div id="backupWarning" style="display:none; margin-bottom:1rem; padding:0.875rem 1.25rem;
+             background:rgba(217,119,6,.1); border:1px solid rgba(217,119,6,.35);
+             border-radius:var(--radius); color:#92400e; font-size:0.875rem;
+             display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+            <span id="backupWarningMsg">⚠️ Cargando estado de backup...</span>
+            <a href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html"
+               class="btn btn--secondary btn--sm">Ir a Configuración</a>
+        </div>
+
         <!-- KPI Cards -->
         <div class="kpi-grid" id="kpiGrid">
             <div class="kpi-card">
@@ -459,6 +469,37 @@
             });
     }
 
+    function verificarBackup() {
+        fetch(API_BASE + '/backup/ultimo', { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (res) {
+                var warn = document.getElementById('backupWarning');
+                var msg  = document.getElementById('backupWarningMsg');
+                if (!warn || !msg) return;
+
+                var diasUmbral = 7;
+                var dias;
+
+                if (!res.success || !res.data) {
+                    // Nunca se hizo backup
+                    dias = Infinity;
+                    msg.textContent = '⚠️ No hay registros de backup. Se recomienda hacer uno desde Configuración.';
+                } else {
+                    dias = res.data.dias_transcurridos;
+                    if (dias >= diasUmbral) {
+                        msg.textContent = '⚠️ Hace ' + dias + ' día(s) que no se realiza un backup. Se recomienda hacer uno.';
+                    }
+                }
+
+                if (dias >= diasUmbral) {
+                    warn.style.display = 'flex';
+                } else {
+                    warn.style.display = 'none';
+                }
+            })
+            .catch(function () { /* silencioso si falla — no bloquea el dashboard */ });
+    }
+
     function escHtml(str) {
         if (!str) return '';
         return String(str)
@@ -489,6 +530,7 @@
                 }
                 cargarMetricas();
                 cargarActividad();
+                verificarBackup();
             })
             .catch(function () {
                 window.location.replace(BASE_URL + '/views/auth/login.html');

@@ -256,7 +256,55 @@ class SocioController
             return;
         }
 
+        $originalName = $_FILES[$fileField]['name'] ?? '';
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        if ($ext !== 'csv') {
+            ResponseHelper::error('El archivo debe tener extensión .csv.', 400);
+            return;
+        }
+
+        // Límite de tamaño: 5 MB
+        $maxBytes = 5 * 1024 * 1024;
+        if ($_FILES[$fileField]['size'] > $maxBytes) {
+            ResponseHelper::error('El archivo excede el tamaño máximo permitido de 5 MB.', 400);
+            return;
+        }
+
         $tmpPath = $_FILES[$fileField]['tmp_name'];
+        if (!is_uploaded_file($tmpPath)) {
+            ResponseHelper::error('El archivo cargado no es válido.', 400);
+            return;
+        }
+
+        // Validar MIME type real del contenido
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $tmpPath);
+        finfo_close($finfo);
+
+        $allowedMimes = [
+            'text/plain',
+            'text/csv',
+            'text/x-csv',
+            'application/csv',
+            'application/x-csv',
+            'application/vnd.ms-excel',
+            'application/vnd.msexcel',
+            'text/comma-separated-values'
+        ];
+
+        $isTextMime = str_starts_with($mime, 'text/') || in_array($mime, $allowedMimes, true);
+        // Compatibilidad con Windows/Excel para application/octet-stream si el contenido es texto plano (sin bytes nulos)
+        if (!$isTextMime && $mime === 'application/octet-stream') {
+            $sample = file_get_contents($tmpPath, false, null, 0, 1024);
+            if ($sample !== false && !str_contains($sample, "\0")) {
+                $isTextMime = true;
+            }
+        }
+
+        if (!$isTextMime) {
+            ResponseHelper::error('El formato del archivo no corresponde a un archivo de texto CSV.', 400);
+            return;
+        }
 
         $result = $this->socioService->importarCSV($tmpPath, $usuarioId);
         ResponseHelper::success($result, 'Importación CSV procesada con éxito.');
