@@ -43,6 +43,11 @@ class PlanillaController
         ];
         $pagina = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
+        // Si el usuario es cobrador, se restringe automáticamente a sus propias planillas
+        if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'cobrador') {
+            $filtros['cobrador_id'] = $_SESSION['usuario_id'];
+        }
+
         $resultado = $this->planillaService->getHistorico($filtros, $pagina);
         ResponseHelper::success($resultado, 'Planillas obtenidas con éxito.');
     }
@@ -52,6 +57,14 @@ class PlanillaController
         AuthMiddleware::requireAuth();
 
         $planilla = $this->planillaService->getPlanilla($params['id']);
+
+        if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'cobrador') {
+            if ($planilla['cobrador_id'] !== $_SESSION['usuario_id']) {
+                ResponseHelper::error('No tienes permiso para acceder a esta planilla.', 403);
+                return;
+            }
+        }
+
         ResponseHelper::success($planilla, 'Planilla obtenida con éxito.');
     }
 
@@ -60,6 +73,14 @@ class PlanillaController
         AuthMiddleware::requireAuth();
 
         $planilla = $this->planillaService->getPlanilla($params['id']);
+
+        if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'cobrador') {
+            if ($planilla['cobrador_id'] !== $_SESSION['usuario_id']) {
+                ResponseHelper::error('No tienes permiso para acceder a esta planilla.', 403);
+                return;
+            }
+        }
+
         if (empty($planilla['pdf_generado'])) {
             throw new AppException("Esta planilla no tiene PDF generado.", 400);
         }
