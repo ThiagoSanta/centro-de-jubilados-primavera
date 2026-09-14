@@ -109,6 +109,27 @@ class AuthRepository
     }
 
     /**
+     * Check if an IP address is blocked (15 or more failed login attempts in the last 15 minutes).
+     *
+     * @param string $ip
+     * @param int $limit
+     * @return bool
+     */
+    public function isIpBlocked(string $ip, int $limit = 15): bool
+    {
+        $sql = "SELECT COUNT(*) FROM auditoria 
+                WHERE accion = 'LOGIN_FALLIDO' 
+                  AND entidad_afectada = 'usuarios' 
+                  AND valor_anterior = :ip 
+                  AND fecha_hora >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['ip' => $ip]);
+
+        return (int)$stmt->fetchColumn() >= $limit;
+    }
+
+    /**
      * Register an audit event in the database.
      *
      * @param string $accion

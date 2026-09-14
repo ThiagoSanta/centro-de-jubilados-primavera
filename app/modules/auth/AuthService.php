@@ -28,9 +28,19 @@ class AuthService
      * @return array
      * @throws Exception
      */
-    public function login(string $username, string $password): array
+    public function login(string $username, string $password, ?string $ip = null): array
     {
-        // 1. Check if username is blocked
+        $clientIp = $ip ?? $this->getClientIp();
+
+        // 1. Check if IP is blocked (escaneo distribuido de cuentas)
+        if ($this->repository->isIpBlocked($clientIp)) {
+            throw new AppException(
+                "Demasiados intentos fallidos desde esta dirección de red. Intente más tarde.",
+                403
+            );
+        }
+
+        // 2. Check if username is blocked (fuerza bruta dirigida al usuario)
         if ($this->repository->isBlocked($username)) {
             throw new AppException(
                 "El usuario se encuentra bloqueado temporalmente por exceso de intentos fallidos. Intente más tarde.",
@@ -38,13 +48,13 @@ class AuthService
             );
         }
 
-        // 2. Find user by username
+        // 3. Find user by username
         $user = $this->repository->findByUsername($username);
         if ($user === null) {
             $this->repository->registerAuditEvent(
                 'LOGIN_FALLIDO',
                 'usuarios',
-                null,
+                $clientIp,
                 $username,
                 null,
                 'El usuario no existe'
@@ -55,27 +65,39 @@ class AuthService
                 $this->repository->registerAuditEvent(
                     'BLOQUEO_USUARIO',
                     'usuarios',
-                    null,
+                    $clientIp,
                     $username,
                     null,
                     'Usuario bloqueado por superar el límite de intentos fallidos'
                 );
             }
 
+            // Audit IP block event if limit reached
+            if ($this->repository->isIpBlocked($clientIp)) {
+                $this->repository->registerAuditEvent(
+                    'BLOQUEO_IP',
+                    'usuarios',
+                    $clientIp,
+                    null,
+                    null,
+                    'Dirección IP bloqueada por superar el límite de intentos fallidos'
+                );
+            }
+
             throw new AppException("Credenciales incorrectas.", 401);
         }
 
-        // 3. Verify user is active
+        // 4. Verify user is active
         if ($user['estado'] !== 'activo') {
             throw new AppException("El usuario se encuentra desactivado.", 403);
         }
 
-        // 4. Verify password
+        // 5. Verify password
         if (!password_verify($password, $user['contrasena_hash'])) {
             $this->repository->registerAuditEvent(
                 'LOGIN_FALLIDO',
                 'usuarios',
-                null,
+                $clientIp,
                 $username,
                 $user['id'],
                 'Contraseña incorrecta'
@@ -86,17 +108,29 @@ class AuthService
                 $this->repository->registerAuditEvent(
                     'BLOQUEO_USUARIO',
                     'usuarios',
-                    null,
+                    $clientIp,
                     $username,
                     $user['id'],
                     'Usuario bloqueado por superar el límite de intentos fallidos'
                 );
             }
 
+            // Audit IP block event if limit reached
+            if ($this->repository->isIpBlocked($clientIp)) {
+                $this->repository->registerAuditEvent(
+                    'BLOQUEO_IP',
+                    'usuarios',
+                    $clientIp,
+                    null,
+                    $user['id'],
+                    'Dirección IP bloqueada por superar el límite de intentos fallidos'
+                );
+            }
+
             throw new AppException("Credenciales incorrectas.", 401);
         }
 
-        // 5. Initialize session, regenerate ID
+        // 6. Initialize session, regenerate ID
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -112,16 +146,16 @@ class AuthService
         $this->repository->registerAuditEvent(
             'LOGIN_EXITOSO',
             'usuarios',
-            null,
+            $clientIp,
             null,
             $user['id'],
             'Inicio de sesión exitoso'
         );
 
-        // 6. Update last access date in DB
+        // 7. Update last access date in DB
         $this->repository->updateLastAccess($user['id']);
 
-        // 7. Return user (excluding password hash)
+        // 8. Return user (excluding password hash)
         unset($user['contrasena_hash']);
 
         return $user;
@@ -194,5 +228,23 @@ class AuthService
             'apellido'      => $_SESSION['apellido'],
             'ultimo_acceso' => $_SESSION['ultimo_acceso'],
         ];
+    }
+
+    /**
+     * Get real client IP address.
+     *
+     * @return string
+     */
+    private function getClientIp(): string
+    {
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            $ip = trim($ips[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
     }
 }
