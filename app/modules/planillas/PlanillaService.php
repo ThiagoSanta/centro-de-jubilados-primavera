@@ -84,7 +84,7 @@ class PlanillaService
             array_splice($geolocalizados, $mejorIndice, 1);
         }
 
-        // Ordenar alfabéticamente los sin geolocalizar
+        // Ordenar por apellido y nombre a los socios que carecen de coordenadas para listarlos al final del recorrido
         usort($sinGeolocalizar, function ($a, $b) {
             return strcmp($a['nombre_apellido'], $b['nombre_apellido']);
         });
@@ -177,8 +177,8 @@ class PlanillaService
             $pdf->Cell(45, 10, utf8_decode($dirCorta), 1, 0, 'L');
             
             $pdf->Cell(25, 10, '$ ' . number_format($socio['deuda_total'], 2, ',', '.'), 1, 0, 'R');
-            $pdf->Cell(40, 10, '', 1, 0, 'C'); // Espacio observaciones en blanco (recuadro)
-            $pdf->Cell(25, 10, '', 1, 1, 'C'); // Espacio firma en blanco (recuadro)
+            $pdf->Cell(40, 10, '', 1, 0, 'C'); // Celda en blanco reservada para anotaciones manuales del cobrador en territorio
+            $pdf->Cell(25, 10, '', 1, 1, 'C'); // Celda en blanco reservada para la firma u hológrafo de conformidad del socio
             $orden++;
         }
 

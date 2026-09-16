@@ -72,7 +72,7 @@ class NotificacionService
                 $stmt = $db->prepare("UPDATE pagos SET estado = 'registrado' WHERE id = :id");
                 $stmt->execute([':id' => $entidadId]);
 
-                // Get the payment date
+                // Consultar la fecha exacta en la que se efectuó el pago
                 $stmtPago = $db->prepare("SELECT fecha_hora FROM pagos WHERE id = :id");
                 $stmtPago->execute([':id' => $entidadId]);
                 $pago = $stmtPago->fetch(\PDO::FETCH_ASSOC);

@@ -18,7 +18,7 @@ class HistorialService
     {
         $historial = [];
 
-        // Pagos
+        // Recuperar los comprobantes de pagos realizados por el socio
         $stmtPagos = $this->db->prepare("SELECT id, fecha_hora as fecha, monto_total, metodo_pago, estado FROM pagos WHERE socio_id = :socio_id");
         $stmtPagos->execute([':socio_id' => $socioId]);
         while ($row = $stmtPagos->fetch(PDO::FETCH_ASSOC)) {
@@ -30,7 +30,7 @@ class HistorialService
             ];
         }
 
-        // Deudas
+        // Recuperar las cuotas sociales y cargos devengados del socio
         $stmtDeudas = $this->db->prepare("SELECT id, periodo, monto, estado, fecha_generacion as fecha FROM deudas WHERE socio_id = :socio_id");
         $stmtDeudas->execute([':socio_id' => $socioId]);
         while ($row = $stmtDeudas->fetch(PDO::FETCH_ASSOC)) {
@@ -42,7 +42,7 @@ class HistorialService
             ];
         }
 
-        // Observaciones
+        // Obtener las notas y observaciones registradas por el personal sobre el socio
         $stmtObs = $this->db->prepare("SELECT o.id, o.fecha, o.contenido, u.nombre, u.apellido FROM observaciones o LEFT JOIN usuarios u ON o.usuario_id = u.id WHERE o.socio_id = :socio_id");
         $stmtObs->execute([':socio_id' => $socioId]);
         while ($row = $stmtObs->fetch(PDO::FETCH_ASSOC)) {
@@ -54,12 +54,12 @@ class HistorialService
             ];
         }
 
-        // Auditoría
+        // Rastrear eventos de cambios y modificaciones en la ficha del socio desde la tabla de auditoría
         $stmtAud = $this->db->prepare("SELECT id, accion, valor_anterior, valor_nuevo, fecha_hora as fecha FROM auditoria WHERE entidad_afectada = 'socios' AND (valor_anterior LIKE :like_id1 OR valor_nuevo LIKE :like_id2)");
         $likeId = "%" . $socioId . "%";
         $stmtAud->execute([':like_id1' => $likeId, ':like_id2' => $likeId]);
         while ($row = $stmtAud->fetch(PDO::FETCH_ASSOC)) {
-            // Verify if socio_id is indeed in the JSON to avoid false positives (though LIKE is usually enough with UUIDs)
+            // Validar que el socio_id coincida en el JSON decodificado para descartar falsos positivos de la cláusula LIKE
             $historial[] = [
                 'tipo' => 'auditoria',
                 'fecha' => $row['fecha'],

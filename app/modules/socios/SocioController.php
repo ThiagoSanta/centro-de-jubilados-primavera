@@ -12,7 +12,8 @@ class SocioController
     private AuthService $authService;
 
     /**
-     * SocioController constructor.
+     * Constructor de SocioController.
+     * Inyecta las dependencias de socios y autenticación.
      *
      * @param SocioService|null $socioService
      * @param AuthService|null $authService
@@ -24,9 +25,9 @@ class SocioController
     }
 
     /**
-     * GET /api/socios — List all partners with filters and pagination.
+     * GET /api/socios — Lista socios con soporte de filtros (estado, zona, deuda, búsqueda) y paginación.
      *
-     * @param array $params
+     * @param array $params Parámetros de consulta (query params)
      * @return void
      */
     public function index(array $params): void
@@ -52,9 +53,9 @@ class SocioController
     }
 
     /**
-     * GET /api/socios/{id} — Retrieve partner details.
+     * GET /api/socios/{id} — Obtiene la ficha completa de un socio por su identificador UUID.
      *
-     * @param array $params
+     * @param array $params Parámetros de ruta con 'id'
      * @return void
      */
     public function show(array $params): void
@@ -72,7 +73,7 @@ class SocioController
     }
 
     /**
-     * POST /api/socios — Create a new partner.
+     * POST /api/socios — Da de alta un nuevo socio en el padrón, asigna zona geográfica y genera su código QR.
      *
      * @param array $params
      * @return void
@@ -89,7 +90,7 @@ class SocioController
     }
 
     /**
-     * PUT /api/socios/{id} — Update partner data.
+     * PUT /api/socios/{id} — Actualiza los datos de un socio existente, validando cambios sensibles de DNI y domicilio.
      *
      * @param array $params
      * @return void
@@ -112,7 +113,7 @@ class SocioController
     }
 
     /**
-     * POST /api/socios/{id}/suspender — Suspend a partner.
+     * POST /api/socios/{id}/suspender — Suspende transitoriamente a un socio activo.
      *
      * @param array $params
      * @return void
@@ -134,7 +135,7 @@ class SocioController
     }
 
     /**
-     * POST /api/socios/{id}/reactivar — Reactivate a partner.
+     * POST /api/socios/{id}/reactivar — Restablece el estado activo de un socio suspendido.
      *
      * @param array $params
      * @return void
@@ -156,7 +157,7 @@ class SocioController
     }
 
     /**
-     * DELETE /api/socios/{id} — Soft delete a partner.
+     * DELETE /api/socios/{id} — Aplica baja lógica a un socio registrando el motivo y abriendo ventana de reversión de 7 días.
      *
      * @param array $params
      * @return void
@@ -185,7 +186,7 @@ class SocioController
     }
 
     /**
-     * POST /api/socios/{id}/revertir — Revert a logical delete.
+     * POST /api/socios/{id}/revertir — Revierte la baja lógica de un socio si no han transcurrido más de 7 días.
      *
      * @param array $params
      * @return void
@@ -207,7 +208,7 @@ class SocioController
     }
 
     /**
-     * POST /api/socios/{id}/geolocalizacion — Manually correct partner geolocalisation coordinates.
+     * POST /api/socios/{id}/geolocalizacion — Permite al administrador corregir manualmente las coordenadas y recalcular la zona asignada.
      *
      * @param array $params
      * @return void
@@ -238,7 +239,7 @@ class SocioController
     }
 
     /**
-     * POST /api/socios/importar — Import partners from CSV file.
+     * POST /api/socios/importar — Procesa la carga masiva de socios desde un archivo CSV con georreferenciación y reporte de inconsistencias.
      *
      * @param array $params
      * @return void
@@ -311,8 +312,7 @@ class SocioController
     }
 
     /**
-     * GET /api/socios/inconsistencias — List CSV import inconsistencies.
-     * Accepts optional ?estado=pendiente|resuelto query param.
+     * GET /api/socios/inconsistencias — Consulta la lista de inconsistencias detectadas en importaciones CSV (con filtro opcional por estado).
      *
      * @param array $params
      * @return void
@@ -330,7 +330,7 @@ class SocioController
     }
 
     /**
-     * GET /api/socios/{id}/qr — Retrieve and serve the partner's QR code.
+     * GET /api/socios/{id}/qr — Sirve la imagen PNG del código QR del socio o la regenera bajo demanda si no existe en storage.
      *
      * @param array $params
      * @return void
@@ -349,7 +349,7 @@ class SocioController
         $path = $dir . '/' . $id . '.png';
 
         if (!file_exists($path)) {
-            // Try to generate it if the partner exists
+            // Intentar generar el código QR bajo demanda si el socio existe pero no tenía imagen previa
             $this->socioService->obtener($id);
             $this->socioService->generarQR($id);
         }

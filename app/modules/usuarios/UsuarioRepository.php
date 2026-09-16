@@ -10,6 +10,10 @@ class UsuarioRepository
 {
     private PDO $db;
 
+    /**
+     * Constructor de UsuarioRepository.
+     * Inyecta la conexión PDO a la base de datos.
+     */
     public function __construct()
     {
         $this->db = Database::getInstance();

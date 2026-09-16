@@ -12,9 +12,9 @@ class AuthRepository
     private PDO $db;
 
     /**
-     * AuthRepository constructor.
+     * Inicializa el repositorio inyectando la conexión a la base de datos.
      *
-     * @param PDO|null $db
+     * @param PDO|null $db Instancia de PDO o null para obtenerla mediante singleton
      */
     public function __construct(?PDO $db = null)
     {
@@ -22,10 +22,10 @@ class AuthRepository
     }
 
     /**
-     * Find user by username.
+     * Busca un usuario por su nombre de usuario único.
      *
-     * @param string $username
-     * @return array|null
+     * @param string $username Nombre de usuario
+     * @return array|null Datos del usuario o null si no existe
      */
     public function findByUsername(string $username): ?array
     {
@@ -38,9 +38,9 @@ class AuthRepository
     }
 
     /**
-     * Update user's last access timestamp.
+     * Actualiza la fecha y hora del último acceso exitoso del usuario.
      *
-     * @param string $userId
+     * @param string $userId UUID del usuario
      * @return void
      */
     public function updateLastAccess(string $userId): void
@@ -51,10 +51,10 @@ class AuthRepository
     }
 
     /**
-     * Count consecutive failed login attempts in the last 15 minutes.
+     * Cuenta los intentos fallidos de inicio de sesión consecutivos ocurridos en los últimos 15 minutos para un usuario.
      *
-     * @param string $username
-     * @return int
+     * @param string $username Nombre de usuario consultado
+     * @return int Cantidad de intentos fallidos
      */
     public function getFailedAttempts(string $username): int
     {
@@ -89,10 +89,10 @@ class AuthRepository
     }
 
     /**
-     * Check if a username is blocked (5 or more failed login attempts in the last 15 minutes).
+     * Verifica si una cuenta de usuario está temporalmente bloqueada por superar el límite de intentos fallidos (5 o más en 15 minutos).
      *
-     * @param string $username
-     * @return bool
+     * @param string $username Nombre de usuario
+     * @return bool True si el usuario está bloqueado
      */
     public function isBlocked(string $username): bool
     {
@@ -109,11 +109,11 @@ class AuthRepository
     }
 
     /**
-     * Check if an IP address is blocked (15 or more failed login attempts in the last 15 minutes).
+     * Verifica si una dirección IP está bloqueada temporalmente por registrar múltiples intentos fallidos (15 o más en 15 minutos).
      *
-     * @param string $ip
-     * @param int $limit
-     * @return bool
+     * @param string $ip Dirección IP del cliente
+     * @param int $limit Umbral de intentos fallidos permitidos
+     * @return bool True si la IP está bloqueada
      */
     public function isIpBlocked(string $ip, int $limit = 15): bool
     {
@@ -130,14 +130,14 @@ class AuthRepository
     }
 
     /**
-     * Register an audit event in the database.
+     * Registra una acción de auditoría vinculada a operaciones de autenticación y seguridad.
      *
-     * @param string $accion
-     * @param string $entidad
-     * @param string|null $valorAnterior
-     * @param string|null $valorNuevo
-     * @param string|null $usuarioId
-     * @param string|null $motivo
+     * @param string $accion Nombre de la acción ejecutada
+     * @param string $entidad Entidad afectada (ej. 'auth')
+     * @param string|null $valorAnterior Estado o valor previo en formato JSON
+     * @param string|null $valorNuevo Estado o valor nuevo en formato JSON
+     * @param string|null $usuarioId UUID del usuario que ejecuta o sufre la acción
+     * @param string|null $motivo Motivo o detalle explicativo del evento
      * @return void
      */
     public function registerAuditEvent(

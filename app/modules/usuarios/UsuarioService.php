@@ -9,6 +9,10 @@ class UsuarioService
 {
     private UsuarioRepository $repository;
 
+    /**
+     * Constructor de UsuarioService.
+     * Inicializa el repositorio de persistencia de usuarios.
+     */
     public function __construct(?UsuarioRepository $repository = null)
     {
         $this->repository = $repository ?? new UsuarioRepository();
@@ -80,7 +84,7 @@ class UsuarioService
             throw new AppException('El rol debe ser "administrador" o "cobrador".', 400);
         }
 
-        // Validar username único
+        // Verificar que el nombre de usuario no se encuentre registrado previamente para garantizar credenciales únicas
         $existente = $this->repository->findByUsername($username);
         if ($existente !== null) {
             throw new AppException('El nombre de usuario ya está en uso.', 409);

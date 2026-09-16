@@ -10,7 +10,8 @@ class ZonaRepository
     private PDO $db;
 
     /**
-     * ZonaRepository constructor.
+     * Constructor de ZonaRepository.
+     * Inyecta la conexión PDO a la base de datos.
      *
      * @param PDO|null $db
      */
@@ -20,9 +21,9 @@ class ZonaRepository
     }
 
     /**
-     * Retrieve all zones from the database.
+     * Consulta y retorna todas las zonas registradas en la base de datos.
      *
-     * @return array
+     * @return array Listado de zonas
      */
     public function findAll(): array
     {
@@ -33,10 +34,10 @@ class ZonaRepository
     }
 
     /**
-     * Find a zone by its UUID.
+     * Busca una zona por su identificador UUID.
      *
-     * @param string $id
-     * @return array|null
+     * @param string $id UUID de la zona
+     * @return array|null Datos de la zona o null si no existe
      */
     public function findById(string $id): ?array
     {
@@ -49,10 +50,10 @@ class ZonaRepository
     }
 
     /**
-     * Find a zone by its name.
+     * Busca una zona por su nombre identificatorio (ej. 'Centro Oeste', 'Norte Este').
      *
-     * @param string $nombre
-     * @return array|null
+     * @param string $nombre Nombre de la zona
+     * @return array|null Datos de la zona o null si no existe
      */
     public function findByNombre(string $nombre): ?array
     {

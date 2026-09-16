@@ -9,6 +9,10 @@ class UsuarioController
 {
     private UsuarioService $service;
 
+    /**
+     * Constructor de UsuarioController.
+     * Inicializa el servicio de gestión de usuarios del sistema.
+     */
     public function __construct(?UsuarioService $service = null)
     {
         $this->service = $service ?? new UsuarioService();

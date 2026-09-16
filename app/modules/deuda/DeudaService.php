@@ -22,19 +22,19 @@ class DeudaService
 
     public function generarDeudaMensual(string $periodo, bool $confirmarDuplicado, string $usuarioId): array
     {
-        // 1. Validar formato de período 'AAAA-MM'
+        // 1. Asegurar que el período cumpla estrictamente con el formato estándar 'AAAA-MM'
         if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periodo)) {
             throw new AppException("Formato de período inválido. Debe ser AAAA-MM.", 400);
         }
 
-        // 2. Obtener cuota vigente
+        // 2. Recuperar el importe y la configuración de la cuota social vigente en el sistema
         $cuotaVigente = $this->cuotaRepository->getVigente();
         if (!$cuotaVigente) {
             throw new AppException("No hay una cuota configurada y vigente para generar la deuda.", 400);
         }
         $monto = (float)$cuotaVigente['monto'];
 
-        // 3. Obtener todos los socios activos
+        // 3. Cargar el padrón de socios activos habilitados para la facturación masiva
         $db = Database::getInstance();
         $stmt = $db->query("SELECT id FROM socios WHERE estado = 'activo'");
         $sociosActivos = $stmt->fetchAll(\PDO::FETCH_COLUMN);
@@ -58,7 +58,7 @@ class DeudaService
                         $advertencias[] = $socioId;
                         $omitidas++;
                     } else {
-                        // Sobrescribir (actualizar estado a 'pendiente', se podría actualizar monto tmb si se quisiera)
+                        // Reactivar la deuda existente marcándola como 'pendiente' en caso de haber sido modificada previamente
                         $this->deudaRepository->updateEstado($deudaExistente['id'], 'pendiente');
                         $generadas++;
                     }
@@ -73,7 +73,7 @@ class DeudaService
                 }
             }
 
-            // 6. Registrar en auditoría
+            // 6. Asentar en la bitácora de auditoría la generación masiva de cuotas del período
             $this->deudaRepository->registerAuditEvent(
                 'GENERACION_DEUDA_MENSUAL',
                 'deudas',
@@ -98,7 +98,7 @@ class DeudaService
 
     public function cargarDeudaAnterior(string $socioId, float $monto, string $usuarioId): void
     {
-        // 1. Verificar que el socio existe y está activo
+        // 1. Comprobar que el socio destinatario exista en el padrón y no se encuentre dado de baja
         $db = Database::getInstance();
         $stmt = $db->prepare("SELECT estado FROM socios WHERE id = :id");
         $stmt->execute(['id' => $socioId]);
@@ -108,13 +108,13 @@ class DeudaService
             throw new AppException("El socio no existe o no está activo.", 404);
         }
 
-        // 2. Verificar que no existe ya una 'deuda_anterior'
+        // 2. Validar que el socio no cuente ya con un saldo histórico migrado ('deuda_anterior')
         $deudaAnterior = $this->deudaRepository->findBySocioAndPeriodo($socioId, 'deuda_anterior');
         if ($deudaAnterior) {
             throw new AppException("El socio ya tiene una deuda anterior registrada.", 409);
         }
 
-        // 3. Insertar deuda
+        // 3. Crear el registro de deuda histórica con el monto y motivo suministrados
         $this->deudaRepository->create([
             'socio_id' => $socioId,
             'periodo' => 'deuda_anterior',
@@ -122,7 +122,7 @@ class DeudaService
             'estado' => 'pendiente'
         ]);
 
-        // 4. Registrar en auditoría
+        // 4. Auditar la asignación de saldo inicial/deuda anterior al socio
         $this->deudaRepository->registerAuditEvent(
             'CARGA_DEUDA_ANTERIOR',
             'deudas',
@@ -144,7 +144,7 @@ class DeudaService
         $stmt->execute(['id' => $deudaId]);
         $deuda = $stmt->fetch();
 
-        // 1. Verificar que la deuda existe y está pendiente
+        // 1. Validar que la deuda a exonerar exista y que su estado admita exoneración ('pendiente')
         if (!$deuda) {
             throw new AppException("La deuda no existe.", 404);
         }
@@ -153,10 +153,10 @@ class DeudaService
             throw new AppException("Solo se pueden exonerar deudas en estado pendiente.", 400);
         }
 
-        // 2. Actualizar estado a 'exonerada'
+        // 2. Marcar la deuda con estado 'exonerada' registrando la marca temporal de cancelación
         $this->deudaRepository->exonerar($deudaId, new DateTime());
 
-        // 3. Registrar en auditoría con motivo
+        // 3. Dejar constancia formal en auditoría especificando el motivo reglamentario de la exoneración
         $this->deudaRepository->registerAuditEvent(
             'EXONERACION_DEUDA',
             'deudas',

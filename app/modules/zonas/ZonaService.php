@@ -29,7 +29,8 @@ class ZonaService
     private ZonaRepository $repository;
 
     /**
-     * ZonaService constructor.
+     * Constructor de ZonaService.
+     * Inyecta el repositorio de zonas.
      *
      * @param ZonaRepository|null $repository
      */
@@ -39,35 +40,35 @@ class ZonaService
     }
 
     /**
-     * Assign a zone based on geographic coordinates.
+     * Determina la zona asignada según las coordenadas geográficas del domicilio.
      *
-     * Boundary tie-breaking rules:
-     * - Exactly on Ruta 9 (lat == -32.811167): assigned to Centro
-     * - Exactly on Bv. Balcarce (lat == -32.822137): assigned to Centro
-     * - Exactly on Calle Sarmiento (lng == -61.389722): assigned to Oeste
+     * Reglas de desempate en límites limítrofes:
+     * - Exactamente sobre Ruta 9 (lat == -32.811167): asigna a banda Centro
+     * - Exactamente sobre Bv. Balcarce (lat == -32.822137): asigna a banda Centro
+     * - Exactamente sobre Calle Sarmiento (lng == -61.389722): asigna a sector Oeste
      *
-     * @param float $lat Latitude (negative for southern hemisphere)
-     * @param float $lng Longitude (negative for western hemisphere)
-     * @return string UUID of the assigned zone
+     * @param float $lat Latitud (valor negativo en hemisferio sur)
+     * @param float $lng Longitud (valor negativo en hemisferio oeste)
+     * @return string UUID de la zona asignada
      */
     public function asignarZona(float $lat, float $lng): string
     {
-        // Determine latitude band
-        // In negative coords: more north = larger value (e.g. -32.80 > -32.81)
+        // 1. Determinar la franja de latitud (Norte, Centro o Sur)
+        // En coordenadas negativas del hemisferio sur, mayor valor algebraico implica mayor proximidad al norte (ej. -32.80 está más al norte que -32.81)
         if ($lat > self::LAT_RUTA_9) {
-            // North of Ruta 9
+            // Franja al norte de la Ruta Nacional 9
             $banda = 'Norte';
         } elseif ($lat >= self::LAT_BALCARCE) {
-            // Between Ruta 9 and Bv. Balcarce (inclusive on both boundaries → Centro)
+            // Franja central entre Ruta 9 y Bv. Balcarce (ambos límites incluidos en Centro)
             $banda = 'Centro';
         } else {
-            // South of Bv. Balcarce
+            // Franja al sur de Bv. Balcarce
             $banda = 'Sur';
         }
 
-        // Determine longitude sector
-        // In negative coords: more west = smaller value (e.g. -61.40 < -61.39)
-        // Exactly on Sarmiento → Oeste (tie-breaking)
+        // 2. Determinar el sector de longitud (Oeste o Este según Calle Sarmiento)
+        // En coordenadas negativas del hemisferio oeste, menor valor implica mayor proximidad al oeste (ej. -61.40 está más al oeste que -61.39)
+        // Regla de desempate: coincidencia exacta sobre el eje de Sarmiento se asigna a Oeste
         $sector = ($lng <= self::LNG_SARMIENTO) ? 'Oeste' : 'Este';
 
         $nombre = "{$banda} {$sector}";
@@ -76,11 +77,11 @@ class ZonaService
     }
 
     /**
-     * Get the name of a zone by its UUID.
+     * Obtiene el nombre descriptivo de una zona a partir de su UUID.
      *
-     * @param string $zonaId
-     * @return string
-     * @throws RuntimeException If the zone does not exist
+     * @param string $zonaId UUID de la zona
+     * @return string Nombre de la zona
+     * @throws RuntimeException Si la zona solicitada no existe en el catálogo
      */
     public function getNombreZona(string $zonaId): string
     {
@@ -94,9 +95,9 @@ class ZonaService
     }
 
     /**
-     * Retrieve all zones.
+     * Retorna el catálogo completo de zonas registradas.
      *
-     * @return array
+     * @return array Colección de zonas
      */
     public function getTodasLasZonas(): array
     {

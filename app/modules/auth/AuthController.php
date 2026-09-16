@@ -9,9 +9,9 @@ class AuthController
     private AuthService $authService;
 
     /**
-     * AuthController constructor.
+     * Inicializa el controlador inyectando el servicio de autenticación.
      *
-     * @param AuthService|null $authService
+     * @param AuthService|null $authService Instancia del servicio de autenticación o null para instanciar por defecto
      */
     public function __construct(?AuthService $authService = null)
     {
@@ -19,9 +19,9 @@ class AuthController
     }
 
     /**
-     * Handle user login.
+     * Procesa la solicitud de inicio de sesión validando credenciales y creando la sesión de usuario.
      *
-     * @param array $params
+     * @param array $params Parámetros de la ruta
      * @return void
      */
     public function login(array $params): void
@@ -40,9 +40,9 @@ class AuthController
     }
 
     /**
-     * Handle user logout.
+     * Cierra la sesión activa del usuario y revoca las cookies asociadas.
      *
-     * @param array $params
+     * @param array $params Parámetros de la ruta
      * @return void
      */
     public function logout(array $params): void
@@ -52,9 +52,9 @@ class AuthController
     }
 
     /**
-     * Retrieve current user session.
+     * Retorna los datos del usuario autenticado en la sesión actual si es válida y no ha expirado.
      *
-     * @param array $params
+     * @param array $params Parámetros de la ruta
      * @return void
      */
     public function me(array $params): void

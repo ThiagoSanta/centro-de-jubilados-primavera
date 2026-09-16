@@ -8,9 +8,10 @@ use CJP\Shared\Helpers\ResponseHelper;
 class AuthMiddleware
 {
     /**
-     * Require authentication and optionally a specific role.
+     * Valida que exista una sesión activa y, opcionalmente, que el usuario cuente con el rol requerido.
+     * Lanza una excepción o interrumpe la ejecución si no cumple las condiciones.
      *
-     * @param string|null $rol
+     * @param string|null $rol Rol necesario para acceder al recurso ('administrador', 'cobrador', etc.)
      * @return void
      */
     public static function requireAuth(?string $rol = null): void

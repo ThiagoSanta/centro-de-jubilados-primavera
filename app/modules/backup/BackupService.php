@@ -15,6 +15,10 @@ class BackupService
     // Ruta fija a mysqldump en XAMPP Windows
     private const MYSQLDUMP_PATH = 'C:\\xampp\\mysql\\bin\\mysqldump.exe';
 
+    /**
+     * Constructor del servicio de copias de seguridad.
+     * Obtiene la instancia activa de la conexión a la base de datos.
+     */
     public function __construct()
     {
         $this->db = Database::getConnection();

@@ -11,6 +11,10 @@ class BackupController
     private BackupService $backupService;
     private AuthService   $authService;
 
+    /**
+     * Constructor del controlador de backups.
+     * Inicializa el servicio de gestión de copias de seguridad.
+     */
     public function __construct()
     {
         $this->backupService = new BackupService();

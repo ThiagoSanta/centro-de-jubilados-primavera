@@ -50,7 +50,7 @@ class AuditoriaRepository
             $params[':fecha_hasta'] = $filtros['fecha_hasta'] . ' 23:59:59';
         }
 
-        // Get total for pagination
+        // Calcular la cantidad total de registros coincidentes para la paginación
         $countQuery = str_replace("SELECT a.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido", "SELECT COUNT(*)", $query);
         $stmtCount = $this->db->prepare($countQuery);
         $stmtCount->execute($params);

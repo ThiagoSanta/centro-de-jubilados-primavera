@@ -35,7 +35,8 @@ class SocioRepository
     ];
 
     /**
-     * SocioRepository constructor.
+     * Constructor de SocioRepository.
+     * Inyecta la conexión PDO a la base de datos.
      *
      * @param PDO|null $db
      */
@@ -45,11 +46,11 @@ class SocioRepository
     }
 
     /**
-     * Find all partners with filters and pagination.
+     * Obtiene el listado de socios aplicando filtros dinámicos y paginación.
      *
-     * @param array $filtros
-     * @param int $pagina
-     * @return array
+     * @param array $filtros Filtros opcionales (estado, zona_id, modalidad_cobranza, con_deuda, busqueda)
+     * @param int $pagina Número de página actual
+     * @return array Arreglo con 'total', 'pagina', 'por_pagina', 'total_paginas' y colección 'datos'
      */
     public function findAll(array $filtros, int $pagina): array
     {
@@ -63,25 +64,25 @@ class SocioRepository
         $conditions = [];
         $params = [];
 
-        // 1. Filter: estado
+        // 1. Filtro: estado del socio ('activo', 'suspendido', 'baja')
         if (!empty($filtros['estado'])) {
             $conditions[] = "s.estado = :estado";
             $params['estado'] = $filtros['estado'];
         }
 
-        // 2. Filter: zona_id
+        // 2. Filtro: zona geográfica asignada
         if (!empty($filtros['zona_id'])) {
             $conditions[] = "s.zona_id = :zona_id";
             $params['zona_id'] = $filtros['zona_id'];
         }
 
-        // 3. Filter: modalidad_cobranza
+        // 3. Filtro: modalidad de cobranza ('domicilio' o 'sede')
         if (!empty($filtros['modalidad_cobranza'])) {
             $conditions[] = "s.modalidad_cobranza = :modalidad_cobranza";
             $params['modalidad_cobranza'] = $filtros['modalidad_cobranza'];
         }
 
-        // 4. Filter: con_deuda (calculated boolean)
+        // 4. Filtro: presencia de deudas pendientes (subconsulta booleana)
         if (isset($filtros['con_deuda']) && $filtros['con_deuda'] !== '' && $filtros['con_deuda'] !== null) {
             $conDeuda = filter_var($filtros['con_deuda'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($conDeuda !== null) {
@@ -94,7 +95,7 @@ class SocioRepository
             }
         }
 
-        // 5. Filter: busqueda (nombre, dni, numero_socio)
+        // 5. Filtro de búsqueda general: coincidencia parcial en nombre/apellido, DNI o número de socio
         if (!empty($filtros['busqueda'])) {
             $busqueda = trim($filtros['busqueda']);
             $busquedaClean = preg_replace('/[^0-9a-zA-Z]/', '', $busqueda);
@@ -108,13 +109,13 @@ class SocioRepository
 
         $whereClause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
 
-        // Count total
+        // Calcular el total de registros que satisfacen los filtros para el paginador
         $countSql = "SELECT COUNT(*) FROM socios s {$whereClause}";
         $countStmt = $this->db->prepare($countSql);
         $countStmt->execute($params);
         $total = (int)$countStmt->fetchColumn();
 
-        // Fetch data
+        // Obtener el lote de registros con ordenamiento y paginación
         $sql = "SELECT s.*, 
                        z.nombre AS zona_nombre,
                        (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 2) AS con_deuda
@@ -126,7 +127,7 @@ class SocioRepository
 
         $stmt = $this->db->prepare($sql);
 
-        // Bind parameters manually to handle integer types for LIMIT and OFFSET
+        // Vincular parámetros de paginación explícitamente como enteros PDO::PARAM_INT para LIMIT y OFFSET
         foreach ($params as $key => $val) {
             $stmt->bindValue($key, $val);
         }
@@ -136,7 +137,7 @@ class SocioRepository
 
         $data = $stmt->fetchAll();
 
-        // Map database fields to correct types
+        // Castear campos numéricos y booleanos provenientes de la base de datos a sus tipos nativos en PHP
         foreach ($data as &$row) {
             $row['numero_socio'] = (int)$row['numero_socio'];
             $row['latitud'] = $row['latitud'] !== null ? (float)$row['latitud'] : null;
@@ -154,10 +155,10 @@ class SocioRepository
     }
 
     /**
-     * Find a partner by ID.
+     * Busca un socio por su identificador UUID.
      *
-     * @param string $id
-     * @return array|null
+     * @param string $id UUID del socio
+     * @return array|null Datos del socio o null si no fue encontrado
      */
     public function findById(string $id): ?array
     {
@@ -186,10 +187,10 @@ class SocioRepository
     }
 
     /**
-     * Find a partner by DNI.
+     * Busca un socio por su número de documento (DNI).
      *
-     * @param string $dni
-     * @return array|null
+     * @param string $dni Número de documento
+     * @return array|null Datos del socio o null si no existe
      */
     public function findByDni(string $dni): ?array
     {
@@ -219,9 +220,9 @@ class SocioRepository
     }
 
     /**
-     * Get the next sequential partner number.
+     * Obtiene el siguiente número correlativo disponible para asignación de socio.
      *
-     * @return int
+     * @return int Siguiente número de socio
      */
     public function getNextNumeroSocio(): int
     {
@@ -231,10 +232,10 @@ class SocioRepository
     }
 
     /**
-     * Insert a new partner.
+     * Inserta un nuevo socio en la tabla 'socios'.
      *
-     * @param array $datos
-     * @return string Generated UUID
+     * @param array $datos Atributos validados del socio
+     * @return string UUID generado para el nuevo socio
      */
     public function create(array $datos): string
     {
@@ -264,10 +265,10 @@ class SocioRepository
     }
 
     /**
-     * Dynamically update a partner.
+     * Actualiza dinámicamente las columnas suministradas para un socio específico.
      *
-     * @param string $id
-     * @param array $datos
+     * @param string $id UUID del socio
+     * @param array $datos Campos a actualizar
      * @return void
      */
     public function update(string $id, array $datos): void
@@ -279,7 +280,7 @@ class SocioRepository
         $fields = [];
         $params = ['id' => $id];
 
-        // Ensure we always update the update timestamp
+        // Asegurar que siempre se actualice la marca temporal 'fecha_actualizacion'
         if (!isset($datos['fecha_actualizacion'])) {
             $datos['fecha_actualizacion'] = DateHelper::now();
         }
@@ -301,10 +302,10 @@ class SocioRepository
     }
 
     /**
-     * Soft delete a partner.
+     * Registra la baja lógica de un socio (estado 'baja'), guardando el motivo y la fecha actual.
      *
-     * @param string $id
-     * @param string $motivo
+     * @param string $id UUID del socio
+     * @param string $motivo Razón de la baja
      * @return void
      */
     public function softDelete(string $id, string $motivo): void
@@ -327,9 +328,9 @@ class SocioRepository
     }
 
     /**
-     * Reactivate a soft deleted partner.
+     * Reactiva un socio en estado de baja lógica (limpia 'fecha_baja' y 'motivo_baja').
      *
-     * @param string $id
+     * @param string $id UUID del socio
      * @return void
      */
     public function reactivate(string $id): void
@@ -350,9 +351,9 @@ class SocioRepository
     }
 
     /**
-     * Suspend a partner.
+     * Suspende a un socio activo cambiando su estado a 'suspendido'.
      *
-     * @param string $id
+     * @param string $id UUID del socio
      * @return void
      */
     public function suspend(string $id): void
@@ -371,12 +372,12 @@ class SocioRepository
     }
 
     /**
-     * Update geolocalisation data.
+     * Actualiza las coordenadas geográficas y la zona asignada al socio.
      *
-     * @param string $id
-     * @param float $lat
-     * @param float $lng
-     * @param string $zonaId
+     * @param string $id UUID del socio
+     * @param float $lat Latitud geográfica
+     * @param float $lng Longitud geográfica
+     * @param string $zonaId UUID de la zona resultante
      * @return void
      */
     public function updateGeolocalizacion(string $id, float $lat, float $lng, string $zonaId): void
@@ -401,9 +402,9 @@ class SocioRepository
     }
 
     /**
-     * Register a CSV inconsistency.
+     * Registra una inconsistencia detectada durante la importación masiva de socios desde CSV.
      *
-     * @param array $datos
+     * @param array $datos Fila con datos erróneos, número de fila y descripción de la falla
      * @return void
      */
     public function registrarInconsistencia(array $datos): void
@@ -435,10 +436,10 @@ class SocioRepository
     }
 
     /**
-     * Retrieve CSV import inconsistencies, optionally filtered by estado.
+     * Obtiene la lista de inconsistencias de importación CSV, con filtro opcional por estado ('pendiente' o 'resuelto').
      *
-     * @param array $filtros  Accepted keys: 'estado' ('pendiente'|'resuelto')
-     * @return array
+     * @param array $filtros Criterios de filtrado
+     * @return array Colección de inconsistencias
      */
     public function getInconsistencias(array $filtros): array
     {
@@ -461,9 +462,9 @@ class SocioRepository
     }
 
     /**
-     * Create a notification.
+     * Inserta una nueva notificación interna en el sistema.
      *
-     * @param array $datos
+     * @param array $datos Datos de la notificación (usuario_id, tipo, mensaje, metadata)
      * @return void
      */
     public function createNotification(array $datos): void
@@ -501,10 +502,10 @@ class SocioRepository
     }
 
     /**
-     * Get user role by user ID.
+     * Obtiene el rol asignado a un usuario por su identificador UUID.
      *
-     * @param string $usuarioId
-     * @return string|null
+     * @param string $usuarioId UUID del usuario
+     * @return string|null Rol del usuario o null si no fue encontrado
      */
     public function getUserRole(string $usuarioId): ?string
     {
@@ -516,14 +517,14 @@ class SocioRepository
     }
 
     /**
-     * Register audit event.
+     * Inserta un registro de auditoría para operaciones ejecutadas en el módulo de socios.
      *
-     * @param string $accion
-     * @param string $entidad
-     * @param string|null $valorAnterior
-     * @param string|null $valorNuevo
-     * @param string|null $usuarioId
-     * @param string|null $motivo
+     * @param string $accion Tipo de acción efectuada
+     * @param string $entidad Entidad impactada ('socios')
+     * @param string|null $valorAnterior Estado previo en JSON
+     * @param string|null $valorNuevo Estado nuevo en JSON
+     * @param string|null $usuarioId UUID del operador responsable
+     * @param string|null $motivo Justificación o detalle de la acción
      * @return void
      */
     public function registerAuditEvent(

@@ -9,9 +9,9 @@ use InvalidArgumentException;
 class DateHelper
 {
     /**
-     * Get current date and time in Y-m-d H:i:s format.
+     * Obtiene la fecha y hora actual formateada en 'Y-m-d H:i:s'.
      *
-     * @return string
+     * @return string Fecha y hora actual
      */
     public static function now(): string
     {
@@ -19,9 +19,9 @@ class DateHelper
     }
 
     /**
-     * Get current date in Y-m-d format.
+     * Obtiene la fecha actual formateada en 'Y-m-d'.
      *
-     * @return string
+     * @return string Fecha actual
      */
     public static function today(): string
     {
@@ -29,13 +29,12 @@ class DateHelper
     }
 
     /**
-     * Add days to a given date and return in Y-m-d H:i:s format.
-     * Supports negative integers for subtracting days.
+     * Suma (o resta si es negativo) una cantidad de días a una fecha dada, retornando en formato 'Y-m-d H:i:s'.
      *
-     * @param string $date
-     * @param int $days
-     * @return string
-     * @throws InvalidArgumentException
+     * @param string $date Fecha base en formato parseable por DateTime
+     * @param int $days Cantidad de días a sumar o restar
+     * @return string Fecha resultante
+     * @throws InvalidArgumentException Si el formato de fecha proporcionado es inválido
      */
     public static function addDays(string $date, int $days): string
     {
@@ -49,11 +48,11 @@ class DateHelper
     }
 
     /**
-     * Check if a given datetime has expired (is in the past).
+     * Determina si una fecha y hora ha expirado (si se encuentra en el pasado respecto al momento actual).
      *
-     * @param string $datetime
-     * @return bool
-     * @throws InvalidArgumentException
+     * @param string $datetime Fecha y hora a evaluar
+     * @return bool True si la fecha ya pasó, false en caso contrario
+     * @throws InvalidArgumentException Si el valor no es una fecha válida
      */
     public static function isExpired(string $datetime): bool
     {

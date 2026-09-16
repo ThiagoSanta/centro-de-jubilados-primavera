@@ -80,13 +80,13 @@ class DeudaRepository
 
         $whereClause = !empty($conditions) ? "WHERE " . implode(" AND ", $conditions) : "";
 
-        // Count total
+        // Calcular el total de deudas filtradas para la paginación de resultados
         $countSql = "SELECT COUNT(*) FROM deudas {$whereClause}";
         $countStmt = $this->db->prepare($countSql);
         $countStmt->execute($params);
         $total = (int)$countStmt->fetchColumn();
 
-        // Fetch data
+        // Ejecutar consulta de deudas con paginación (LIMIT / OFFSET)
         $sql = "SELECT * FROM deudas 
                 {$whereClause} 
                 ORDER BY fecha_generacion DESC 
@@ -193,7 +193,7 @@ class DeudaRepository
 
             foreach ($sociosIds as $socioId) {
                 if (in_array($socioId, $existentes)) {
-                    // Si ya existe, se anota para advertencia
+                    // Registrar el socio en la lista de advertencias si ya posee una cuota emitida para dicho período
                     $resultado['advertencias'][] = $socioId;
                     $resultado['omitidas']++;
                     continue;

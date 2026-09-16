@@ -23,12 +23,12 @@ class DashboardController
 
         $db = Database::getInstance();
 
-        // Socios activos
+        // Métrica 1: Total de socios actualmente en estado 'activo'
         $stmt = $db->prepare("SELECT COUNT(*) FROM socios WHERE estado = 'activo'");
         $stmt->execute();
         $sociosActivos = (int) $stmt->fetchColumn();
 
-        // Socios con 2 o más deudas pendientes
+        // Métrica 2: Cantidad de socios con condición de morosidad (2 o más períodos pendientes de pago)
         $stmt = $db->prepare(
             "SELECT COUNT(DISTINCT s.id)
              FROM socios s
@@ -40,7 +40,7 @@ class DashboardController
         $stmt->execute();
         $sociosConDeuda = (int) $stmt->rowCount();
 
-        // Re-ejecutar correctamente con subquery para COUNT DISTINCT
+        // Contar socios únicos morosos mediante subconsulta para evitar discrepancias de agrupación (HAVING)
         $stmt2 = $db->prepare(
             "SELECT COUNT(*) FROM (
                 SELECT s.id
@@ -54,12 +54,12 @@ class DashboardController
         $stmt2->execute();
         $sociosConDeuda = (int) $stmt2->fetchColumn();
 
-        // Monto total adeudado
+        // Métrica 3: Sumatoria del importe adeudado acumulado entre todas las cuotas pendientes
         $stmt = $db->prepare("SELECT COALESCE(SUM(monto), 0) FROM deudas WHERE estado = 'pendiente'");
         $stmt->execute();
         $montoAdeudadoTotal = (float) $stmt->fetchColumn();
 
-        // Pagos del mes actual
+        // Métrica 4: Total recaudado a través de pagos registrados durante el mes calendario en curso
         $stmt = $db->prepare(
             "SELECT COUNT(*)
              FROM pagos
@@ -70,7 +70,7 @@ class DashboardController
         $stmt->execute();
         $pagosDelMes = (int) $stmt->fetchColumn();
 
-        // Cobranzas de hoy
+        // Métrica 5: Total recaudado en el día de la fecha (rendición diaria de cobradores y pagos en sede)
         $stmt = $db->prepare(
             "SELECT COUNT(*)
              FROM pagos
@@ -80,7 +80,7 @@ class DashboardController
         $stmt->execute();
         $cobranzasHoy = (int) $stmt->fetchColumn();
 
-        // Notificaciones sin leer
+        // Métrica 6: Contador de alertas y notificaciones pendientes de lectura para el usuario administrador
         $stmt = $db->prepare("SELECT COUNT(*) FROM notificaciones WHERE estado = 'no_leida'");
         $stmt->execute();
         $notificacionesSinLeer = (int) $stmt->fetchColumn();

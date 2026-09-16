@@ -10,7 +10,8 @@ class ZonaController
     private ZonaService $zonaService;
 
     /**
-     * ZonaController constructor.
+     * Constructor de ZonaController.
+     * Inyecta el servicio de cálculo y consulta de zonas geográficas.
      *
      * @param ZonaService|null $zonaService
      */
@@ -20,7 +21,7 @@ class ZonaController
     }
 
     /**
-     * GET /api/zonas — List all zones.
+     * GET /api/zonas — Retorna el catálogo completo de zonas de cobranza definidas en la ciudad.
      *
      * @param array $params
      * @return void
@@ -34,9 +35,7 @@ class ZonaController
     }
 
     /**
-     * POST /api/zonas/calcular — Calculate the assigned zone for given coordinates.
-     *
-     * Expects JSON body: { "lat": float, "lng": float }
+     * POST /api/zonas/calcular — Calcula la zona geográfica asignada a partir de un par de coordenadas (latitud y longitud).
      *
      * @param array $params
      * @return void

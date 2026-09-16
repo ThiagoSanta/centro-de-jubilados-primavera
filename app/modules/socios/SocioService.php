@@ -18,10 +18,8 @@ class SocioService
     private ZonaService $zonaService;
 
     /**
-     * SocioService constructor.
-     *
-     * @param SocioRepository|null $repository
-     * @param ZonaService|null $zonaService
+     * Constructor de SocioService.
+     * Inyecta el repositorio de socios y el servicio de cálculo de zonas geográficas.
      */
     public function __construct(?SocioRepository $repository = null, ?ZonaService $zonaService = null)
     {
@@ -30,16 +28,16 @@ class SocioService
     }
 
     /**
-     * Create a new partner.
+     * Registra un nuevo socio realizando validaciones de campos, geocodificación de dirección, cálculo de zona y generación de QR.
      *
-     * @param array $datos
-     * @param string $usuarioId
-     * @return array
-     * @throws Exception
+     * @param array $datos Datos del socio recibidos en la solicitud
+     * @param string $usuarioId UUID del usuario que ejecuta el alta
+     * @return array Ficha completa del socio recién creado
+     * @throws Exception Si faltan datos obligatorios o existen inconsistencias
      */
     public function crear(array $datos, string $usuarioId): array
     {
-        // 1. Validation
+        // 1. Validar integridad de campos obligatorios, formatos de fecha y tipo de documento
         $this->validarDatosSocio($datos);
 
         $dni = trim($datos['dni']);
@@ -47,10 +45,10 @@ class SocioService
             throw new AppException("El DNI ingresado ya pertenece a un socio.", 409);
         }
 
-        // 2. Generate sequential number
+        // 2. Obtener el siguiente número correlativo de socio disponible
         $numeroSocio = $this->repository->getNextNumeroSocio();
 
-        // 3. Geolocation via Nominatim
+        // 3. Geocodificar la dirección postal mediante el servicio Nominatim de OpenStreetMap
         $geo = $this->geocodeAddress($datos['direccion']);
         $lat = null;
         $lng = null;
@@ -64,13 +62,13 @@ class SocioService
             $geoPendiente = false;
         }
 
-        // 4. UUID generation
+        // 4. Generar identificador único global (UUID v4) para el nuevo socio
         $socioId = Uuid::uuid4()->toString();
 
-        // 5. QR code generation
+        // 5. Generar y almacenar la imagen del código QR identificatorio del socio
         $qrUrl = $this->generarQR($socioId);
 
-        // 6. DB Insertion payload
+        // 6. Estructurar el payload final para la inserción en la base de datos
         $payload = [
             'id'                        => $socioId,
             'numero_socio'              => $numeroSocio,
@@ -92,7 +90,7 @@ class SocioService
 
         $this->repository->create($payload);
 
-        // 7. Register audit event
+        // 7. Asentar el evento de creación del socio en el registro de auditoría
         $this->repository->registerAuditEvent(
             'CREAR_SOCIO',
             'socios',
@@ -106,13 +104,13 @@ class SocioService
     }
 
     /**
-     * Edit partner data.
+     * Edita la información de un socio existente con validación de doble confirmación en cambios de DNI.
      *
-     * @param string $id
-     * @param array $datos
-     * @param string $usuarioId
-     * @return array
-     * @throws Exception
+     * @param string $id UUID del socio a modificar
+     * @param array $datos Campos enviados para actualización
+     * @param string $usuarioId UUID del usuario operador
+     * @return array Ficha actualizada del socio
+     * @throws Exception Si las validaciones de negocio fallan o el socio no existe
      */
     public function editar(string $id, array $datos, string $usuarioId): array
     {
@@ -124,7 +122,7 @@ class SocioService
         $payload = [];
         $valAnterior = [];
 
-        // 1. Validation of common fields if they are sent
+        // 1. Validar reglas de formato para campos modificados (teléfono, email, fechas)
         if (isset($datos['nombre_apellido'])) {
             $val = trim($datos['nombre_apellido']);
             if (empty($val)) {
@@ -165,7 +163,7 @@ class SocioService
             $valAnterior['modalidad_cobranza'] = $socio['modalidad_cobranza'];
         }
 
-        // 2. DNI and Tipo de documento check
+        // 2. Detección y verificación de cambio en el documento de identidad
         $dniCambiado = isset($datos['dni']) && trim($datos['dni']) !== $socio['dni'];
         $tipoDocCambiado = isset($datos['tipo_documento']) && trim($datos['tipo_documento']) !== ($socio['tipo_documento'] ?? 'dni');
 
@@ -180,13 +178,13 @@ class SocioService
         }
 
         if ($dniCambiado || $tipoDocCambiado) {
-            // Role verification
+            // Verificar si el operador posee permisos suficientes para alterar el documento del socio
             $rol = $this->repository->getUserRole($usuarioId);
             if ($rol !== 'administrador') {
                 throw new AppException("Solo los administradores pueden modificar el documento o tipo de documento de un socio.", 403);
             }
 
-            // Double confirmation check (if DNI changes or both change)
+            // Exigir bandera explícita de confirmación ante cambios en el número de documento
             if ($dniCambiado && (!isset($datos['confirmar_cambio_dni']) || $datos['confirmar_cambio_dni'] !== true)) {
                 throw new AppException("Se requiere doble confirmación para modificar el DNI.", 400);
             }
@@ -198,12 +196,12 @@ class SocioService
                 throw new AppException("El número de documento es obligatorio.", 400);
             }
 
-            // Uniqueness check
+            // Garantizar la unicidad del nuevo DNI verificando que no pertenezca a otro socio registrado
             if ($this->repository->findByDni($newDni) !== null) {
                 throw new AppException("El documento ingresado ya pertenece a otro socio.", 409);
             }
 
-            // Validate format based on active/new tipo_documento
+            // Validar formato de documento según la tipología seleccionada (DNI, Pasaporte, Cédula)
             $activeTipoDoc = $payload['tipo_documento'] ?? ($socio['tipo_documento'] ?? 'dni');
             $dniLimpio = preg_replace('/[^0-9a-zA-Z]/', '', $newDni);
             if ($activeTipoDoc === 'pasaporte') {
@@ -220,7 +218,7 @@ class SocioService
             $valAnterior['dni'] = $socio['dni'];
         }
 
-        // 3. Address geocoding check
+        // 3. Detectar si el domicilio postal fue modificado para re-geolocalizarlo
         if (isset($datos['direccion']) && trim($datos['direccion']) !== $socio['direccion']) {
             $newAddress = trim($datos['direccion']);
             if (empty($newAddress)) {
@@ -230,7 +228,7 @@ class SocioService
             $payload['direccion'] = $newAddress;
             $valAnterior['direccion'] = $socio['direccion'];
 
-            // Geocode new address
+            // Re-geocodificar la nueva dirección y reasignar la zona geográfica correspondiente
             $geo = $this->geocodeAddress($newAddress);
             if ($geo !== null) {
                 $payload['latitud'] = $geo['lat'];
@@ -254,10 +252,10 @@ class SocioService
             return $socio;
         }
 
-        // 4. Database update
+        // 4. Persistir los cambios en la base de datos
         $this->repository->update($id, $payload);
 
-        // 5. Register audit event
+        // 5. Registrar en auditoría las diferencias entre los valores previos y los nuevos
         $this->repository->registerAuditEvent(
             'EDITAR_SOCIO',
             'socios',
@@ -271,12 +269,12 @@ class SocioService
     }
 
     /**
-     * Suspend a partner.
+     * Suspende a un socio activo previas verificaciones de estado y permisos.
      *
-     * @param string $id
-     * @param string $usuarioId
+     * @param string $id UUID del socio
+     * @param string $usuarioId UUID del operador
      * @return void
-     * @throws Exception
+     * @throws Exception Si el socio no existe o ya no se encuentra activo
      */
     public function suspender(string $id, string $usuarioId): void
     {
@@ -298,12 +296,12 @@ class SocioService
     }
 
     /**
-     * Reactivate a partner.
+     * Reactiva a un socio suspendido devolviéndolo al estado 'activo'.
      *
-     * @param string $id
-     * @param string $usuarioId
+     * @param string $id UUID del socio
+     * @param string $usuarioId UUID del operador
      * @return void
-     * @throws Exception
+     * @throws Exception Si el socio no se encuentra suspendido
      */
     public function reactivar(string $id, string $usuarioId): void
     {
@@ -325,13 +323,13 @@ class SocioService
     }
 
     /**
-     * Logical delete (soft delete) of a partner.
+     * Efectúa la baja lógica de un socio, programa alerta de reversión por 7 días y audita el evento.
      *
-     * @param string $id
-     * @param string $motivo
-     * @param string $usuarioId
+     * @param string $id UUID del socio
+     * @param string $motivo Justificación de la baja
+     * @param string $usuarioId UUID del operador
      * @return void
-     * @throws Exception
+     * @throws Exception Si el socio no existe o ya fue dado de baja
      */
     public function eliminar(string $id, string $motivo, string $usuarioId): void
     {
@@ -344,10 +342,10 @@ class SocioService
             throw new AppException("El motivo de la baja es obligatorio.", 400);
         }
 
-        // 1. DB logical delete
+        // 1. Ejecutar la baja lógica en la base de datos preservando la integridad referencial
         $this->repository->softDelete($id, trim($motivo));
 
-        // 2. Notification creation (7-day reversion window)
+        // 2. Generar notificación con ventana de gracia de 7 días para permitir la reversión de la baja
         $expiration = DateHelper::addDays(DateHelper::now(), 7);
         $this->repository->createNotification([
             'tipo'                       => 'reversion_baja',
@@ -356,7 +354,7 @@ class SocioService
             'fecha_expiracion_reversion' => $expiration
         ]);
 
-        // 3. Register audit event
+        // 3. Registrar el evento de baja lógica con su respectivo motivo en auditoría
         $this->repository->registerAuditEvent(
             'ELIMINAR_SOCIO',
             'socios',
@@ -368,12 +366,12 @@ class SocioService
     }
 
     /**
-     * Revert logical delete within the 7-day period.
+     * Revierte la baja lógica de un socio dentro del plazo legal de 7 días posteriores a su registro.
      *
-     * @param string $id
-     * @param string $usuarioId
+     * @param string $id UUID del socio
+     * @param string $usuarioId UUID del operador
      * @return void
-     * @throws Exception
+     * @throws Exception Si venció el plazo de 7 días o el socio no está dado de baja
      */
     public function revertirEliminacion(string $id, string $usuarioId): void
     {
@@ -386,7 +384,7 @@ class SocioService
             throw new AppException("El socio no se encuentra en estado eliminado.", 400);
         }
 
-        // Check if 7 days have passed
+        // Validar que no hayan transcurrido más de 7 días desde la fecha_baja registrada
         if (empty($socio['fecha_baja'])) {
             throw new AppException("Fecha de baja no registrada.", 400);
         }
@@ -396,10 +394,10 @@ class SocioService
             throw new AppException("El plazo de 7 días para revertir la eliminación ha expirado.", 400);
         }
 
-        // Reactivate
+        // Restablecer el estado activo del socio y limpiar las marcas temporales de baja
         $this->repository->reactivate($id);
 
-        // Audit
+        // Registrar en auditoría la reversión formal de la baja lógica
         $this->repository->registerAuditEvent(
             'REVERTIR_ELIMINACION',
             'socios',
@@ -411,14 +409,14 @@ class SocioService
     }
 
     /**
-     * Correct partner coordinates manually.
+     * Corrige manualmente las coordenadas geográficas de un socio y recalcula su zona de cobranza.
      *
-     * @param string $id
-     * @param float $lat
-     * @param float $lng
-     * @param string $usuarioId
+     * @param string $id UUID del socio
+     * @param float $lat Nueva latitud
+     * @param float $lng Nueva longitud
+     * @param string $usuarioId UUID del operador
      * @return void
-     * @throws Exception
+     * @throws Exception Si las coordenadas son inválidas o el socio no existe
      */
     public function corregirGeolocalizacion(string $id, float $lat, float $lng, string $usuarioId): void
     {
@@ -450,7 +448,7 @@ class SocioService
 
         $this->repository->updateGeolocalizacion($id, $lat, $lng, $zonaId);
 
-        // Audit
+        // Asentar en auditoría la rectificación manual de coordenadas y reasignación de zona
         $this->repository->registerAuditEvent(
             'CORREGIR_GEOLOCALIZACION',
             'socios',
@@ -462,12 +460,12 @@ class SocioService
     }
 
     /**
-     * Import partners from CSV file.
+     * Importa un lote de socios desde un archivo CSV con georreferenciación y reporte de inconsistencias.
      *
-     * @param string $rutaArchivo
-     * @param string $usuarioId
-     * @return array [exitosos => int, fallidos => int]
-     * @throws Exception
+     * @param string $rutaArchivo Ruta temporal del archivo CSV recibido
+     * @param string $usuarioId UUID del usuario que realiza la importación
+     * @return array Balance del proceso con conteos de ['exitosos' => int, 'fallidos' => int]
+     * @throws Exception Si el archivo no es legible o su estructura es incompatible
      */
     public function importarCSV(string $rutaArchivo, string $usuarioId): array
     {
@@ -480,14 +478,14 @@ class SocioService
             throw new AppException("No se pudo abrir el archivo CSV.", 400);
         }
 
-        // Clean UTF-8 BOM if present
+        // Eliminar la marca de orden de bytes (BOM) UTF-8 al inicio del archivo si está presente
         $bom = pack('H*', 'EFBBBF');
         $line = fgets($file);
         if (str_starts_with($line, $bom)) {
             $line = substr($line, 3);
         }
 
-        // Detect separator
+        // Detectar automáticamente si el delimitador de campos es punto y coma (;) o coma (,)
         $header = str_getcsv($line, ';');
         if (count($header) === 1 && str_contains($header[0], ',')) {
             $header = str_getcsv($line, ',');
@@ -508,7 +506,7 @@ class SocioService
         $exitosos = 0;
         $fallidos = 0;
 
-        // Find index of headers
+        // Localizar las posiciones ordinales de las columnas obligatorias en la cabecera CSV
         $indices = [];
         foreach ($header as $idx => $name) {
             $indices[$name] = $idx;
@@ -528,7 +526,7 @@ class SocioService
                 throw new AppException("El archivo supera el límite máximo permitido de {$maxRows} filas por importación.", 400);
             }
 
-            // Map columns
+            // Mapear los valores de la fila actual hacia los campos de la entidad socio
             $rowData = [];
             foreach ($indices as $name => $idx) {
                 $val = isset($row[$idx]) ? trim($row[$idx]) : '';
@@ -537,7 +535,7 @@ class SocioService
 
             $errors = [];
 
-            // 1. Mandatory values check
+            // 1. Validar la presencia ineludible de nombre y apellido en la fila actual
             if (empty($rowData['nombre_apellido'])) {
                 $errors[] = "nombre_apellido es obligatorio";
             }
@@ -560,7 +558,7 @@ class SocioService
                 $errors[] = "modalidad_cobranza incorrecta (esperado 'cobranza_domiciliaria' o 'cobranza_en_sede')";
             }
 
-            // 2. Duplicate DNI check
+            // 2. Descartar filas con documentos de identidad duplicados respecto a socios ya existentes
             if (!empty($rowData['dni'])) {
                 if ($this->repository->findByDni($rowData['dni']) !== null) {
                     $errors[] = "DNI ya existente en el sistema";
@@ -576,7 +574,7 @@ class SocioService
                 continue;
             }
 
-            // 3. Geocode and insert
+            // 3. Obtener coordenadas geográficas para la dirección e insertar el nuevo registro de socio
             try {
                 $numeroSocio = $this->repository->getNextNumeroSocio();
                 $geo = $this->geocodeAddress($rowData['direccion']);
@@ -616,7 +614,7 @@ class SocioService
 
                 $this->repository->create($payload);
 
-                // Register audit
+                // Registrar el evento de importación masiva en la tabla de auditoría
                 $this->repository->registerAuditEvent(
                     'CREAR_SOCIO',
                     'socios',
@@ -645,10 +643,10 @@ class SocioService
     }
 
     /**
-     * Retrieve CSV import inconsistencies.
+     * Obtiene las inconsistencias registradas en importaciones CSV según los filtros indicados.
      *
-     * @param array $filtros  Accepted keys: 'estado' ('pendiente'|'resuelto')
-     * @return array
+     * @param array $filtros Filtros de consulta (ej. 'estado' => 'pendiente'|'resuelto')
+     * @return array Lista de inconsistencias
      */
     public function getInconsistencias(array $filtros): array
     {
@@ -656,11 +654,11 @@ class SocioService
     }
 
     /**
-     * List partners with filters and pagination.
+     * Consulta el padrón de socios aplicando filtros de búsqueda y paginación.
      *
-     * @param array $filtros
-     * @param int $pagina
-     * @return array
+     * @param array $filtros Criterios de filtrado
+     * @param int $pagina Página a recuperar
+     * @return array Colección paginada de socios
      */
     public function listar(array $filtros, int $pagina): array
     {
@@ -668,11 +666,11 @@ class SocioService
     }
 
     /**
-     * Retrieve partner details.
+     * Obtiene la información detallada de un socio lanzando una excepción si no existe.
      *
-     * @param string $id
-     * @return array
-     * @throws Exception
+     * @param string $id UUID del socio
+     * @return array Ficha del socio
+     * @throws Exception Si el socio no fue hallado
      */
     public function obtener(string $id): array
     {
@@ -684,10 +682,10 @@ class SocioService
     }
 
     /**
-     * Generate QR code PNG file for a partner and return its URL.
+     * Genera el archivo PNG con el código QR del socio y retorna su ruta relativa pública.
      *
-     * @param string $socioId
-     * @return string
+     * @param string $socioId UUID del socio
+     * @return string URL pública del archivo QR generado
      */
     public function generarQR(string $socioId): string
     {
@@ -710,11 +708,11 @@ class SocioService
     }
 
     /**
-     * Validate partner fields.
+     * Valida la consistencia, presencia y formatos válidos de los campos de un socio.
      *
-     * @param array $datos
+     * @param array $datos Datos a verificar
      * @return void
-     * @throws Exception
+     * @throws Exception Si algún campo no cumple las reglas de negocio
      */
     private function validarDatosSocio(array $datos): void
     {
@@ -766,10 +764,10 @@ class SocioService
     }
 
     /**
-     * Validate date format YYYY-MM-DD.
+     * Valida que una cadena coincida con el formato de fecha ISO 'AAAA-MM-DD'.
      *
-     * @param string $date
-     * @return bool
+     * @param string $date Cadena de texto a evaluar
+     * @return bool True si la fecha es sintácticamente válida
      */
     private function validarFecha(string $date): bool
     {
@@ -778,10 +776,10 @@ class SocioService
     }
 
     /**
-     * Retrieve coordinates from Nominatim.
+     * Consulta la API de geocodificación de OpenStreetMap (Nominatim) para resolver coordenadas de una dirección.
      *
-     * @param string $direccion
-     * @return array|null
+     * @param string $direccion Dirección física (calle y número)
+     * @return array|null Arreglo con ['lat' => float, 'lng' => float] o null si no se resolvió
      */
     private function geocodeAddress(string $direccion): ?array
     {

@@ -11,10 +11,10 @@ class Router
     private array $routes = [];
 
     /**
-     * Register a GET route.
+     * Registra una ruta para el método HTTP GET.
      *
-     * @param string $pattern
-     * @param mixed $handler
+     * @param string $pattern Patrón de URL (admite parámetros entre llaves {id})
+     * @param mixed $handler Controlador o función callback a ejecutar
      * @return void
      */
     public function get(string $pattern, mixed $handler): void
@@ -23,10 +23,10 @@ class Router
     }
 
     /**
-     * Register a POST route.
+     * Registra una ruta para el método HTTP POST.
      *
-     * @param string $pattern
-     * @param mixed $handler
+     * @param string $pattern Patrón de URL
+     * @param mixed $handler Controlador o función callback a ejecutar
      * @return void
      */
     public function post(string $pattern, mixed $handler): void
@@ -35,10 +35,10 @@ class Router
     }
 
     /**
-     * Register a PUT route.
+     * Registra una ruta para el método HTTP PUT.
      *
-     * @param string $pattern
-     * @param mixed $handler
+     * @param string $pattern Patrón de URL
+     * @param mixed $handler Controlador o función callback a ejecutar
      * @return void
      */
     public function put(string $pattern, mixed $handler): void
@@ -47,10 +47,10 @@ class Router
     }
 
     /**
-     * Register a DELETE route.
+     * Registra una ruta para el método HTTP DELETE.
      *
-     * @param string $pattern
-     * @param mixed $handler
+     * @param string $pattern Patrón de URL
+     * @param mixed $handler Controlador o función callback a ejecutar
      * @return void
      */
     public function delete(string $pattern, mixed $handler): void
@@ -59,11 +59,11 @@ class Router
     }
 
     /**
-     * Internal helper to add a route definition.
+     * Auxiliar interno para agregar una definición de ruta a la colección.
      *
-     * @param string $method
-     * @param string $pattern
-     * @param mixed $handler
+     * @param string $method Método HTTP (GET, POST, PUT, DELETE)
+     * @param string $pattern Patrón de ruta solicitado
+     * @param mixed $handler Manejador de la ruta
      * @return void
      */
     private function addRoute(string $method, string $pattern, mixed $handler): void
@@ -76,7 +76,7 @@ class Router
     }
 
     /**
-     * Match current request against registered routes and execute the handler.
+     * Compara la URI y método de la petición actual contra las rutas registradas y ejecuta el manejador correspondiente.
      *
      * @return void
      */
@@ -85,12 +85,12 @@ class Router
         $requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 
-        // Strip query string (e.g. ?page=2)
+        // Remover los parámetros de consulta (?param=valor) para evaluar únicamente el path base
         if (($pos = strpos($requestUri, '?')) !== false) {
             $requestUri = substr($requestUri, 0, $pos);
         }
 
-        // Handle subdirectory deployments using APP_URL if set in .env
+        // Ajustar el prefijo de la ruta si la aplicación se ejecuta dentro de un subdirectorio configurado en APP_URL
         $appUrl = Config::get('APP_URL');
         if (!empty($appUrl)) {
             $basePath = parse_url($appUrl, PHP_URL_PATH);
@@ -99,7 +99,7 @@ class Router
             }
         }
 
-        // Normalize URI: always start with single slash and remove trailing slashes
+        // Normalizar la URI para que siempre inicie con una sola barra y no tenga barras redundantes al final
         $requestUri = '/' . trim($requestUri, '/');
 
         foreach ($this->routes as $route) {
@@ -109,7 +109,7 @@ class Router
 
             $pattern = '/' . trim($route['pattern'], '/');
 
-            // Convert routes like /socios/{id} to regex matchable format /socios/(?P<id>[^/]+)
+            // Convertir placeholders de ruta como {id} en grupos de captura de expresiones regulares con nombre (?P<id>[^/]+)
             $patternRegex = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '(?P<$1>[^/]+)', $pattern);
             $regex = '#^' . $patternRegex . '$#';
 
