@@ -65,7 +65,7 @@
         </div>
         </aside>
 
-        <!-- Contenido -->
+        <!-- Contenido principal: perfil, tabs, mapa y acciones -->
         <main class="content">
             <div style="margin-bottom:1rem;">
                 <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" style="font-size:0.8125rem;color:var(--color-text-muted);">&larr; Volver al padrón</a>
@@ -77,7 +77,7 @@
             </div>
 
             <div id="profileContent" style="display:none;">
-                <!-- Encabezado -->
+                <!-- Encabezado del perfil: nombre, número, estado y acciones -->
                 <div class="profile-header">
                     <div class="profile-header__info">
                         <h1 id="socioNombre"></h1>
@@ -516,7 +516,7 @@
             });
         });
 
-        /* --- Observaciones (endpoint placeholder) --- */
+        /* --- Observaciones (se intentan cargar opcionalmente; si el endpoint no existe, se muestra mensaje vacío) --- */
         function cargarObservaciones() {
             apiFetchOptional(BASE_URL + '/api/observaciones/socio/' + socioId).then(function (data) {
                 var container = document.getElementById('listaObservaciones');
@@ -553,7 +553,7 @@
             });
         });
 
-        /* --- Pagos (endpoint placeholder) --- */
+        /* --- Pagos del socio (se cargan opcionalmente; si el endpoint no responde, muestra estado vacío) --- */
         function cargarPagos() {
             apiFetchOptional(BASE_URL + '/api/pagos/socio/' + socioId).then(function (data) {
                 var tbody = document.getElementById('tablaPagos');
@@ -600,7 +600,7 @@
             });
         }
 
-        /* --- Historial (endpoint placeholder) --- */
+        /* --- Historial de eventos del socio (se carga al abrir el modal; si el endpoint no existe, muestra estado vacío) --- */
         document.getElementById('btnHistorial').addEventListener('click', function () {
             document.getElementById('modalHistorialOverlay').classList.add('modal-overlay--open');
             var content = document.getElementById('historialContent');
@@ -625,7 +625,7 @@
             document.getElementById('modalHistorialOverlay').classList.remove('modal-overlay--open');
         });
 
-        /* --- Editar --- */
+        /* --- Edición de datos del socio: abre el modal, pre-rellena los campos y guarda via PUT --- */
         document.getElementById('btnEditar').addEventListener('click', function () {
             document.getElementById('editNombre').value = socio.nombre_apellido;
             document.getElementById('editTipoDoc').value = socio.tipo_documento || 'dni';

@@ -64,7 +64,7 @@
         </div>
         </aside>
 
-        <!-- Contenido -->
+        <!-- Contenido principal: formulario de importación CSV e inconsistencias -->
         <main class="content">
             <div style="margin-bottom:1rem;">
                 <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" style="font-size:0.8125rem;color:var(--color-text-muted);">&larr; Volver al padrón</a>
@@ -123,7 +123,7 @@
                         <button type="button" class="btn btn--primary" id="btnImportar" disabled>Importar</button>
                     </div>
 
-                    <!-- Resultado -->
+                    <!-- Resultado de la importación: contadores de éxito y fallos -->
                     <div id="resultadoImport" style="display:none;">
                         <div class="result-cards">
                             <div class="result-card result-card--success">
@@ -262,7 +262,7 @@
             document.getElementById('btnImportar').disabled = false;
         }
 
-        /* --- Importar --- */
+        /* --- Lógica de importación: envía el CSV al API, anima la barra de progreso y muestra el resultado --- */
         document.getElementById('btnImportar').addEventListener('click', function () {
             if (!selectedFile) {
                 showAlert('Seleccione un archivo CSV.');
@@ -320,7 +320,7 @@
             });
         });
 
-        /* --- Inconsistencias --- */
+        /* --- Bandeja de inconsistencias: carga y renderiza los registros rechazados del último proceso de importación --- */
         function cargarInconsistencias() {
             var tbody = document.getElementById('tablaInconsistencias');
             var empty = document.getElementById('inconsistenciasEmpty');

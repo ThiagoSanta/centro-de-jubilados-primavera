@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
     <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <style>
-        /* ── Welcome card ─────────────────────────────────────── */
+        /* ── Tarjeta de bienvenida ──────────────────── */
         .welcome-card {
             background: linear-gradient(135deg, #1A1F3A 0%, #2A3154 100%);
             color: #ffffff;
@@ -63,7 +63,7 @@
             display: inline-block;
         }
 
-        /* ── Section titles ───────────────────────────────────── */
+        /* ── Títulos de sección ────────────────────── */
         .section-title {
             font-size: 1.125rem;
             font-weight: 700;
@@ -81,7 +81,7 @@
             flex-shrink: 0;
         }
 
-        /* ── Module Cards Grid ────────────────────────────────── */
+        /* ── Grilla de tarjetas de módulos de acceso ── */
         .modules-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -177,7 +177,7 @@
             transform: translateX(3px);
         }
 
-        /* ── Mobile Responsive & Hamburguesa ─────────────────── */
+        /* ── Responsivo móvil y menú hamburguesa ────── */
         .mobile-header-bar {
             display: none;
         }
@@ -277,7 +277,7 @@
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="layout">
-        <!-- Mobile Header Bar -->
+        <!-- Barra de cabecera móvil -->
         <div class="mobile-header-bar">
             <button class="btn-hamburger" id="btnToggleSidebar" aria-label="Abrir menú">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -348,10 +348,10 @@
             </div>
         </aside>
 
-        <!-- Main content -->
+        <!-- Contenido principal del panel del cobrador -->
         <main class="content">
 
-            <!-- Section 1: Welcome banner -->
+            <!-- Sección 1: Banner de bienvenida -->
             <section class="welcome-card" aria-label="Bienvenida">
                 <div class="welcome-card__info">
                     <h1 class="welcome-card__title">Bienvenido, <span id="welcome-user-name">...</span></h1>
@@ -359,7 +359,7 @@
                 </div>
             </section>
 
-            <!-- Section 2: Accesos directos a módulos -->
+            <!-- Sección 2: Accesos directos a los módulos del cobrador -->
             <h2 class="section-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -371,7 +371,7 @@
             </h2>
 
             <div class="modules-grid">
-                <!-- Card 1: Socios -->
+                <!-- Tarjeta 1: Socios asignados -->
                 <a href="/centro-de-jubilados-primavera/public/views/cobrador/socios.html" class="module-card">
                     <div class="module-card__icon module-card__icon--blue">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -389,7 +389,7 @@
                     </div>
                 </a>
 
-                <!-- Card 2: Mis Planillas -->
+                <!-- Tarjeta 2: Mis planillas de cobranza -->
                 <a href="/centro-de-jubilados-primavera/public/views/cobrador/planillas.html" class="module-card">
                     <div class="module-card__icon module-card__icon--amber">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -407,7 +407,7 @@
                     </div>
                 </a>
 
-                <!-- Card 3: Cobro en Sede -->
+                <!-- Tarjeta 3: Cobro en sede -->
                 <a href="/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html" class="module-card">
                     <div class="module-card__icon module-card__icon--green">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -423,7 +423,7 @@
                     </div>
                 </a>
 
-                <!-- Card 4: Mapa de Ruteo -->
+                <!-- Tarjeta 4: Mapa de ruteo -->
                 <a href="/centro-de-jubilados-primavera/public/views/planillas/mapa.html" class="module-card">
                     <div class="module-card__icon module-card__icon--purple">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
     <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <style>
-        /* ── Section titles ───────────────────────────────────── */
+        /* ── Títulos de sección ──────────── */
         .section-title {
             font-size: 1.125rem;
             font-weight: 700;
@@ -30,7 +30,7 @@
             flex-shrink: 0;
         }
 
-        /* ── Search box (DNI) ────────────────────────────────── */
+        /* ── Caja de búsqueda rápida por DNI ── */
         .search-box {
             display: flex;
             gap: 0.5rem;
@@ -67,7 +67,7 @@
             stroke-width: 2.2;
         }
 
-        /* ── DNI result card ─────────────────────────────────── */
+        /* ── Tarjeta de resultado de búsqueda por DNI ── */
         .search-result {
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
@@ -109,7 +109,7 @@
             margin-top: 0.5rem;
         }
 
-        /* ── Status & alert helpers ──────────────────────────── */
+        /* ── Helpers de estado y alertas ──── */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -151,7 +151,7 @@
             border: 1px solid #dbeafe;
         }
 
-        /* ── Empty placeholder ───────────────────────────────── */
+        /* ── Placeholder de estado vacío ──── */
         .empty-placeholder {
             text-align: center;
             color: var(--color-text-muted);
@@ -170,7 +170,7 @@
             opacity: 0.45;
         }
 
-        /* ── Socios table btn-ver ────────────────────────────── */
+        /* ── Botón "Ver" de la tabla de socios ── */
         .btn-ver {
             display: inline-flex;
             align-items: center;
@@ -203,7 +203,7 @@
             stroke-width: 2.2;
         }
 
-        /* ── Animations ──────────────────────────────────────── */
+        /* ── Animaciones ───────────────────── */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -226,7 +226,7 @@
             }
         }
 
-        /* ── Mobile Responsive & Hamburguesa ─────────────────── */
+        /* ── Responsivo móvil y menú hamburguesa ── */
         .mobile-header-bar {
             display: none;
         }
@@ -317,7 +317,7 @@
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="layout">
-        <!-- Mobile Header Bar -->
+        <!-- Barra de cabecera móvil -->
         <div class="mobile-header-bar">
             <button class="btn-hamburger" id="btnToggleSidebar" aria-label="Abrir menú">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -388,7 +388,7 @@
             </div>
         </aside>
 
-        <!-- Main content -->
+        <!-- Contenido principal: búsqueda por DNI y tabla de socios del cobrador -->
         <main class="content">
 
             <div class="content__header">
@@ -398,7 +398,7 @@
                 </div>
             </div>
 
-            <!-- DNI quick search -->
+            <!-- Búsqueda rápida por DNI -->
             <div class="search-box">
                 <input type="text" id="dni-input" placeholder="Búsqueda rápida por DNI exacto..."
                     aria-label="Búsqueda por DNI">
@@ -486,7 +486,7 @@
         (function () {
             'use strict';
 
-            // ── State ─────────────────────────────────────────────────────────────────
+            // ── Estado ──────────────────────────────────
             var state = {
                 pagina: 1,
                 total: 0,
@@ -522,7 +522,7 @@
                 return modalidad === 'cobranza_en_sede' ? ICON_EDIFICIO : ICON_CASA;
             }
 
-            // ── Auth ──────────────────────────────────────────────────────────────────
+            // ── Autenticación y control de acceso ──────
             document.addEventListener('DOMContentLoaded', function () {
                 fetch(API_BASE + '/auth/me')
                     .then(function (res) {
@@ -549,12 +549,12 @@
                         window.location.replace(BASE_URL + '/views/auth/login.html');
                     });
 
-                // Enter key in DNI input
+                // Lanzar búsqueda al presionar Enter en el campo de DNI
                 document.getElementById('dni-input').addEventListener('keypress', function (e) {
                     if (e.key === 'Enter') buscarSocioDni();
                 });
 
-                // Debounced search on tabla toolbar
+                // Búsqueda con retardo (debounce) al escribir en la barra de filtros de la tabla
                 document.getElementById('inputBusqueda').addEventListener('input', function () {
                     clearTimeout(state.debounceTimer);
                     state.debounceTimer = setTimeout(function () {
@@ -625,7 +625,7 @@
                     .catch(function () { cargarSocios(); });
             }
 
-            // ── Socios table ─────────────────────────────────────────────────────────
+            // ── Tabla de socios ────────────────────────
             function buildQueryParams() {
                 var params = new URLSearchParams();
                 params.set('pagina', state.pagina);
@@ -709,7 +709,7 @@
                 document.getElementById('btnPagSiguiente').disabled = state.pagina >= totalPaginas;
             }
 
-            // ── DNI quick search ─────────────────────────────────────────────────────
+            // ── Búsqueda rápida por DNI ────────────────
             window.buscarSocioDni = function () {
                 var dniInput = document.getElementById('dni-input');
                 var resultContainer = document.getElementById('search-result-container');

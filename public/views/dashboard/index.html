@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
     <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <style>
-        /* ── KPI Grid ─────────────────────────────────────── */
+        /* ── Grilla de indicadores clave (KPI) ──────── */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -67,7 +67,7 @@
             font-weight: 500;
         }
 
-        /* ── Section headers ──────────────────────────────── */
+        /* ── Encabezados de sección ──────────────────── */
         .section-header {
             display: flex;
             align-items: center;
@@ -80,7 +80,7 @@
             font-weight: 600;
         }
 
-        /* ── Dashboard two-column ─────────────────────────── */
+        /* ── Diseño de dos columnas del dashboard ─────── */
         .dash-grid {
             display: grid;
             grid-template-columns: 1fr 300px;
@@ -126,7 +126,7 @@
             flex-shrink: 0;
         }
 
-        /* ── Notif card ───────────────────────────────────── */
+        /* ── Tarjeta de notificación sin leer ──────────── */
         .notif-card {
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
@@ -291,7 +291,7 @@
                class="btn btn--secondary btn--sm">Ir a Configuración</a>
         </div>
 
-        <!-- KPI Cards -->
+        <!-- Tarjetas de indicadores clave (KPI) -->
         <div class="kpi-grid" id="kpiGrid">
             <div class="kpi-card">
                 <div class="kpi-card__icon kpi-card__icon--blue">
@@ -342,7 +342,7 @@
             <a href="/centro-de-jubilados-primavera/public/views/notificaciones/index.html" class="btn btn--secondary btn--sm">Ver notificaciones</a>
         </div>
 
-        <!-- Grid inferior -->
+        <!-- Sección inferior: actividad reciente y accesos rápidos -->
         <div class="dash-grid">
             <!-- Actividad reciente -->
             <div>
@@ -481,7 +481,7 @@
                 var dias;
 
                 if (!res.success || !res.data) {
-                    // Nunca se hizo backup
+                    // Si la fecha de backup es nula, es porque nunca se realizó uno: mostrar aviso permanente
                     dias = Infinity;
                     msg.textContent = '⚠️ No hay registros de backup. Se recomienda hacer uno desde Configuración.';
                 } else {

@@ -112,7 +112,7 @@
                 </form>
             </div>
 
-            <!-- Tabla -->
+            <!-- Tabla de planillas generadas con columnas de fecha, zona, cobrador y acciones -->
             <div class="table-container">
                 <table class="table">
                     <thead>
@@ -125,7 +125,7 @@
                         </tr>
                     </thead>
                     <tbody id="tablaPlanillas">
-                        <!-- JS -->
+                        <!-- El JS rellena el cuerpo de esta tabla con los resultados paginados -->
                     </tbody>
                 </table>
             </div>
@@ -139,6 +139,7 @@
     <script>
         let currentPage = 1;
 
+        /* --- Inicialización de filtros y carga inicial --- */
         async function init() {
             const [zonasRes, cobradoresRes] = await Promise.all([
                 fetch(`${API_BASE}/zonas`),
@@ -175,6 +176,7 @@
             loadPlanillas();
         }
 
+        /* --- Utilidades --- */
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -185,6 +187,7 @@
                 .replace(/'/g, '&#039;');
         }
 
+        /* --- Carga y renderizado de planillas --- */
         async function loadPlanillas() {
             const zona = document.getElementById('zonaFilter').value;
             const cobrador = document.getElementById('cobradorFilter').value;
@@ -228,6 +231,7 @@
             }
         }
 
+        /* --- Paginación --- */
         function renderPagination(total, current) {
             const container = document.getElementById('paginacion');
             container.innerHTML = '';
@@ -244,6 +248,7 @@
             }
         }
 
+        /* --- Autenticación y arranque --- */
         document.addEventListener('DOMContentLoaded', function () {
             fetch(API_BASE + '/auth/me')
                 .then(function (res) {

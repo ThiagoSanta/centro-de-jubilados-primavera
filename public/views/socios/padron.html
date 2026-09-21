@@ -118,7 +118,7 @@
                 </div>
             </div>
 
-            <!-- Tabla -->
+            <!-- Tabla del padrón de socios con columnas y estado vacío -->
             <div class="table-wrapper">
                 <table class="table" id="tablaSocios">
                     <thead>
@@ -318,7 +318,7 @@
                     select.appendChild(opt);
                 });
             }).catch(function () {
-                /* Zonas opcionales para filtros */
+                /* Las zonas son opcionales; si el endpoint falla, se omiten sin bloquear la carga */
             });
         }
 

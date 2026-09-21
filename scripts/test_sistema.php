@@ -40,6 +40,7 @@ $ctx = [
     'tests'           => 0,
     'passed'          => 0,
     'failed'          => 0,
+    'omitted'         => 0,             // pruebas omitidas por precondicion no cumplida
     'failures'        => [],
     'admin_cookie'    => null,
     'cobrador_cookie' => null,
@@ -700,6 +701,11 @@ assertStatus($ctx, 'GET /api/pagos sin auth -> 401', 'GET', '/api/pagos', 401, $
 // ============================================================
 
 section('BLOQUE 11: Planillas');
+
+// Obtener zona_id directamente del socio TEST_ recien creado.
+// El propio socio ya tiene deuda domiciliaria pendiente tras la anulacion del pago
+// en el Bloque 10, por lo que la generacion de planilla es deterministica.
+// Si zona_id es null (fallo de geocodificacion), el subtest se marca OMITIDO.
 $zonaIdSocio = null;
 if ($ctx['socio_id']) {
     $r = apiRequest('GET', '/api/socios/' . $ctx['socio_id'], null, $adminCookie);
@@ -710,7 +716,9 @@ assertStatus($ctx, 'GET /api/planillas/cobradores -> 200', 'GET', '/api/planilla
 $r = apiRequest('GET', '/api/planillas', null, $adminCookie);
 assertStatus($ctx, 'GET /api/planillas (historial) -> 200', 'GET', '/api/planillas', 200, $r);
 
-if ($zonaIdSocio && $ctx['cobrador_id']) {
+if ($ctx['cobrador_id'] && $zonaIdSocio) {
+    // El socio TEST_ (cobranza_domiciliaria, activo, con deuda pendiente) esta en esta zona;
+    // no dependemos de socios preexistentes en la BD.
     $r = apiRequest('POST', '/api/planillas', [
         'zona_id'     => $zonaIdSocio,
         'cobrador_id' => $ctx['cobrador_id'],
@@ -734,8 +742,14 @@ if ($zonaIdSocio && $ctx['cobrador_id']) {
             echo "  GET /api/planillas/{id}/pdf -> {$r['status']}                          \033[31mFALLO\033[0m" . PHP_EOL;
         }
     }
+} elseif (!$zonaIdSocio) {
+    // La geocodificacion no asigno zona al socio TEST_; no es posible probar
+    // la generacion de planilla de forma deterministica. Se registra como OMITIDA.
+    $ctx['omitted']++;
+    echo "  \033[33mOMITIDA\033[0m: zona_id del socio TEST_ es null (geocodificacion pendiente)." . PHP_EOL;
+    echo "           Se saltea POST /api/planillas para evitar falsos fallos." . PHP_EOL;
 } else {
-    echo "  ADVERTENCIA: zona o cobrador no disponibles. Saltando generacion de planilla." . PHP_EOL;
+    echo "  ADVERTENCIA: cobrador no disponible. Saltando generacion de planilla." . PHP_EOL;
 }
 $r = apiRequest('POST', '/api/planillas', [
     'zona_id'     => '00000000-0000-0000-0000-000000000000',
@@ -1019,14 +1033,18 @@ echo "\033[1m|                    RESUMEN DE PRUEBAS                           |
 echo "\033[1m+==================================================================+\033[0m" . PHP_EOL;
 echo PHP_EOL;
 
-$total  = $ctx['tests'];
-$passed = $ctx['passed'];
-$failed = $ctx['failed'];
-$pct    = $total > 0 ? round($passed / $total * 100) : 0;
-echo "  Total de pruebas : \033[1m{$total}\033[0m"                                      . PHP_EOL;
-echo "  Pasaron          : \033[32m{$passed}\033[0m"                                    . PHP_EOL;
-echo "  Fallaron         : \033[" . ($failed > 0 ? '31' : '32') . "m{$failed}\033[0m"  . PHP_EOL;
-echo "  Tasa de exito    : {$pct}%"                                                      . PHP_EOL;
+$total   = $ctx['tests'];
+$passed  = $ctx['passed'];
+$failed  = $ctx['failed'];
+$omitted = $ctx['omitted'];
+$pct     = $total > 0 ? round($passed / $total * 100) : 0;
+echo "  Total de pruebas : \033[1m{$total}\033[0m"                                       . PHP_EOL;
+echo "  Pasaron          : \033[32m{$passed}\033[0m"                                     . PHP_EOL;
+echo "  Fallaron         : \033[" . ($failed > 0 ? '31' : '32') . "m{$failed}\033[0m"   . PHP_EOL;
+if ($omitted > 0) {
+    echo "  Omitidas         : \033[33m{$omitted}\033[0m (precondicion no cumplida)"     . PHP_EOL;
+}
+echo "  Tasa de exito    : {$pct}%"                                                       . PHP_EOL;
 echo PHP_EOL;
 
 if (!empty($ctx['failures'])) {
@@ -1036,6 +1054,11 @@ if (!empty($ctx['failures'])) {
     foreach ($ctx['failures'] as $i => $f) {
         echo "  \033[31m" . ($i + 1) . ". {$f}\033[0m" . PHP_EOL;
     }
+    echo PHP_EOL;
+}
+if ($omitted > 0) {
+    echo "\033[33m  NOTA: {$omitted} prueba(s) omitida(s) por precondicion no cumplida\033[0m" . PHP_EOL;
+    echo "\033[33m        (ej: geocodificacion pendiente). No cuentan como fallos.\033[0m"      . PHP_EOL;
     echo PHP_EOL;
 }
 if (!$cleaned) {

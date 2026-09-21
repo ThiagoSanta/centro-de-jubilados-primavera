@@ -203,7 +203,7 @@
                             </tr>
                         </thead>
                         <tbody id="tablaPreview">
-                            <!-- JS will populate -->
+                            <!-- El JS rellena este cuerpo con los socios de la vista previa -->
                         </tbody>
                     </table>
                 </div>
@@ -212,9 +212,11 @@
     </div>
 
     <script>
+        /* --- Configuración del mapa --- */
         let map;
         let markers = [];
 
+        /* --- Inicialización de la vista --- */
         async function init() {
             try {
                 const [zonasData, cobData] = await Promise.all([
@@ -249,6 +251,7 @@
             }
         }
 
+        /* --- Configuración y renderizado de mapa Leaflet --- */
         function initMap() {
             map = L.map('mapPreview').setView([-32.820366, -61.403157], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -273,6 +276,7 @@
                 .replace(/'/g, '&#039;');
         }
 
+        /* --- Carga de datos y vista previa --- */
         async function loadPreview() {
             const zonaId = document.getElementById('zonaSelect').value;
             const container = document.getElementById('previewContainer');
@@ -334,6 +338,7 @@
             }
         }
 
+        /* --- Generación de planilla --- */
         async function generarPlanilla(e) {
             e.preventDefault();
             const zona_id = document.getElementById('zonaSelect').value;
@@ -377,6 +382,7 @@
             }
         }
 
+        /* --- Autenticación y arranque --- */
         document.addEventListener('DOMContentLoaded', function () {
             fetch(API_BASE + '/auth/me')
                 .then(function (res) {

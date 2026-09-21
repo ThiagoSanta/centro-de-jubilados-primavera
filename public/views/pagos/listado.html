@@ -226,10 +226,11 @@
     </div>
 
     <script>
-
+        /* --- Variables de estado --- */
         let pagoAAnular = null;
         let paginaActual = 1;
 
+        /* --- Inicialización y autenticación --- */
         document.addEventListener('DOMContentLoaded', () => {
             fetch(API_BASE + '/auth/me')
                 .then(res => {
@@ -254,6 +255,7 @@
                 });
         });
 
+        /* --- Utilidades --- */
         function escapeHtml(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -264,6 +266,7 @@
                 .replace(/'/g, '&#039;');
         }
 
+        /* --- Carga de pagos y filtros --- */
         async function cargarPagos(pagina) {
             paginaActual = pagina;
             const tbody = document.getElementById('tablaPagos');
@@ -344,6 +347,7 @@
             container.innerHTML = html;
         }
 
+        /* --- Modal de anulación --- */
         function abrirModalAnular(id) {
             pagoAAnular = id;
             document.getElementById('motivoAnulacion').value = '';

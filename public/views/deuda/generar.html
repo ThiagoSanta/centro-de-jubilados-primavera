@@ -31,7 +31,7 @@
             max-width: 500px;
         }
 
-        /* Modal simple */
+        /* Estilos del modal de advertencia previo a la generación masiva de deudas */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -281,11 +281,11 @@
                     const result = data.data;
 
                     if (result.advertencias && result.advertencias.length > 0 && !confirmarDuplicado) {
-                        // Mostrar advertencia
+                        // Si hay deudas del período seleccionado ya generadas, mostrar advertencia antes de confirmar
                         document.getElementById('cantDuplicados').textContent = result.advertencias.length;
                         document.getElementById('modalAdvertencia').style.display = 'flex';
                     } else {
-                        // Mostrar resultados finales
+                        // Generación exitosa: mostrar el resumen con cantidad de deudas creadas y los errores si los hubiera
                         document.getElementById('resultadosCard').style.display = 'block';
                         document.getElementById('resGeneradas').textContent = `Deudas generadas: ${result.generadas}`;
                         document.getElementById('resOmitidas').textContent = `Deudas omitidas: ${result.omitidas}`;

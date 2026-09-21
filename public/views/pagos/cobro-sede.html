@@ -128,7 +128,7 @@
             border-color: #cbd5e1;
         }
 
-        /* ── Mobile Responsive & Hamburguesa ─────────────────── */
+        /* ── Responsivo móvil y menú hamburguesa ── */
         .mobile-header-bar {
             display: none;
         }
@@ -219,14 +219,14 @@
 <body>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="layout">
-        <!-- Mobile Header Bar -->
+        <!-- Barra de cabecera móvil (visible solo en pantallas pequeñas) -->
         <div class="mobile-header-bar">
             <button class="btn-hamburger" id="btnToggleSidebar" aria-label="Abrir menú">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <span class="mobile-header-bar__title">Centro Primavera — Cobro en Sede</span>
         </div>
-        <!-- Sidebar (populated dynamically based on role) -->
+        <!-- Barra lateral (se rellena dinámicamente según el rol del usuario autenticado) -->
         <aside class="sidebar" id="appSidebar">
             <div class="sidebar__brand">
                 <div class="sidebar__brand-title">Centro Primavera</div>
@@ -427,7 +427,7 @@
                         nav.innerHTML = buildSidebarItems(SIDEBAR_COBRADOR);
                         footer.style.display = '';
                     } else {
-                        // administrador u otro rol
+                        // Rol no cobrador: se muestra la navegación de administrador sin botón de logout en el footer
                         rolLabel.textContent = 'Sistema de Gestión';
                         nav.innerHTML = buildSidebarItems(SIDEBAR_ADMIN);
                         footer.style.display = 'none';
@@ -721,7 +721,7 @@
 
                     document.getElementById('deudasContainer').style.display = 'none';
 
-                    // Mostrar acciones post-pago
+                    // Pago exitoso: mostrar enlaces al comprobante PDF y al mensaje de WhatsApp
                     const actions = document.getElementById('resultActions');
                     actions.style.display = 'flex';
                     document.getElementById('linkComprobante').href = data.data.comprobante_url;

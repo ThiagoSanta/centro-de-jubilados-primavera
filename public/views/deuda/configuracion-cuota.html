@@ -161,7 +161,7 @@
     </div>
 
     <script>
-
+        /* --- Inicialización y autenticación --- */
         document.addEventListener('DOMContentLoaded', () => {
             fetch(API_BASE + '/auth/me')
                 .then(res => {
@@ -214,6 +214,7 @@
                 });
         });
 
+        /* --- Configuración y consulta de cuota social --- */
         async function cargarCuotaVigente() {
             try {
                 const res = await fetch(`${BASE_URL}/api/cuota/vigente`);
@@ -260,6 +261,7 @@
             }
         }
 
+        /* --- Utilidades --- */
         function mostrarAlerta(mensaje, tipo) {
             const container = document.getElementById('alertContainer');
             const alert = document.createElement('div');
@@ -277,6 +279,7 @@
             setTimeout(() => { alert.remove(); }, 5000);
         }
 
+        /* --- Gestión de copias de seguridad (Backup) --- */
         async function cargarUltimoBackup() {
             try {
                 const res = await fetch(`${API_BASE}/backup/ultimo`);
