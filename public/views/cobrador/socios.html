@@ -645,12 +645,17 @@
             function cargarSocios() {
                 var tbody = document.getElementById('sociosBody');
                 var emptyEl = document.getElementById('sociosEmpty');
-                tbody.innerHTML = '<tr class="loading-row"><td colspan="7">Cargando socios...</td></tr>';
+                if (tbody.children.length === 0 || tbody.querySelector('.loading-row')) {
+                    tbody.innerHTML = '<tr class="loading-row"><td colspan="7">Cargando socios...</td></tr>';
+                } else {
+                    tbody.style.opacity = '0.5';
+                }
                 emptyEl.style.display = 'none';
 
                 fetch(API_BASE + '/socios?' + buildQueryParams())
                     .then(function (res) { return res.json(); })
                     .then(function (result) {
+                        tbody.style.opacity = '1';
                         var data = result.data || {};
                         state.socios = data.data || [];
                         state.total = data.total || 0;
@@ -660,6 +665,7 @@
                         renderPaginacion();
                     })
                     .catch(function () {
+                        tbody.style.opacity = '1';
                         tbody.innerHTML = '';
                         emptyEl.style.display = 'flex';
                     });
@@ -679,7 +685,7 @@
                 emptyEl.style.display = 'none';
                 tbody.innerHTML = state.socios.map(function (socio) {
                     var profileUrl = BASE_URL + '/views/socios/perfil.html?id=' + encodeURIComponent(socio.id);
-                    return '<tr style="cursor:pointer;" onclick="window.location.replace(\'' + profileUrl + '\')">' +
+                    return '<tr class="fade-in" style="cursor:pointer;" onclick="window.location.replace(\'' + profileUrl + '\')">' +
                         '<td>' + escapeHtml(socio.numero_socio) + '</td>' +
                         '<td>' + escapeHtml(socio.nombre_apellido) + '</td>' +
                         '<td>' + escapeHtml(socio.dni) + '</td>' +
@@ -688,7 +694,7 @@
                         '<td>' + getModalidadIcon(socio.modalidad_cobranza) + '</td>' +
                         '<td class="table__actions table__actions-cell" onclick="event.stopPropagation()">' +
                         '<a href="' + profileUrl + '" class="btn-ver">' +
-                        '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
                         'Ver perfil' +
                         '</a>' +
                         '</td>' +

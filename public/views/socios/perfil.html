@@ -67,9 +67,13 @@
 
         <!-- Contenido principal: perfil, tabs, mapa y acciones -->
         <main class="content">
-            <div style="margin-bottom:1rem;">
-                <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" style="font-size:0.8125rem;color:var(--color-text-muted);">&larr; Volver al padrón</a>
-            </div>
+            <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Volver al padrón</span>
+            </a>
 
             <div id="alertContainer"></div>
             <div id="loadingState" style="text-align:center;padding:3rem;color:var(--color-text-muted);">

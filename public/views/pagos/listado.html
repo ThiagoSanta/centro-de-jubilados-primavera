@@ -270,7 +270,11 @@
         async function cargarPagos(pagina) {
             paginaActual = pagina;
             const tbody = document.getElementById('tablaPagos');
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Cargando pagos...</td></tr>';
+            if (tbody.children.length === 0 || tbody.querySelector('td[colspan="7"]')) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Cargando pagos...</td></tr>';
+            } else {
+                tbody.style.opacity = '0.5';
+            }
             
             const params = new URLSearchParams();
             if (document.getElementById('filtroSocio').value) params.append('socio_id', document.getElementById('filtroSocio').value);
@@ -282,6 +286,7 @@
             try {
                 const res = await fetch(`${BASE_URL}/api/pagos?${params.toString()}`);
                 const data = await res.json();
+                tbody.style.opacity = '1';
 
                 if (data.success) {
                     renderizarTabla(data.data.items || []);
@@ -290,6 +295,7 @@
                     tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${escapeHtml(data.message)}</td></tr>`;
                 }
             } catch (err) {
+                tbody.style.opacity = '1';
                 tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error de conexión.</td></tr>';
             }
         }
@@ -305,6 +311,7 @@
 
             pagos.forEach(pago => {
                 const tr = document.createElement('tr');
+                tr.className = 'fade-in';
                 
                 const fecha = new Date(pago.fecha_hora).toLocaleString('es-AR');
                 const badgeClass = pago.estado === 'registrado' ? 'badge--registrado' : 'badge--anulado';

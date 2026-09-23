@@ -348,11 +348,16 @@
         function cargarSocios() {
             var tbody = document.getElementById('tablaBody');
             var emptyState = document.getElementById('emptyState');
-            tbody.innerHTML = '<tr class="loading-row"><td colspan="8">Cargando socios...</td></tr>';
+            if (tbody.children.length === 0 || tbody.querySelector('.loading-row')) {
+                tbody.innerHTML = '<tr class="loading-row"><td colspan="8">Cargando socios...</td></tr>';
+            } else {
+                tbody.style.opacity = '0.5';
+            }
             emptyState.style.display = 'none';
 
-            apiFetch(BASE_URL + '/api/socios?' + buildQueryParams())
+            return apiFetch(BASE_URL + '/api/socios?' + buildQueryParams())
                 .then(function (result) {
+                    tbody.style.opacity = '1';
                     var data = result.data;
                     state.socios = (data && data.data) ? data.data : (Array.isArray(data) ? data : []);
                     state.total = (data && data.total !== undefined) ? data.total : (result.total || 0);
@@ -362,6 +367,7 @@
                     renderPaginacion();
                 })
                 .catch(function (err) {
+                    tbody.style.opacity = '1';
                     tbody.innerHTML = '';
                     emptyState.style.display = 'flex';
                     showAlert(err.message);
@@ -385,7 +391,7 @@
                     ? '<span class="deuda--si">Con deuda</span>'
                     : '<span class="deuda--no">Al día</span>';
 
-                return '<tr data-id="' + escapeHtml(socio.id) + '">' +
+                return '<tr class="fade-in" data-id="' + escapeHtml(socio.id) + '">' +
                     '<td>' + socio.numero_socio + '</td>' +
                     '<td>' + escapeHtml(socio.nombre_apellido) + '</td>' +
                     '<td>' + escapeHtml(socio.dni) + '</td>' +
@@ -669,7 +675,9 @@
                         : BASE_URL + '/views/auth/login.html');
                     return;
                 }
-                cargarZonas().then(cargarSocios);
+                Promise.all([cargarZonas(), cargarSocios()]).then(function () {
+                    renderTabla();
+                });
             })
             .catch(function () {
                 window.location.replace(BASE_URL + '/views/auth/login.html');

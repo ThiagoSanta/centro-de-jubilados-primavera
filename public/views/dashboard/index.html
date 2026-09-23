@@ -286,7 +286,14 @@
              background:rgba(217,119,6,.1); border:1px solid rgba(217,119,6,.35);
              border-radius:var(--radius); color:#92400e; font-size:0.875rem;
              display:flex; align-items:center; justify-content:space-between; gap:1rem;">
-            <span id="backupWarningMsg">⚠️ Cargando estado de backup...</span>
+            <div style="display:flex; align-items:center; gap:0.625rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span id="backupWarningMsg">Cargando estado de backup...</span>
+            </div>
             <a href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html"
                class="btn btn--secondary btn--sm">Ir a Configuración</a>
         </div>
@@ -483,11 +490,11 @@
                 if (!res.success || !res.data) {
                     // Si la fecha de backup es nula, es porque nunca se realizó uno: mostrar aviso permanente
                     dias = Infinity;
-                    msg.textContent = '⚠️ No hay registros de backup. Se recomienda hacer uno desde Configuración.';
+                    msg.textContent = 'No hay registros de backup. Se recomienda hacer uno desde Configuración.';
                 } else {
                     dias = res.data.dias_transcurridos;
                     if (dias >= diasUmbral) {
-                        msg.textContent = '⚠️ Hace ' + dias + ' día(s) que no se realiza un backup. Se recomienda hacer uno.';
+                        msg.textContent = 'Hace ' + dias + ' día(s) que no se realiza un backup. Se recomienda hacer uno.';
                     }
                 }
 

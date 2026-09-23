@@ -66,9 +66,13 @@
 
         <!-- Contenido principal: formulario de importación CSV e inconsistencias -->
         <main class="content">
-            <div style="margin-bottom:1rem;">
-                <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" style="font-size:0.8125rem;color:var(--color-text-muted);">&larr; Volver al padrón</a>
-            </div>
+            <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                <span>Volver al padrón</span>
+            </a>
 
             <div class="content__header">
                 <div>
@@ -124,7 +128,7 @@
                     </div>
 
                     <!-- Resultado de la importación: contadores de éxito y fallos -->
-                    <div id="resultadoImport" style="display:none;">
+                    <div id="resultadoImport" class="fade-in" style="display:none; margin-top:1.25rem;">
                         <div class="result-cards">
                             <div class="result-card result-card--success">
                                 <div class="result-card__number" id="resultExitosos">0</div>
@@ -314,9 +318,7 @@
                 showAlert(err.message);
             }).finally(function () {
                 btn.disabled = false;
-                setTimeout(function () {
-                    progressBar.classList.remove('progress-bar--visible');
-                }, 1000);
+                progressBar.classList.remove('progress-bar--visible');
             });
         });
 
@@ -324,7 +326,11 @@
         function cargarInconsistencias() {
             var tbody = document.getElementById('tablaInconsistencias');
             var empty = document.getElementById('inconsistenciasEmpty');
-            tbody.innerHTML = '<tr class="loading-row"><td colspan="4">Cargando inconsistencias...</td></tr>';
+            if (tbody.children.length === 0 || tbody.querySelector('.loading-row')) {
+                tbody.innerHTML = '<tr class="loading-row"><td colspan="4">Cargando inconsistencias...</td></tr>';
+            } else {
+                tbody.style.opacity = '0.5';
+            }
             empty.style.display = 'none';
 
             var estado = document.getElementById('filtroInconsistencia').value;
@@ -333,6 +339,7 @@
             fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                 .then(function (res) { return res.json(); })
                 .then(function (data) {
+                    tbody.style.opacity = '1';
                     var items = [];
                     if (data && data.success && data.data) {
                         items = Array.isArray(data.data) ? data.data : (data.data.data || []);
@@ -345,7 +352,7 @@
                     }
 
                     tbody.innerHTML = items.map(function (item) {
-                        return '<tr>' +
+                        return '<tr class="fade-in">' +
                             '<td style="font-size:0.8125rem;">' + formatDatosRegistro(item.datos_registro) + '</td>' +
                             '<td style="font-size:0.8125rem;">' + escapeHtml(item.motivo_rechazo) + '</td>' +
                             '<td>' + estadoBadge(item.estado) + '</td>' +
@@ -354,6 +361,7 @@
                     }).join('');
                 })
                 .catch(function () {
+                    tbody.style.opacity = '1';
                     tbody.innerHTML = '';
                     empty.style.display = 'flex';
                     empty.querySelector('.empty-state__text').textContent =
