@@ -26,7 +26,7 @@ declare(strict_types=1);
 define('BASE_URL',      'http://localhost/centro-de-jubilados-primavera/public');
 define('ADMIN_USER',    'admin');
 define('ADMIN_PASS',    'Admin1234!');
-define('COBRADOR_USER', 'pepe');
+define('COBRADOR_USER', 'TEST_cobrador_qa_9f3k');
 define('COBRADOR_PASS', 'Cobrador1!');
 define('TEST_PREFIX',   'TEST_');
 define('TEST_DNI',      '99999998');   // DNI reservado para socio de prueba principal
@@ -223,9 +223,11 @@ if (in_array('--limpiar', $argv ?? [], true)) {
         $deletedAuditoria += $s->rowCount();
 
         // 3. Limpiar notificaciones vinculadas a datos TEST_
+        $deletedNotificaciones = 0;
         try {
-            $pdo->prepare("DELETE FROM notificaciones WHERE mensaje LIKE 'TEST\_%' OR referencia LIKE ? OR referencia LIKE ?")
-                ->execute(['%' . TEST_DNI . '%', '%' . TEST_DNI2 . '%']);
+            $s = $pdo->prepare("DELETE FROM notificaciones WHERE mensaje LIKE '%TEST\_%' OR referencia LIKE ? OR referencia LIKE ?");
+            $s->execute(['%' . TEST_DNI . '%', '%' . TEST_DNI2 . '%']);
+            $deletedNotificaciones += $s->rowCount();
         } catch (Exception $e) { /* ignorar */ }
 
         // 4. Limpiar planillas y detalle vinculadas al cobrador TEST_
@@ -270,6 +272,15 @@ if (in_array('--limpiar', $argv ?? [], true)) {
 
             // Planillas detalle vinculadas a esos socios
             $pdo->prepare("DELETE FROM planilla_socio WHERE socio_id IN ({$in})")->execute($testSocioIds);
+
+            // Notificaciones que referencien al socio_id en JSON
+            foreach ($testSocioIds as $sId) {
+                try {
+                    $sNotif = $pdo->prepare("DELETE FROM notificaciones WHERE referencia LIKE ?");
+                    $sNotif->execute(['%' . $sId . '%']);
+                    $deletedNotificaciones += $sNotif->rowCount();
+                } catch (Exception $e) { /* ignorar */ }
+            }
 
             // Observaciones e historial
             foreach (['observaciones', 'historial_estados'] as $tabla) {
@@ -322,6 +333,7 @@ if (in_array('--limpiar', $argv ?? [], true)) {
         echo "  Deudas eliminadas       : {$deletedDeudas}"    . PHP_EOL;
         echo "  Socios eliminados       : {$deletedSocios}"    . PHP_EOL;
         echo "  Usuarios TEST_ borrados : {$deletedUsuarios}"  . PHP_EOL;
+        echo "  Notificaciones elim.    : {$deletedNotificaciones}" . PHP_EOL;
         echo PHP_EOL;
         echo "\033[32m  Limpieza completada exitosamente.\033[0m" . PHP_EOL . PHP_EOL;
     } catch (Exception $e) {
@@ -420,7 +432,7 @@ $r = apiRequest('GET', '/api/usuarios');
 assertStatus($ctx, 'GET /api/usuarios sin auth -> 401', 'GET', '/api/usuarios', 401, $r);
 
 $nuevoCobradorPayload = [
-    'nombre'     => 'TEST_Pepe',
+    'nombre'     => 'TEST_Cobrador',
     'apellido'   => 'TEST_Prueba',
     'usuario'    => COBRADOR_USER,
     'contrasena' => COBRADOR_PASS,
@@ -781,16 +793,41 @@ if ($ctx['cobrador_cookie'] && $zonaIdSocio && $ctx['cobrador_id']) {
 section('BLOQUE 12: Notificaciones');
 $r = apiRequest('GET', '/api/notificaciones', null, $adminCookie);
 assertStatus($ctx, 'GET /api/notificaciones -> 200', 'GET', '/api/notificaciones', 200, $r);
-$notificaciones = $r['body']['data'] ?? [];
-if (!empty($notificaciones)) {
-    // Usamos la notificación más reciente ($notif1), generada por la anulación de pago del Bloque 9
-    $notif1 = $notificaciones[0]['id'] ?? null;
 
-    // 1. Marcar como leída
+// --- Generar notificacion TEST_ propia (deterministica) ---
+// Damos de baja al 2do socio TEST_ para forzar la creacion de una notificacion
+// con mensaje que contiene 'TEST_'. Esto evita depender de notificaciones[0]
+// que puede ser una notificacion real y vencida (p.ej. tras limpiar residuos).
+$notif1 = null;
+if ($ctx['socio_id2']) {
+    $rBaja = apiRequest('DELETE', '/api/socios/' . $ctx['socio_id2'], [
+        'motivo' => 'TEST_ baja de prueba automatizada',
+    ], $adminCookie);
+    assertStatus($ctx, 'DELETE socio_id2 para generar notif TEST_ -> 200', 'DELETE', '/api/socios/{id}', 200, $rBaja);
+
+    // Buscar la notificacion TEST_ recien creada en el listado (no archivada)
+    $rNotifs = apiRequest('GET', '/api/notificaciones', null, $adminCookie);
+    $todasNotifs = $rNotifs['body']['data'] ?? [];
+    foreach ($todasNotifs as $notifItem) {
+        $msg    = $notifItem['mensaje'] ?? '';
+        $estado = $notifItem['estado']  ?? '';
+        if (stripos($msg, 'TEST_') !== false && $estado !== 'archivada') {
+            $notif1 = $notifItem['id'];
+            echo "  Notificacion TEST_ encontrada: {$notif1} (msg: " . substr($msg, 0, 60) . ")" . PHP_EOL;
+            break;
+        }
+    }
+    if (!$notif1) {
+        echo "  ADVERTENCIA: No se encontro notificacion TEST_ tras la baja de socio_id2." . PHP_EOL;
+    }
+}
+
+if ($notif1) {
+    // 1. Marcar como leida
     $r = apiRequest('POST', '/api/notificaciones/' . $notif1 . '/leida', [], $adminCookie);
     assertStatus($ctx, 'POST /api/notificaciones/{id}/leida -> 200', 'POST', '/api/notificaciones/{id}/leida', 200, $r);
 
-    // 2. Revertir ANTES de archivar (revertir exige estado != 'archivada' y archiva internamente al completar)
+    // 2. Revertir (exige estado != 'archivada'; la ventana de tiempo debe estar vigente)
     $r = apiRequest('POST', '/api/notificaciones/' . $notif1 . '/revertir', [], $adminCookie);
     assertStatus($ctx, 'POST /api/notificaciones/{id}/revertir -> 200', 'POST', '/api/notificaciones/{id}/revertir', 200, $r);
 
@@ -798,8 +835,26 @@ if (!empty($notificaciones)) {
     $r = apiRequest('POST', '/api/notificaciones/' . $notif1 . '/archivar', [], $adminCookie);
     assertStatus($ctx, 'POST /api/notificaciones/{id}/archivar -> 200', 'POST', '/api/notificaciones/{id}/archivar', 200, $r);
 } else {
-    echo "  ADVERTENCIA: No hay notificaciones disponibles para pruebas individuales." . PHP_EOL;
+    echo "  ADVERTENCIA: No hay notificacion TEST_ disponible; saltando pruebas individuales." . PHP_EOL;
 }
+
+// Verificar que la reversion de la notificacion realmente reactivo al socio_id2
+// (prueba de extremo a extremo: revertir notif de baja => socio vuelve a 'activo').
+// NO se llama a POST /revertir de nuevo: eso ya lo hizo el endpoint de notificacion.
+if ($ctx['socio_id2']) {
+    $rCheck2 = apiRequest('GET', '/api/socios/' . $ctx['socio_id2'], null, $adminCookie);
+    $estadoSocio2 = $rCheck2['body']['data']['estado'] ?? null;
+    $ctx['tests']++;
+    if ($estadoSocio2 === 'activo') {
+        $ctx['passed']++;
+        echo "  Verificar socio_id2 activo tras revertir notif de baja         \033[32mOK\033[0m" . PHP_EOL;
+    } else {
+        $ctx['failed']++;
+        $ctx['failures'][] = "Verificar socio_id2 activo: estado esperado 'activo', recibido '" . ($estadoSocio2 ?? 'null') . "'";
+        echo "  Verificar socio_id2 activo tras revertir notif de baja         \033[31mFALLO\033[0m" . PHP_EOL;
+    }
+}
+
 $r = apiRequest('GET', '/api/notificaciones');
 assertStatus($ctx, 'GET /api/notificaciones sin auth -> 401', 'GET', '/api/notificaciones', 401, $r);
 
@@ -949,7 +1004,7 @@ try {
 
     // 3. Limpiar notificaciones vinculadas a datos TEST_
     try {
-        $pdo->prepare("DELETE FROM notificaciones WHERE mensaje LIKE 'TEST\_%' OR referencia LIKE ? OR referencia LIKE ?")
+        $pdo->prepare("DELETE FROM notificaciones WHERE mensaje LIKE '%TEST\_%' OR referencia LIKE ? OR referencia LIKE ?")
             ->execute(['%' . TEST_DNI . '%', '%' . TEST_DNI2 . '%']);
     } catch (Exception $e) { /* ignorar */ }
 
@@ -989,6 +1044,11 @@ try {
         }
         $pdo->prepare("DELETE FROM pagos WHERE socio_id IN ({$in})")->execute($socioIds);
         $pdo->prepare("DELETE FROM planilla_socio WHERE socio_id IN ({$in})")->execute($socioIds);
+        foreach ($socioIds as $sId) {
+            try {
+                $pdo->prepare("DELETE FROM notificaciones WHERE referencia LIKE ?")->execute(['%' . $sId . '%']);
+            } catch (Exception $e) { /* ignorar */ }
+        }
         foreach (['observaciones', 'historial_estados'] as $tabla) {
             try {
                 $pdo->prepare("DELETE FROM {$tabla} WHERE socio_id IN ({$in})")->execute($socioIds);
