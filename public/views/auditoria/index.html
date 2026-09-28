@@ -49,6 +49,31 @@
         .py-2 { padding-top: 0.5rem;   padding-bottom: 0.5rem; }
         .mt-1 { margin-top: 0.25rem; }
 
+        /* Filtros — misma estructura que pagos/listado.html */
+        .filters-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        /* .form-label no esta definida en main.css (el selector global es .form-group label);
+           se define aqui para que funcione fuera de .form-group. */
+        .form-label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 0.375rem;
+        }
+
         /* Dimensiones */
         .max-w-xs { max-width: 20rem; }
     </style>
@@ -119,21 +144,38 @@
         <div id="alertContainer"></div>
 
         <!-- Filtros -->
-        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; margin-bottom:1rem;">
-            <input type="text" id="filterUsuario" placeholder="ID Usuario" class="input" style="width:140px;">
-            <input type="text" id="filterAccion" placeholder="Acción (ej. crear_socio)" class="input" style="width:200px;">
-            <select id="filterEntidad" class="input" style="width:160px;">
-                <option value="">Todas las entidades</option>
-                <option value="socios">Socios</option>
-                <option value="pagos">Pagos</option>
-                <option value="deudas">Deudas</option>
-                <option value="planillas">Planillas</option>
-                <option value="observaciones">Observaciones</option>
-            </select>
-            <input type="date" id="filterDesde" class="input">
-            <input type="date" id="filterHasta" class="input">
-            <button onclick="currentPage=1; fetchAuditoria()" class="btn btn--primary">Filtrar</button>
-            <button onclick="limpiarFiltros()" class="btn btn--secondary">Limpiar</button>
+        <div class="filters-container">
+            <div class="filter-group">
+                <label class="form-label" for="filterUsuario">ID Usuario</label>
+                <input type="text" id="filterUsuario" class="form-control" placeholder="UUID del usuario...">
+            </div>
+            <div class="filter-group">
+                <label class="form-label" for="filterAccion">Acción</label>
+                <input type="text" id="filterAccion" class="form-control" placeholder="ej. crear_socio">
+            </div>
+            <div class="filter-group">
+                <label class="form-label" for="filterEntidad">Entidad</label>
+                <select id="filterEntidad" class="form-control">
+                    <option value="">Todas las entidades</option>
+                    <option value="socios">Socios</option>
+                    <option value="pagos">Pagos</option>
+                    <option value="deudas">Deudas</option>
+                    <option value="planillas">Planillas</option>
+                    <option value="observaciones">Observaciones</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="form-label" for="filterDesde">Fecha Desde</label>
+                <input type="date" id="filterDesde" class="form-control">
+            </div>
+            <div class="filter-group">
+                <label class="form-label" for="filterHasta">Fecha Hasta</label>
+                <input type="date" id="filterHasta" class="form-control">
+            </div>
+            <div class="filter-group" style="display:flex; align-items:flex-end; gap:0.5rem;">
+                <button type="button" onclick="currentPage=1; fetchAuditoria()" class="btn btn--primary" style="flex:1;">Filtrar</button>
+                <button type="button" onclick="limpiarFiltros()" class="btn btn--secondary" style="flex:1;">Limpiar</button>
+            </div>
         </div>
 
         <!-- Tabla de auditoría -->

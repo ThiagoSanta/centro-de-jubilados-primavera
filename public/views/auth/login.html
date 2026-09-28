@@ -78,50 +78,20 @@
             box-shadow: var(--shadow);
             overflow: hidden;
             z-index: 10;
-            transform: translateY(0);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .login-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.25), 0 15px 15px -5px rgba(0, 0, 0, 0.15);
         }
 
         .login-header {
             background-color: var(--primary);
             color: #ffffff;
-            padding: 3rem 2.5rem 2rem 2.5rem;
+            padding: 2.25rem 2.5rem 1.75rem 2.5rem;
             text-align: center;
             position: relative;
         }
 
-        /* Marca decorativa del logotipo centrada en el encabezado */
-        .logo-mark {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
-            border-radius: 14px;
-            margin: 0 auto 1.25rem auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .logo-mark svg {
-            width: 28px;
-            height: 28px;
-            fill: none;
-            stroke: #ffffff;
-            stroke-width: 2.2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
         .login-header h1 {
-            font-size: 1.625rem;
+            font-size: 1.25rem;
+            line-height: 1.3;
             font-weight: 700;
             margin-bottom: 0.5rem;
             letter-spacing: -0.03em;
@@ -210,6 +180,31 @@
             color: var(--accent);
         }
 
+        /* Padding derecho del input de contraseña para dar espacio al botón ojo */
+        #password {
+            padding-right: 2.75rem;
+        }
+
+        /* Botón mostrar/ocultar contraseña */
+        .toggle-password {
+            position: absolute;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .toggle-password:hover {
+            color: var(--accent);
+        }
+
         .btn-submit {
             display: flex;
             align-items: center;
@@ -280,17 +275,7 @@
             }
         }
 
-        @keyframes float {
 
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-6px);
-            }
-        }
 
         @keyframes spin {
             to {
@@ -316,12 +301,7 @@
 <body>
     <div class="login-card">
         <div class="login-header">
-            <div class="logo-mark">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-            </div>
-            <h1>Centro Primavera</h1>
+            <h1>Centro de Jubilados Primavera</h1>
             <p>Acceso al Sistema de Gestión</p>
         </div>
         <div class="login-body">
@@ -350,6 +330,15 @@
                         </span>
                         <input type="password" id="password" name="password" class="form-control"
                             placeholder="Ingrese su contraseña" required autocomplete="current-password">
+                        <button type="button" id="togglePassword" class="toggle-password"
+                            aria-label="Mostrar contraseña">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                 stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
@@ -444,6 +433,22 @@
                 btnText.textContent = 'Iniciar sesión';
             }
         }
+
+        // ── Botón mostrar/ocultar contraseña ─────────────────────────────────
+        // Nombres únicos (btnTogglePassword, campoPassword) para no redeclarar
+        // las constantes ya existentes en el scope del handler de submit.
+        const btnTogglePassword = document.getElementById('togglePassword');
+        const campoPassword     = document.getElementById('password');
+        btnTogglePassword.addEventListener('click', function () {
+            const visible = campoPassword.type === 'text';
+            campoPassword.type = visible ? 'password' : 'text';
+            this.setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+            this.querySelector('svg').innerHTML = visible
+                ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+                : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>'
+                  + '<path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>'
+                  + '<line x1="1" y1="1" x2="23" y2="23"/>';
+        });
     </script>
 </body>
 
