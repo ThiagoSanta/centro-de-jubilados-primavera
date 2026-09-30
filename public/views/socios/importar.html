@@ -87,44 +87,57 @@
             <div class="card">
                 <div class="card__header">Archivo CSV</div>
                 <div class="card__body">
-                    <div class="drop-zone" id="dropZone">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        <div class="drop-zone__title">Arrastre un archivo CSV aquí</div>
-                        <div class="drop-zone__hint">o haga clic para seleccionar un archivo</div>
-                        <div class="drop-zone__file" id="fileName" style="display:none;"></div>
-                    </div>
-                    <input type="file" id="fileInput" accept=".csv" style="display:none;">
+                    <!-- Selector de archivo -->
+                    <div id="seccionSelectorArchivo">
+                        <div class="drop-zone" id="dropZone">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <div class="drop-zone__title">Arrastre un archivo CSV aquí</div>
+                            <div class="drop-zone__hint">o haga clic para seleccionar un archivo</div>
+                            <div class="drop-zone__file" id="fileName" style="display:none;"></div>
+                        </div>
+                        <input type="file" id="fileInput" accept=".csv" style="display:none;">
 
-                    <div class="columns-table">
-                        <p style="font-size:0.8125rem;color:var(--color-text-muted);margin-top:1rem;">Columnas esperadas en el CSV:</p>
-                        <div class="table-wrapper" style="margin-top:0.5rem;">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Columna</th>
-                                        <th>Obligatorio</th>
-                                        <th>Descripción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td><code>nombre_apellido</code></td><td>Sí</td><td>Nombre completo del socio</td></tr>
-                                    <tr><td><code>dni</code></td><td>Sí</td><td>Documento de identidad</td></tr>
-                                    <tr><td><code>fecha_nacimiento</code></td><td>Sí</td><td>Formato YYYY-MM-DD</td></tr>
-                                    <tr><td><code>telefono</code></td><td>Sí</td><td>Número de contacto</td></tr>
-                                    <tr><td><code>mutual</code></td><td>No</td><td>Obra social o mutual</td></tr>
-                                    <tr><td><code>direccion</code></td><td>Sí</td><td>Domicilio del socio</td></tr>
-                                    <tr><td><code>modalidad_cobranza</code></td><td>Sí</td><td><code>cobranza_domiciliaria</code> o <code>cobranza_en_sede</code></td></tr>
-                                </tbody>
-                            </table>
+                        <div class="columns-table">
+                            <p style="font-size:0.8125rem;color:var(--color-text-muted);margin-top:1rem;">Columnas esperadas en el CSV:</p>
+                            <div class="table-wrapper" style="margin-top:0.5rem;">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Columna</th>
+                                            <th>Obligatorio</th>
+                                            <th>Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td><code>nombre_apellido</code></td><td>Sí</td><td>Nombre completo del socio</td></tr>
+                                        <tr><td><code>dni</code></td><td>Sí</td><td>Documento de identidad</td></tr>
+                                        <tr><td><code>fecha_nacimiento</code></td><td>Sí</td><td>Formato YYYY-MM-DD</td></tr>
+                                        <tr><td><code>telefono</code></td><td>Sí</td><td>Número de contacto</td></tr>
+                                        <tr><td><code>mutual</code></td><td>No</td><td>Obra social o mutual</td></tr>
+                                        <tr><td><code>direccion</code></td><td>Sí</td><td>Domicilio del socio</td></tr>
+                                        <tr><td><code>modalidad_cobranza</code></td><td>Sí</td><td><code>cobranza_domiciliaria</code> o <code>cobranza_en_sede</code></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:1rem;">
+                            <button type="button" class="btn btn--primary" id="btnImportar" disabled>Importar</button>
                         </div>
                     </div>
 
-                    <div class="progress-bar" id="progressBar">
-                        <div class="progress-bar__fill" id="progressFill"></div>
-                    </div>
-
-                    <div style="margin-top:1rem;">
-                        <button type="button" class="btn btn--primary" id="btnImportar" disabled>Importar</button>
+                    <!-- Progreso en tiempo real con polling -->
+                    <div id="seccionProgreso" style="display:none; margin-top:0.5rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                            <span id="progresoTexto" style="font-size:0.875rem; font-weight:500; color:var(--color-text);">Procesando: 0 de 0 filas (0 exitosos, 0 inconsistencias)</span>
+                            <span id="progresoPorcentaje" style="font-size:0.875rem; font-weight:600; color:var(--color-accent);">0%</span>
+                        </div>
+                        <div class="progress-bar progress-bar--visible" id="progressBar" style="display:block; margin:0.5rem 0;">
+                            <div class="progress-bar__fill" id="progressFill" style="width:0%;"></div>
+                        </div>
+                        <p style="font-size:0.8125rem; color:var(--color-text-muted); margin-top:0.5rem;">
+                            La importación y georreferenciación se ejecutan en segundo plano. Puede permanecer en esta página o volver más tarde sin interrumpir el proceso.
+                        </p>
                     </div>
 
                     <!-- Resultado de la importación: contadores de éxito y fallos -->
@@ -138,6 +151,9 @@
                                 <div class="result-card__number" id="resultFallidos">0</div>
                                 <div class="result-card__label">Registros fallidos</div>
                             </div>
+                        </div>
+                        <div id="contenedorBotonNuevo" style="margin-top:1rem; display:none;">
+                            <button type="button" class="btn btn--secondary" id="btnNuevaImportacion">Importar otro archivo</button>
                         </div>
                     </div>
                 </div>
@@ -185,8 +201,9 @@
     (function () {
         'use strict';
 
-
         var selectedFile = null;
+        var pollingTimer = null;
+        var POLLING_INTERVAL_MS = 2500;
         var INCONSISTENCIAS_URL = BASE_URL + '/api/socios/inconsistencias';
 
         function showAlert(message, type) {
@@ -226,7 +243,7 @@
             return '<span class="badge ' + cls + '">' + label + '</span>';
         }
 
-        /* --- Drop zone --- */
+        /* --- Drop zone y selección de archivo --- */
         var dropZone = document.getElementById('dropZone');
         var fileInput = document.getElementById('fileInput');
 
@@ -266,7 +283,86 @@
             document.getElementById('btnImportar').disabled = false;
         }
 
-        /* --- Lógica de importación: envía el CSV al API, anima la barra de progreso y muestra el resultado --- */
+        /* --- UI de Progreso --- */
+        function actualizarUIProgreso(datos) {
+            var total = parseInt(datos.total_filas, 10) || 0;
+            var procesadas = parseInt(datos.filas_procesadas, 10) || 0;
+            var exitosos = parseInt(datos.exitosos, 10) || 0;
+            var fallidos = parseInt(datos.fallidos, 10) || 0;
+
+            var porcentaje = total > 0 ? Math.min(100, Math.round((procesadas / total) * 100)) : 0;
+            if (datos.estado === 'completado') {
+                porcentaje = 100;
+                procesadas = total;
+            }
+
+            var texto = 'Procesando: ' + procesadas + ' de ' + total + ' filas (' + exitosos + ' exitosos, ' + fallidos + ' inconsistencias)';
+            document.getElementById('progresoTexto').textContent = texto;
+            document.getElementById('progresoPorcentaje').textContent = porcentaje + '%';
+            document.getElementById('progressFill').style.width = porcentaje + '%';
+        }
+
+        function mostrarResultadoFinal(datos) {
+            var exitosos = parseInt(datos.exitosos, 10) || 0;
+            var fallidos = parseInt(datos.fallidos, 10) || 0;
+
+            document.getElementById('resultExitosos').textContent = exitosos;
+            document.getElementById('resultFallidos').textContent = fallidos;
+            document.getElementById('resultadoImport').style.display = 'block';
+            document.getElementById('contenedorBotonNuevo').style.display = 'block';
+        }
+
+        function detenerPolling() {
+            if (pollingTimer) {
+                clearInterval(pollingTimer);
+                pollingTimer = null;
+            }
+        }
+
+        function iniciarPolling(id) {
+            detenerPolling();
+
+            function consultar() {
+                fetch(BASE_URL + '/api/socios/importar/' + encodeURIComponent(id) + '/estado', {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function (res) {
+                    if (!res.ok) {
+                        throw new Error('Error al consultar estado de importación (' + res.status + ')');
+                    }
+                    return res.json();
+                })
+                .then(function (res) {
+                    if (!res.success || !res.data) {
+                        return;
+                    }
+                    var estado = res.data;
+                    actualizarUIProgreso(estado);
+
+                    if (estado.estado === 'completado') {
+                        detenerPolling();
+                        localStorage.removeItem('importacion_activa_id');
+                        mostrarResultadoFinal(estado);
+                        showAlert(res.message || 'Importación completada con éxito.', 'success');
+                        cargarInconsistencias();
+                    } else if (estado.estado === 'error') {
+                        detenerPolling();
+                        localStorage.removeItem('importacion_activa_id');
+                        mostrarResultadoFinal(estado);
+                        showAlert(estado.error_mensaje || 'La importación finalizó con un error.', 'error');
+                        cargarInconsistencias();
+                    }
+                })
+                .catch(function (err) {
+                    console.error('Error en polling de importación:', err);
+                });
+            }
+
+            consultar();
+            pollingTimer = setInterval(consultar, POLLING_INTERVAL_MS);
+        }
+
+        /* --- Enviar importación --- */
         document.getElementById('btnImportar').addEventListener('click', function () {
             if (!selectedFile) {
                 showAlert('Seleccione un archivo CSV.');
@@ -274,18 +370,7 @@
             }
 
             var btn = document.getElementById('btnImportar');
-            var progressBar = document.getElementById('progressBar');
-            var progressFill = document.getElementById('progressFill');
-
             btn.disabled = true;
-            progressBar.classList.add('progress-bar--visible');
-            progressFill.style.width = '0%';
-
-            var progress = 0;
-            var progressInterval = setInterval(function () {
-                progress = Math.min(progress + Math.random() * 15, 90);
-                progressFill.style.width = progress + '%';
-            }, 300);
 
             var formData = new FormData();
             formData.append('archivo', selectedFile);
@@ -296,33 +381,58 @@
                 body: formData
             }).then(function (res) {
                 return res.json().then(function (data) {
-                    if (!res.ok || !data.success) {
-                        throw new Error(data.message || 'Error en la importación.');
-                    }
-                    return data;
+                    return { status: res.status, ok: res.ok, data: data };
                 });
-            }).then(function (result) {
-                clearInterval(progressInterval);
-                progressFill.style.width = '100%';
+            }).then(function (response) {
+                var data = response.data;
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Error en la importación.');
+                }
 
-                var data = result.data || {};
-                document.getElementById('resultExitosos').textContent = data.exitosos || 0;
-                document.getElementById('resultFallidos').textContent = data.fallidos || 0;
-                document.getElementById('resultadoImport').style.display = 'block';
+                // Paso 1: mostrar respuesta 202 y guardar el id de importación en localStorage
+                var importacionId = data.data && data.data.id;
+                if (importacionId) {
+                    localStorage.setItem('importacion_activa_id', importacionId);
+                }
 
-                showAlert(result.message || 'Importación completada.', 'success');
-                cargarInconsistencias();
+                showAlert(data.message || 'Importación iniciada en segundo plano.', 'info');
+
+                // Ocultar selector de archivo y mostrar barra de progreso
+                document.getElementById('seccionSelectorArchivo').style.display = 'none';
+                document.getElementById('resultadoImport').style.display = 'none';
+                document.getElementById('seccionProgreso').style.display = 'block';
+
+                actualizarUIProgreso({
+                    total_filas: (data.data && data.data.total_filas) || 0,
+                    filas_procesadas: 0,
+                    exitosos: 0,
+                    fallidos: 0,
+                    estado: 'pendiente'
+                });
+
+                if (importacionId) {
+                    iniciarPolling(importacionId);
+                }
             }).catch(function (err) {
-                clearInterval(progressInterval);
-                progressFill.style.width = '0%';
-                showAlert(err.message);
-            }).finally(function () {
                 btn.disabled = false;
-                progressBar.classList.remove('progress-bar--visible');
+                showAlert(err.message || 'Error al iniciar la importación.');
             });
         });
 
-        /* --- Bandeja de inconsistencias: carga y renderiza los registros rechazados del último proceso de importación --- */
+        /* --- Botón para importar otro archivo --- */
+        document.getElementById('btnNuevaImportacion').addEventListener('click', function () {
+            selectedFile = null;
+            fileInput.value = '';
+            document.getElementById('fileName').textContent = '';
+            document.getElementById('fileName').style.display = 'none';
+            document.getElementById('btnImportar').disabled = true;
+
+            document.getElementById('seccionSelectorArchivo').style.display = 'block';
+            document.getElementById('seccionProgreso').style.display = 'none';
+            document.getElementById('resultadoImport').style.display = 'none';
+        });
+
+        /* --- Bandeja de inconsistencias --- */
         function cargarInconsistencias() {
             var tbody = document.getElementById('tablaInconsistencias');
             var empty = document.getElementById('inconsistenciasEmpty');
@@ -371,28 +481,68 @@
 
         document.getElementById('filtroInconsistencia').addEventListener('change', cargarInconsistencias);
 
-        fetch(API_BASE + '/auth/me')
+        /* --- Verificar si existe una importación activa en curso --- */
+        function verificarImportacionActiva() {
+            fetch(BASE_URL + '/api/socios/importar/activa', {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
             .then(function (res) {
-                if (!res.ok) throw new Error('No autenticado');
+                if (!res.ok) return null;
                 return res.json();
             })
             .then(function (res) {
-                if (!res.success || !res.data) {
-                    window.location.href = BASE_URL + '/views/auth/login.html';
-                    return;
+                var activa = res && res.success ? res.data : null;
+                if (activa && (activa.estado === 'pendiente' || activa.estado === 'procesando')) {
+                    localStorage.setItem('importacion_activa_id', activa.id);
+                    document.getElementById('seccionSelectorArchivo').style.display = 'none';
+                    document.getElementById('seccionProgreso').style.display = 'block';
+                    actualizarUIProgreso(activa);
+                    iniciarPolling(activa.id);
+                } else {
+                    localStorage.removeItem('importacion_activa_id');
+                    document.getElementById('seccionSelectorArchivo').style.display = 'block';
+                    document.getElementById('seccionProgreso').style.display = 'none';
                 }
-                var user = res.data;
-                if (user.rol !== 'administrador') {
-                    window.location.replace(user.rol === 'cobrador'
-                        ? BASE_URL + '/views/cobrador/index.html'
-                        : BASE_URL + '/views/auth/login.html');
-                    return;
-                }
-                cargarInconsistencias();
             })
-            .catch(function () {
-                window.location.replace(BASE_URL + '/views/auth/login.html');
+            .catch(function (err) {
+                console.error('Error al consultar importación activa:', err);
+                document.getElementById('seccionSelectorArchivo').style.display = 'block';
+                document.getElementById('seccionProgreso').style.display = 'none';
             });
+        }
+
+        /* --- Inicialización y verificación de sesión --- */
+        function init() {
+            fetch(API_BASE + '/auth/me')
+                .then(function (res) {
+                    if (!res.ok) throw new Error('No autenticado');
+                    return res.json();
+                })
+                .then(function (res) {
+                    if (!res.success || !res.data) {
+                        window.location.href = BASE_URL + '/views/auth/login.html';
+                        return;
+                    }
+                    var user = res.data;
+                    if (user.rol !== 'administrador') {
+                        window.location.replace(user.rol === 'cobrador'
+                            ? BASE_URL + '/views/cobrador/index.html'
+                            : BASE_URL + '/views/auth/login.html');
+                        return;
+                    }
+                    cargarInconsistencias();
+                    verificarImportacionActiva();
+                })
+                .catch(function () {
+                    window.location.replace(BASE_URL + '/views/auth/login.html');
+                });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     })();
     </script>
 </body>

@@ -5,6 +5,8 @@ namespace CJP\Modules\Socios;
 use CJP\Shared\AuthMiddleware;
 use CJP\Modules\Auth\AuthService;
 use CJP\Shared\Helpers\ResponseHelper;
+use CJP\Config\Config;
+use Ramsey\Uuid\Uuid;
 
 class SocioController
 {
@@ -307,8 +309,94 @@ class SocioController
             return;
         }
 
-        $result = $this->socioService->importarCSV($tmpPath, $usuarioId);
-        ResponseHelper::success($result, 'Importación CSV procesada con éxito.');
+        $importacionId = Uuid::uuid4()->toString();
+        $importsDir = dirname(__DIR__, 2) . '/storage/imports';
+        if (!is_dir($importsDir)) {
+            mkdir($importsDir, 0755, true);
+        }
+
+        $destPath = $importsDir . '/' . $importacionId . '.csv';
+        if (!move_uploaded_file($tmpPath, $destPath)) {
+            ResponseHelper::error('No se pudo guardar el archivo cargado en el servidor.', 500);
+            return;
+        }
+
+        $totalFilas = $this->socioService->contarFilasCSV($destPath);
+        if ($totalFilas === 0) {
+            if (file_exists($destPath)) {
+                unlink($destPath);
+            }
+            ResponseHelper::error('El archivo CSV está vacío o no contiene filas con datos válidos.', 400);
+            return;
+        }
+
+        // Registrar la importación en la base de datos
+        $this->socioService->registrarImportacion([
+            'id'               => $importacionId,
+            'usuario_id'       => $usuarioId,
+            'archivo_original' => $originalName,
+            'archivo_ruta'     => $destPath,
+            'estado'           => 'pendiente',
+            'total_filas'      => $totalFilas,
+        ]);
+
+        // Determinar ejecutable de PHP y ruta del script worker
+        $phpCli = Config::get('PHP_CLI_PATH');
+        if (empty($phpCli)) {
+            $defaultPhp = 'C:\\xampp\\php\\php.exe';
+            $phpCli = file_exists($defaultPhp) ? $defaultPhp : 'php';
+        }
+
+        $scriptPath = realpath(dirname(__DIR__, 2) . '/scripts/importar_csv_worker.php');
+
+        // Disparar worker en segundo plano desacoplado del ciclo de vida HTTP
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $cmd = 'start /B "" "' . $phpCli . '" "' . $scriptPath . '" ' . escapeshellarg($importacionId) . ' > NUL 2>&1';
+            pclose(popen($cmd, 'r'));
+        } else {
+            $cmd = '"' . $phpCli . '" "' . $scriptPath . '" ' . escapeshellarg($importacionId) . ' > /dev/null 2>&1 &';
+            exec($cmd);
+        }
+
+        ResponseHelper::success([
+            'id'               => $importacionId,
+            'estado'           => 'pendiente',
+            'total_filas'      => $totalFilas,
+            'archivo_original' => $originalName,
+        ], 'Importación iniciada en segundo plano.', 202);
+    }
+
+    /**
+     * GET /api/socios/importar/{id}/estado — Consulta el progreso y estado actual de una importación CSV (admin-only).
+     *
+     * @param array $params
+     * @return void
+     */
+    public function getEstadoImportacion(array $params): void
+    {
+        AuthMiddleware::requireAuth('administrador');
+        $id = $params['id'] ?? '';
+        $estado = $this->socioService->getEstadoImportacion($id);
+
+        if (!$estado) {
+            ResponseHelper::error('Importación no encontrada.', 404);
+            return;
+        }
+
+        ResponseHelper::success($estado, 'Estado de importación obtenido con éxito.');
+    }
+
+    /**
+     * GET /api/socios/importar/activa — Consulta si existe una importación actualmente en curso (admin-only).
+     *
+     * @param array $params
+     * @return void
+     */
+    public function getImportacionActiva(array $params = []): void
+    {
+        AuthMiddleware::requireAuth('administrador');
+        $activa = $this->socioService->getImportacionActiva();
+        ResponseHelper::success($activa, $activa ? 'Importación activa encontrada.' : 'No hay importaciones en curso.');
     }
 
     /**

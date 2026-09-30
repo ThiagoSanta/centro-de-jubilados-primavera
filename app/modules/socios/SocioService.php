@@ -533,103 +533,10 @@ class SocioService
                 $rowData[$name] = $this->sanitizeFormulaInjection($val);
             }
 
-            $errors = [];
-
-            // 1. Validar la presencia ineludible de nombre y apellido en la fila actual
-            if (empty($rowData['nombre_apellido'])) {
-                $errors[] = "nombre_apellido es obligatorio";
-            }
-            if (empty($rowData['dni'])) {
-                $errors[] = "dni es obligatorio";
-            }
-            if (empty($rowData['fecha_nacimiento']) || !$this->validarFecha($rowData['fecha_nacimiento'])) {
-                $errors[] = "fecha_nacimiento inválida (esperado YYYY-MM-DD)";
-            }
-            if (empty($rowData['telefono'])) {
-                $errors[] = "telefono es obligatorio";
-            }
-            if (empty($rowData['direccion'])) {
-                $errors[] = "direccion es obligatorio";
-            }
-            if (
-                empty($rowData['modalidad_cobranza']) ||
-                ($rowData['modalidad_cobranza'] !== 'cobranza_domiciliaria' && $rowData['modalidad_cobranza'] !== 'cobranza_en_sede')
-            ) {
-                $errors[] = "modalidad_cobranza incorrecta (esperado 'cobranza_domiciliaria' o 'cobranza_en_sede')";
-            }
-
-            // 2. Descartar filas con documentos de identidad duplicados respecto a socios ya existentes
-            if (!empty($rowData['dni'])) {
-                if ($this->repository->findByDni($rowData['dni']) !== null) {
-                    $errors[] = "DNI ya existente en el sistema";
-                }
-            }
-
-            if (!empty($errors)) {
-                $this->repository->registrarInconsistencia([
-                    'datos_registro' => $rowData,
-                    'motivo_rechazo' => implode('; ', $errors)
-                ]);
-                $fallidos++;
-                continue;
-            }
-
-            // 3. Obtener coordenadas geográficas para la dirección e insertar el nuevo registro de socio
-            try {
-                $numeroSocio = $this->repository->getNextNumeroSocio();
-                $geo = $this->geocodeAddress($rowData['direccion']);
-                $lat = null;
-                $lng = null;
-                $zonaId = null;
-                $geoPendiente = true;
-
-                if ($geo !== null) {
-                    $lat = $geo['lat'];
-                    $lng = $geo['lng'];
-                    $zonaId = $this->zonaService->asignarZona($lat, $lng);
-                    $geoPendiente = false;
-                }
-
-                $socioId = Uuid::uuid4()->toString();
-                $qrUrl = $this->generarQR($socioId);
-
-                $payload = [
-                    'id'                        => $socioId,
-                    'numero_socio'              => $numeroSocio,
-                    'tipo_documento'           => !empty($rowData['tipo_documento']) ? $rowData['tipo_documento'] : 'dni',
-                    'nombre_apellido'           => $rowData['nombre_apellido'],
-                    'dni'                       => $rowData['dni'],
-                    'fecha_nacimiento'          => $rowData['fecha_nacimiento'],
-                    'telefono'                  => $rowData['telefono'],
-                    'mutual'                    => !empty($rowData['mutual']) ? $rowData['mutual'] : null,
-                    'direccion'                 => $rowData['direccion'],
-                    'latitud'                   => $lat,
-                    'longitud'                  => $lng,
-                    'zona_id'                   => $zonaId,
-                    'estado'                    => 'activo',
-                    'modalidad_cobranza'        => $rowData['modalidad_cobranza'],
-                    'geolocalizacion_pendiente' => $geoPendiente ? 1 : 0,
-                    'qr_url'                    => $qrUrl,
-                ];
-
-                $this->repository->create($payload);
-
-                // Registrar el evento de importación masiva en la tabla de auditoría
-                $this->repository->registerAuditEvent(
-                    'CREAR_SOCIO',
-                    'socios',
-                    null,
-                    json_encode($payload, JSON_UNESCAPED_UNICODE),
-                    $usuarioId,
-                    'Importación CSV'
-                );
-
+            $ok = $this->procesarFilaImportacion($rowData, $usuarioId);
+            if ($ok) {
                 $exitosos++;
-            } catch (Exception $e) {
-                $this->repository->registrarInconsistencia([
-                    'datos_registro' => $rowData,
-                    'motivo_rechazo' => "Error durante inserción: " . $e->getMessage()
-                ]);
+            } else {
                 $fallidos++;
             }
         }
@@ -640,6 +547,319 @@ class SocioService
             'exitosos' => $exitosos,
             'fallidos' => $fallidos
         ];
+    }
+
+    /**
+     * Procesa e inserta una única fila del CSV de importación de socios.
+     * Retorna true si fue exitoso, o false si se registró una inconsistencia o fallo.
+     *
+     * @param array $rowData Datos normalizados y sanitizados de la fila
+     * @param string $usuarioId UUID del operador responsable
+     * @param string|null $importacionId UUID de la importación asociada en segundo plano
+     * @return bool
+     */
+    public function procesarFilaImportacion(array $rowData, string $usuarioId, ?string $importacionId = null): bool
+    {
+        $errors = [];
+
+        // 1. Validar la presencia ineludible de campos obligatorios
+        if (empty($rowData['nombre_apellido'])) {
+            $errors[] = "nombre_apellido es obligatorio";
+        }
+        if (empty($rowData['dni'])) {
+            $errors[] = "dni es obligatorio";
+        }
+        if (empty($rowData['fecha_nacimiento']) || !$this->validarFecha($rowData['fecha_nacimiento'])) {
+            $errors[] = "fecha_nacimiento inválida (esperado YYYY-MM-DD)";
+        }
+        if (empty($rowData['telefono'])) {
+            $errors[] = "telefono es obligatorio";
+        }
+        if (empty($rowData['direccion'])) {
+            $errors[] = "direccion es obligatorio";
+        }
+        if (
+            empty($rowData['modalidad_cobranza']) ||
+            ($rowData['modalidad_cobranza'] !== 'cobranza_domiciliaria' && $rowData['modalidad_cobranza'] !== 'cobranza_en_sede')
+        ) {
+            $errors[] = "modalidad_cobranza incorrecta (esperado 'cobranza_domiciliaria' o 'cobranza_en_sede')";
+        }
+
+        // 2. Descartar filas con documentos de identidad duplicados respecto a socios ya existentes
+        if (!empty($rowData['dni'])) {
+            if ($this->repository->findByDni($rowData['dni']) !== null) {
+                $errors[] = "DNI ya existente en el sistema";
+            }
+        }
+
+        if (!empty($errors)) {
+            $this->repository->registrarInconsistencia([
+                'importacion_id' => $importacionId,
+                'datos_registro' => $rowData,
+                'motivo_rechazo' => implode('; ', $errors)
+            ]);
+            return false;
+        }
+
+        // 3. Obtener coordenadas geográficas para la dirección e insertar el nuevo registro de socio
+        try {
+            $numeroSocio = $this->repository->getNextNumeroSocio();
+            $geo = $this->geocodeAddress($rowData['direccion']);
+            $lat = null;
+            $lng = null;
+            $zonaId = null;
+            $geoPendiente = true;
+
+            if ($geo !== null) {
+                $lat = $geo['lat'];
+                $lng = $geo['lng'];
+                $zonaId = $this->zonaService->asignarZona($lat, $lng);
+                $geoPendiente = false;
+            }
+
+            $socioId = Uuid::uuid4()->toString();
+            $qrUrl = $this->generarQR($socioId);
+
+            $payload = [
+                'id'                        => $socioId,
+                'numero_socio'              => $numeroSocio,
+                'tipo_documento'           => !empty($rowData['tipo_documento']) ? $rowData['tipo_documento'] : 'dni',
+                'nombre_apellido'           => $rowData['nombre_apellido'],
+                'dni'                       => $rowData['dni'],
+                'fecha_nacimiento'          => $rowData['fecha_nacimiento'],
+                'telefono'                  => $rowData['telefono'],
+                'mutual'                    => !empty($rowData['mutual']) ? $rowData['mutual'] : null,
+                'direccion'                 => $rowData['direccion'],
+                'latitud'                   => $lat,
+                'longitud'                  => $lng,
+                'zona_id'                   => $zonaId,
+                'estado'                    => 'activo',
+                'modalidad_cobranza'        => $rowData['modalidad_cobranza'],
+                'geolocalizacion_pendiente' => $geoPendiente ? 1 : 0,
+                'qr_url'                    => $qrUrl,
+            ];
+
+            $this->repository->create($payload);
+
+            // Registrar el evento de importación masiva en la tabla de auditoría
+            $this->repository->registerAuditEvent(
+                'CREAR_SOCIO',
+                'socios',
+                null,
+                json_encode($payload, JSON_UNESCAPED_UNICODE),
+                $usuarioId,
+                'Importación CSV'
+            );
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->repository->registrarInconsistencia([
+                'importacion_id' => $importacionId,
+                'datos_registro' => $rowData,
+                'motivo_rechazo' => "Error durante inserción: " . $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Ejecuta el procesamiento completo en segundo plano para una importación registrada en importaciones_csv.
+     * Actualiza el progreso fila a fila y marca el estado final.
+     *
+     * @param string $importacionId UUID de la importación
+     * @return void
+     */
+    public function procesarImportacionWorker(string $importacionId): void
+    {
+        $importacion = $this->repository->findImportacionById($importacionId);
+        if (!$importacion) {
+            error_log("Worker CSV: No se encontró la importación con ID {$importacionId}");
+            return;
+        }
+
+        // Si ya está completada o cancelada, no re-procesar
+        if (in_array($importacion['estado'], ['completado', 'cancelado'], true)) {
+            return;
+        }
+
+        $pid = function_exists('getmypid') ? (int)getmypid() : 0;
+        $this->repository->iniciarImportacion($importacionId, $pid);
+
+        $rutaArchivo = $importacion['archivo_ruta'];
+        if (!file_exists($rutaArchivo)) {
+            $this->repository->finalizarImportacion($importacionId, 'error', 'El archivo CSV no existe en la ruta configurada.');
+            return;
+        }
+
+        $file = fopen($rutaArchivo, 'r');
+        if (!$file) {
+            $this->repository->finalizarImportacion($importacionId, 'error', 'No se pudo abrir el archivo CSV.');
+            return;
+        }
+
+        try {
+            $bom = pack('H*', 'EFBBBF');
+            $line = fgets($file);
+            if (str_starts_with($line, $bom)) {
+                $line = substr($line, 3);
+            }
+
+            $delimiter = str_contains($line, ';') ? ';' : ',';
+            $header = str_getcsv($line, $delimiter);
+            if (count($header) === 1 && $delimiter === ';' && str_contains($header[0], ',')) {
+                $delimiter = ',';
+                $header = str_getcsv($line, ',');
+            }
+
+            $header = array_map(function ($h) {
+                return trim(str_replace('"', '', $h));
+            }, $header);
+
+            $requiredHeaders = ['nombre_apellido', 'dni', 'fecha_nacimiento', 'telefono', 'direccion', 'modalidad_cobranza'];
+            foreach ($requiredHeaders as $req) {
+                if (!in_array($req, $header, true)) {
+                    fclose($file);
+                    $this->repository->finalizarImportacion($importacionId, 'error', "Columnas requeridas faltantes: " . implode(', ', $requiredHeaders));
+                    return;
+                }
+            }
+
+            $indices = [];
+            foreach ($header as $idx => $name) {
+                $indices[$name] = $idx;
+            }
+
+            $exitosos = 0;
+            $fallidos = 0;
+            $procesadas = 0;
+
+            while (($row = fgetcsv($file, 0, $delimiter)) !== false) {
+                if (empty($row) || (count($row) === 1 && $row[0] === null)) {
+                    continue;
+                }
+
+                $procesadas++;
+
+                $rowData = [];
+                foreach ($indices as $name => $idx) {
+                    $val = isset($row[$idx]) ? trim($row[$idx]) : '';
+                    $rowData[$name] = $this->sanitizeFormulaInjection($val);
+                }
+
+                try {
+                    $ok = $this->procesarFilaImportacion($rowData, $importacion['usuario_id'], $importacionId);
+                    if ($ok) {
+                        $exitosos++;
+                    } else {
+                        $fallidos++;
+                    }
+                } catch (\Throwable $filaEx) {
+                    $fallidos++;
+                    $this->repository->registrarInconsistencia([
+                        'importacion_id' => $importacionId,
+                        'datos_registro' => $rowData,
+                        'motivo_rechazo' => 'Fallo no controlado en fila: ' . $filaEx->getMessage()
+                    ]);
+                }
+
+                // Actualizar progreso tras procesar cada fila
+                $this->repository->updateImportacionProgreso($importacionId, $procesadas, $exitosos, $fallidos, 'procesando');
+
+                // Pausa breve para evitar saturación de CPU y cumplir rate limit de Nominatim
+                usleep(50000);
+            }
+
+            fclose($file);
+            $this->repository->finalizarImportacion($importacionId, 'completado');
+        } catch (\Throwable $e) {
+            if (is_resource($file)) {
+                fclose($file);
+            }
+            $this->repository->finalizarImportacion($importacionId, 'error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Cuenta el total de filas válidas con datos en un archivo CSV (excluyendo cabecera y filas vacías).
+     */
+    public function contarFilasCSV(string $rutaArchivo): int
+    {
+        if (!file_exists($rutaArchivo)) {
+            return 0;
+        }
+
+        $file = fopen($rutaArchivo, 'r');
+        if (!$file) {
+            return 0;
+        }
+
+        $line = fgets($file);
+        if ($line === false) {
+            fclose($file);
+            return 0;
+        }
+
+        $delimiter = str_contains($line, ';') ? ';' : ',';
+        $filas = 0;
+
+        while (($row = fgetcsv($file, 0, $delimiter)) !== false) {
+            if (!empty($row) && !(count($row) === 1 && $row[0] === null)) {
+                $filas++;
+            }
+        }
+
+        fclose($file);
+        return $filas;
+    }
+
+    /**
+     * Obtiene el estado y cálculo de progreso de una importación.
+     */
+    public function getEstadoImportacion(string $id): ?array
+    {
+        $imp = $this->repository->findImportacionById($id);
+        if (!$imp) {
+            return null;
+        }
+
+        $total = (int)$imp['total_filas'];
+        $procesadas = (int)$imp['filas_procesadas'];
+        $porcentaje = $total > 0 ? round(($procesadas / $total) * 100, 1) : 0.0;
+
+        return [
+            'id'               => $imp['id'],
+            'estado'           => $imp['estado'],
+            'total_filas'      => $total,
+            'filas_procesadas' => $procesadas,
+            'exitosos'         => (int)$imp['exitosos'],
+            'fallidos'         => (int)$imp['fallidos'],
+            'porcentaje'       => $porcentaje,
+            'error_mensaje'    => $imp['error_mensaje'],
+            'fecha_inicio'     => $imp['fecha_inicio'],
+            'fecha_fin'        => $imp['fecha_fin'],
+            'archivo_original' => $imp['archivo_original']
+        ];
+    }
+
+    /**
+     * Busca la importación activa más reciente (pendiente o procesando).
+     */
+    public function getImportacionActiva(): ?array
+    {
+        $imp = $this->repository->findImportacionActiva();
+        if (!$imp) {
+            return null;
+        }
+
+        return $this->getEstadoImportacion($imp['id']);
+    }
+
+    /**
+     * Registra una nueva importación en la base de datos con estado 'pendiente'.
+     */
+    public function registrarImportacion(array $datos): void
+    {
+        $this->repository->createImportacion($datos);
     }
 
     /**

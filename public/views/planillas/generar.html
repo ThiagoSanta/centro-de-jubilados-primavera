@@ -17,6 +17,14 @@
             display: none !important;
         }
 
+        .form-label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 0.375rem;
+        }
+
         .form-card {
             max-width: 800px;
             margin: 0 auto 1.5rem;
@@ -47,6 +55,24 @@
             .form-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* Placeholder de vista previa */
+        .preview-placeholder {
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius);
+            background: var(--color-content);
+            padding: 3rem 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Oculta automáticamente el placeholder cuando la vista previa está visible */
+        #previewContainer:not(.hidden) + #previewPlaceholder {
+            display: none !important;
         }
     </style>
 </head>
@@ -153,60 +179,82 @@
 
             <!-- Contenedor del Formulario -->
             <div class="card form-card">
-                <form id="formGenerar">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label" for="zonaSelect">Zona</label>
-                            <select id="zonaSelect" class="form-control">
-                                <option value="">Seleccione zona...</option>
-                            </select>
+                <div class="card__header">Datos de la planilla</div>
+                <div class="card__body">
+                    <form id="formGenerar">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="zonaSelect">Zona</label>
+                                <select id="zonaSelect" class="form-control">
+                                    <option value="">Seleccione zona...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="cobradorSelect">Cobrador</label>
+                                <select id="cobradorSelect" class="form-control">
+                                    <option value="">Seleccione cobrador...</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="cobradorSelect">Cobrador</label>
-                            <select id="cobradorSelect" class="form-control">
-                                <option value="">Seleccione cobrador...</option>
-                            </select>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button type="submit" class="btn btn--primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                                Generar Planilla
+                            </button>
                         </div>
-                    </div>
+                    </form>
 
-                    <div style="display: flex; justify-content: flex-end;">
-                        <button type="submit" class="btn btn--primary">Generar Planilla</button>
+                    <div id="loadingMessage" class="alert alert--info hidden" style="margin-top: 1rem; text-align: center;">
+                        Procesando...</div>
+                    <div id="errorMessage" class="alert alert--error hidden" style="margin-top: 1rem;"></div>
+                    <div id="successMessage" class="alert alert--success hidden"
+                        style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Planilla generada con éxito.</span>
+                        <a id="linkPdf" href="#" target="_blank" class="btn btn--primary btn--sm">Ver PDF</a>
                     </div>
-                </form>
-
-                <div id="loadingMessage" class="alert alert--info hidden" style="margin-top: 1rem; text-align: center;">
-                    Procesando...</div>
-                <div id="errorMessage" class="alert alert--error hidden" style="margin-top: 1rem;"></div>
-                <div id="successMessage" class="alert alert--success hidden"
-                    style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Planilla generada con éxito.</span>
-                    <a id="linkPdf" href="#" target="_blank" class="btn btn--primary btn--sm">Ver PDF</a>
                 </div>
             </div>
 
             <!-- Contenedor de Vista Previa -->
             <div id="previewContainer" class="card preview-card hidden">
-                <h3
-                    style="font-size: 1.125rem; font-weight: 700; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
-                    Vista Previa de Socios</h3>
+                <div class="card__header">Vista Previa de Socios</div>
+                <div class="card__body">
+                    <div id="mapPreview"></div>
 
-                <div id="mapPreview"></div>
-
-                <div class="table-container">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>N° Socio</th>
-                                <th>Nombre</th>
-                                <th>Dirección</th>
-                                <th>Geo</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaPreview">
-                            <!-- El JS rellena este cuerpo con los socios de la vista previa -->
-                        </tbody>
-                    </table>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>N° Socio</th>
+                                    <th>Nombre</th>
+                                    <th>Dirección</th>
+                                    <th>Geo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPreview">
+                                <!-- El JS rellena este cuerpo con los socios de la vista previa -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Placeholder de Vista Previa -->
+            <div id="previewPlaceholder" class="preview-placeholder preview-card">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="36" height="36" style="color: var(--color-text-muted); margin-bottom: 0.75rem;">
+                    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                    <line x1="8" y1="2" x2="8" y2="18"/>
+                    <line x1="16" y1="6" x2="16" y2="22"/>
+                </svg>
+                <p style="margin: 0; font-size: 0.875rem; color: var(--color-text-muted); text-align: center;">
+                    Seleccione una zona para ver la vista previa de los socios a cobrar
+                </p>
             </div>
         </main>
     </div>

@@ -411,15 +411,18 @@ class SocioRepository
     {
         $id = Uuid::uuid4()->toString();
         $now = DateHelper::now();
+        $importacionId = $datos['importacion_id'] ?? null;
 
         $sql = "INSERT INTO importacion_inconsistencias (
                     id, 
+                    importacion_id,
                     datos_registro, 
                     motivo_rechazo, 
                     estado, 
                     fecha_importacion
                 ) VALUES (
                     :id, 
+                    :importacion_id,
                     :datos_registro, 
                     :motivo_rechazo, 
                     'pendiente', 
@@ -429,6 +432,7 @@ class SocioRepository
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'id'             => $id,
+            'importacion_id' => $importacionId,
             'datos_registro' => json_encode($datos['datos_registro'], JSON_UNESCAPED_UNICODE),
             'motivo_rechazo' => $datos['motivo_rechazo'],
             'now'            => $now
@@ -570,4 +574,129 @@ class SocioRepository
             'motivo'        => $motivo,
         ]);
     }
+
+    /**
+     * Registra una nueva importación en la tabla importaciones_csv con estado 'pendiente'.
+     */
+    public function createImportacion(array $datos): void
+    {
+        $sql = "INSERT INTO importaciones_csv (
+                    id, 
+                    usuario_id, 
+                    archivo_original, 
+                    archivo_ruta, 
+                    estado, 
+                    total_filas, 
+                    filas_procesadas, 
+                    exitosos, 
+                    fallidos, 
+                    created_at, 
+                    updated_at
+                ) VALUES (
+                    :id, 
+                    :usuario_id, 
+                    :archivo_original, 
+                    :archivo_ruta, 
+                    :estado, 
+                    :total_filas, 
+                    0, 
+                    0, 
+                    0, 
+                    NOW(), 
+                    NOW()
+                )";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'id'               => $datos['id'],
+            'usuario_id'       => $datos['usuario_id'],
+            'archivo_original' => $datos['archivo_original'],
+            'archivo_ruta'     => $datos['archivo_ruta'],
+            'estado'           => $datos['estado'] ?? 'pendiente',
+            'total_filas'      => $datos['total_filas'] ?? 0,
+        ]);
+    }
+
+    /**
+     * Busca una importación por su ID.
+     */
+    public function findImportacionById(string $id): ?array
+    {
+        $stmt = $this->db->prepare("SELECT * FROM importaciones_csv WHERE id = :id LIMIT 1");
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    /**
+     * Marca el inicio de ejecución del worker para una importación.
+     */
+    public function iniciarImportacion(string $id, int $pid): void
+    {
+        $stmt = $this->db->prepare("UPDATE importaciones_csv 
+                                    SET estado = 'procesando', pid = :pid, fecha_inicio = NOW(), updated_at = NOW() 
+                                    WHERE id = :id");
+        $stmt->execute([
+            'id'  => $id,
+            'pid' => $pid
+        ]);
+    }
+
+    /**
+     * Actualiza el progreso actual de una importación.
+     */
+    public function updateImportacionProgreso(string $id, int $procesadas, int $exitosos, int $fallidos, ?string $estado = null): void
+    {
+        $sql = "UPDATE importaciones_csv 
+                SET filas_procesadas = :procesadas, 
+                    exitosos = :exitosos, 
+                    fallidos = :fallidos, 
+                    updated_at = NOW()";
+        $params = [
+            'id'         => $id,
+            'procesadas' => $procesadas,
+            'exitosos'   => $exitosos,
+            'fallidos'   => $fallidos
+        ];
+
+        if ($estado !== null) {
+            $sql .= ", estado = :estado";
+            $params['estado'] = $estado;
+        }
+
+        $sql .= " WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+    }
+
+    /**
+     * Marca la importación como finalizada ('completado' o 'error').
+     */
+    public function finalizarImportacion(string $id, string $estado, ?string $errorMensaje = null): void
+    {
+        $stmt = $this->db->prepare("UPDATE importaciones_csv 
+                                    SET estado = :estado, 
+                                        error_mensaje = :error_mensaje, 
+                                        fecha_fin = NOW(), 
+                                        updated_at = NOW() 
+                                    WHERE id = :id");
+        $stmt->execute([
+            'id'            => $id,
+            'estado'        => $estado,
+            'error_mensaje' => $errorMensaje
+        ]);
+    }
+
+    /**
+     * Busca la importación activa más reciente ('pendiente' o 'procesando').
+     */
+    public function findImportacionActiva(): ?array
+    {
+        $stmt = $this->db->query("SELECT * FROM importaciones_csv 
+                                  WHERE estado IN ('pendiente', 'procesando') 
+                                  ORDER BY created_at DESC LIMIT 1");
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
 }
+

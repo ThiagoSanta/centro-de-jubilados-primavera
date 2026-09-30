@@ -88,8 +88,10 @@ $router->get('/api/zonas', [ZonaController::class, 'index']);
 $router->post('/api/zonas/calcular', [ZonaController::class, 'calcular']);
 
 // Rutas de socios (el orden es crítico: registrar rutas estáticas antes de las parametrizadas para evitar colisiones)
-$router->post('/api/socios/importar',       [SocioController::class, 'importarCSV']);
-$router->get('/api/socios/inconsistencias', [SocioController::class, 'getInconsistencias']);
+$router->post('/api/socios/importar',            [SocioController::class, 'importarCSV']);
+$router->get('/api/socios/importar/activa',      [SocioController::class, 'getImportacionActiva']);
+$router->get('/api/socios/importar/{id}/estado', [SocioController::class, 'getEstadoImportacion']);
+$router->get('/api/socios/inconsistencias',      [SocioController::class, 'getInconsistencias']);
 $router->get('/api/socios',                 [SocioController::class, 'index']);
 $router->post('/api/socios', [SocioController::class, 'create']);
 $router->get('/api/socios/{id}', [SocioController::class, 'show']);
