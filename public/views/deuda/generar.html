@@ -267,6 +267,12 @@
         }
 
         async function procesarGeneracion(confirmarDuplicado) {
+            const btnSubmit = document.querySelector('#formGenerar button[type="submit"]');
+            const btnDuplicados = document.getElementById('btnConfirmarDuplicados');
+
+            if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.textContent = 'Generando...'; }
+            if (btnDuplicados) btnDuplicados.disabled = true;
+
             try {
                 const data = await fetchJson(`${API_BASE}/deuda/generar`, {
                     method: 'POST',
@@ -295,7 +301,10 @@
                     mostrarAlerta(data.message || 'Error al generar deuda.', 'error');
                 }
             } catch (err) {
-                mostrarAlerta('Error de red al generar deuda.', 'error');
+                mostrarAlerta(clasificarErrorRed(err), 'error');
+            } finally {
+                if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = 'Generar deuda mensual'; }
+                if (btnDuplicados) btnDuplicados.disabled = false;
             }
         }
 

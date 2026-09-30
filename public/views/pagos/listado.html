@@ -371,27 +371,42 @@
             
             const motivo = document.getElementById('motivoAnulacion').value.trim();
             if (!motivo) {
-                alert('El motivo es obligatorio.');
+                mostrarAlerta('El motivo de anulación es obligatorio.', 'error');
                 return;
             }
 
+            // Bloquear ambos botones del modal para evitar doble envío
+            const btnOk = document.querySelector('#modalAnular .modal-footer .btn--primary');
+            const btnCancel = document.querySelector('#modalAnular .modal-footer .btn--secondary');
+            if (btnOk) { btnOk.disabled = true; btnOk.textContent = 'Anulando...'; }
+            if (btnCancel) btnCancel.disabled = true;
+
             try {
-                const res = await fetch(`${BASE_URL}/api/pagos/${pagoAAnular}/anular`, {
+                const data = await fetchJson(`${BASE_URL}/api/pagos/${pagoAAnular}/anular`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ motivo })
                 });
-                const data = await res.json();
                 
-                if (data.success) {
-                    mostrarAlerta('Pago anulado correctamente.', 'success');
-                    cerrarModalAnular();
-                    cargarPagos(paginaActual);
-                } else {
-                    alert('Error: ' + data.message);
-                }
+                mostrarAlerta('Pago anulado correctamente.', 'success');
+                cerrarModalAnular();
+                cargarPagos(paginaActual);
+
             } catch (err) {
-                alert('Error de red.');
+                if (esErrorDeRed(err)) {
+                    // En caso de error de red/timeout, la anulación pudo haberse procesado
+                    mostrarAlerta(
+                        '⚠️ ' + clasificarErrorRed(err) +
+                        ' No se puede confirmar si la anulación se registró. ' +
+                        'Recargar la página para verificar el estado del pago antes de reintentar.',
+                        'error'
+                    );
+                } else {
+                    mostrarAlerta(clasificarErrorRed(err), 'error');
+                }
+            } finally {
+                if (btnOk) { btnOk.disabled = false; btnOk.textContent = 'Confirmar Anulación'; }
+                if (btnCancel) btnCancel.disabled = false;
             }
         }
 

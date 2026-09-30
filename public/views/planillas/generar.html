@@ -395,6 +395,7 @@
             const errDiv = document.getElementById('errorMessage');
             const succDiv = document.getElementById('successMessage');
             const loadDiv = document.getElementById('loadingMessage');
+            const btnSubmit = e.target.querySelector('button[type="submit"]');
 
             errDiv.classList.add('hidden');
             succDiv.classList.add('hidden');
@@ -406,12 +407,17 @@
             }
 
             loadDiv.classList.remove('hidden');
+            // Deshabilitar el botón para evitar doble envío mientras genera el PDF
+            if (btnSubmit) btnSubmit.disabled = true;
 
             try {
+                // La generación de planilla incluye PDF y puede tardar más de lo normal:
+                // se usa un timeout de 30 s en lugar del default de 15 s
                 const data = await fetchJson(`${API_BASE}/planillas`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ zona_id, cobrador_id })
+                    body: JSON.stringify({ zona_id, cobrador_id }),
+                    timeoutMs: 30_000
                 });
 
                 loadDiv.classList.add('hidden');
@@ -425,8 +431,10 @@
                 }
             } catch (error) {
                 loadDiv.classList.add('hidden');
-                errDiv.textContent = error.message || 'Error al generar la planilla.';
+                errDiv.textContent = clasificarErrorRed(error);
                 errDiv.classList.remove('hidden');
+            } finally {
+                if (btnSubmit) btnSubmit.disabled = false;
             }
         }
 

@@ -707,31 +707,48 @@
                 observacion: observacion
             };
 
+            // Bloquear ambos botones del modal para evitar doble envío
+            const btnOk = document.querySelector('#modalConfirmacion .modal-footer .btn--primary');
+            const btnCancel = document.querySelector('#modalConfirmacion .modal-footer .btn--secondary');
+            if (btnOk) { btnOk.disabled = true; btnOk.textContent = 'Registrando...'; }
+            if (btnCancel) btnCancel.disabled = true;
+
             try {
-                const res = await fetch(`${BASE_URL}/api/pagos`, {
+                const data = await fetchJson(`${BASE_URL}/api/pagos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
-                const data = await res.json();
 
-                if (data.success) {
-                    cerrarModal();
-                    mostrarAlerta('Pago registrado con éxito.', 'success');
+                cerrarModal();
+                mostrarAlerta('Pago registrado con éxito.', 'success');
 
-                    document.getElementById('deudasContainer').style.display = 'none';
+                document.getElementById('deudasContainer').style.display = 'none';
 
-                    // Pago exitoso: mostrar enlaces al comprobante PDF y al mensaje de WhatsApp
-                    const actions = document.getElementById('resultActions');
-                    actions.style.display = 'flex';
-                    document.getElementById('linkComprobante').href = data.data.comprobante_url;
-                    document.getElementById('linkWhatsapp').href = data.data.whatsapp_url;
+                // Pago exitoso: mostrar enlaces al comprobante PDF y al mensaje de WhatsApp
+                const actions = document.getElementById('resultActions');
+                actions.style.display = 'flex';
+                document.getElementById('linkComprobante').href = data.data.comprobante_url;
+                document.getElementById('linkWhatsapp').href = data.data.whatsapp_url;
 
-                } else {
-                    mostrarAlerta(data.message || 'Error al registrar pago.', 'error');
-                }
             } catch (err) {
-                mostrarAlerta('Error de red.', 'error');
+                // Si el error es de red o timeout, no podemos saber si el pago se procesó
+                // en el servidor antes de perder conexión → advertir antes de reintentar
+                if (esErrorDeRed(err)) {
+                    mostrarAlerta(
+                        '⚠️ ' + clasificarErrorRed(err) +
+                        ' No se puede confirmar si el pago se registró. ' +
+                        'Verificá en el Listado de Pagos antes de intentar cobrar nuevamente.',
+                        'error'
+                    );
+                } else {
+                    // Error HTTP claro del servidor (ej. validación 422): el pago NO se procesó
+                    mostrarAlerta(clasificarErrorRed(err), 'error');
+                }
+            } finally {
+                // Restaurar botones siempre, haya éxito o error
+                if (btnOk) { btnOk.disabled = false; btnOk.textContent = 'Confirmar Pago'; }
+                if (btnCancel) btnCancel.disabled = false;
             }
         }
 
