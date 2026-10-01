@@ -85,11 +85,11 @@
                     <span class="toolbar__search-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </span>
-                    <input type="text" id="inputBusqueda" placeholder="Buscar por nombre, DNI o N° de socio..." autocomplete="off">
+                    <input type="text" id="inputBusqueda" placeholder="Buscar por nombre, DNI o N° de socio..." autocomplete="off" aria-label="Buscar por nombre, DNI o N° de socio">
                 </div>
                 <div class="filter-chips">
                     <div class="filter-chip">
-                        <select id="filtroEstado">
+                        <select id="filtroEstado" aria-label="Filtrar por estado">
                             <option value="">Estado: Todos</option>
                             <option value="activo">Activo</option>
                             <option value="suspendido">Suspendido</option>
@@ -97,19 +97,19 @@
                         </select>
                     </div>
                     <div class="filter-chip">
-                        <select id="filtroZona">
+                        <select id="filtroZona" aria-label="Filtrar por zona">
                             <option value="">Zona: Todas</option>
                         </select>
                     </div>
                     <div class="filter-chip">
-                        <select id="filtroModalidad">
+                        <select id="filtroModalidad" aria-label="Filtrar por modalidad de cobranza">
                             <option value="">Modalidad: Todas</option>
                             <option value="cobranza_domiciliaria">Domiciliaria</option>
                             <option value="cobranza_en_sede">En sede</option>
                         </select>
                     </div>
                     <div class="filter-chip">
-                        <select id="filtroDeuda">
+                        <select id="filtroDeuda" aria-label="Filtrar por estado de deuda">
                             <option value="">Deuda: Todas</option>
                             <option value="1">Con deuda</option>
                             <option value="0">Al día</option>

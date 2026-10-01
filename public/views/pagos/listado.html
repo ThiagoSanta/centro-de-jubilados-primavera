@@ -163,23 +163,23 @@
 
             <div class="filters-container">
                 <div class="filter-group">
-                    <label class="form-label">Socio ID (UUID)</label>
-                    <input type="text" id="filtroSocio" class="form-control" placeholder="ID del socio...">
+                    <label class="form-label" for="filtroSocio">Socio ID (UUID)</label>
+                    <input type="text" id="filtroSocio" class="form-control" placeholder="ID del socio..." aria-label="Buscar por ID de socio">
                 </div>
                 <div class="filter-group">
-                    <label class="form-label">Estado</label>
-                    <select id="filtroEstado" class="form-control">
+                    <label class="form-label" for="filtroEstado">Estado</label>
+                    <select id="filtroEstado" class="form-control" aria-label="Filtrar por estado">
                         <option value="registrado" selected>Registrado</option>
                         <option value="anulado">Anulado</option>
                         <option value="todos">Todos</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label class="form-label">Fecha Desde</label>
+                    <label class="form-label" for="filtroFechaDesde">Fecha Desde</label>
                     <input type="date" id="filtroFechaDesde" class="form-control">
                 </div>
                 <div class="filter-group">
-                    <label class="form-label">Fecha Hasta</label>
+                    <label class="form-label" for="filtroFechaHasta">Fecha Hasta</label>
                     <input type="date" id="filtroFechaHasta" class="form-control">
                 </div>
                 <div class="filter-group" style="display: flex; align-items: flex-end;">
@@ -321,9 +321,9 @@
                 const metodoPago = escapeHtml(pago.metodo_pago);
                 const pagoId = encodeURIComponent(pago.id);
                 
-                let acciones = `<a href="${BASE_URL}/api/pagos/${pagoId}/comprobante" target="_blank" class="action-link">PDF</a>`;
+                let acciones = `<a href="${BASE_URL}/api/pagos/${pagoId}/comprobante" target="_blank" class="btn btn--secondary btn--sm" aria-label="Ver comprobante PDF del pago">PDF</a>`;
                 if (pago.estado === 'registrado') {
-                    acciones += `<a class="action-link text-danger" onclick="abrirModalAnular('${escapeHtml(pago.id)}')">Anular</a>`;
+                    acciones += ` <button type="button" class="btn btn--danger btn--sm" onclick="abrirModalAnular('${escapeHtml(pago.id)}')">Anular</button>`;
                 }
 
                 tr.innerHTML = `

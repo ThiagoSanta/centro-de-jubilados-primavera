@@ -90,3 +90,77 @@ function logout() {
       window.location.replace(BASE_URL + '/views/auth/login.html');
     });
 }
+
+/**
+ * Atajo global de accesibilidad (WCAG 2.1 - 2.1.1):
+ * Cierra modales, drawers, menú contextual o sidebars abiertos al presionar Escape.
+ */
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+
+  // 1. Menú contextual (ej. en socios/padron.html)
+  const contextMenu = document.querySelector('.context-menu.context-menu--open, #contextMenu.context-menu--open');
+  if (contextMenu) {
+    if (typeof cerrarContextMenu === 'function') {
+      cerrarContextMenu();
+    } else {
+      contextMenu.classList.remove('context-menu--open');
+    }
+    return;
+  }
+
+  // 2. Modales controlados por clase .modal-overlay--open (usuarios, socios/padron, socios/perfil, notificaciones)
+  const openOverlays = document.querySelectorAll('.modal-overlay.modal-overlay--open, .modal-overlay--open');
+  if (openOverlays.length > 0) {
+    openOverlays.forEach(function (overlay) {
+      if (typeof closeModal === 'function' && overlay.id) {
+        closeModal(overlay.id);
+      } else if (typeof cerrarModal === 'function') {
+        cerrarModal();
+      }
+      overlay.classList.remove('modal-overlay--open');
+    });
+    return;
+  }
+
+  // 3. Modales controlados por estilo inline display (flex/block en pagos/listado, pagos/cobro-sede, deuda/generar)
+  const visibleModals = Array.from(document.querySelectorAll('.modal-overlay')).filter(function (el) {
+    return el.style.display && el.style.display !== 'none';
+  });
+  if (visibleModals.length > 0) {
+    visibleModals.forEach(function (modal) {
+      if (modal.id === 'modalAnular' && typeof cerrarModalAnular === 'function') {
+        cerrarModalAnular();
+      } else if (modal.id === 'modalSeleccionSocio' && typeof cerrarModalSeleccionSocio === 'function') {
+        cerrarModalSeleccionSocio();
+      } else if (typeof cerrarModal === 'function') {
+        cerrarModal();
+      }
+      modal.style.display = 'none';
+    });
+    return;
+  }
+
+  // 4. Drawers laterales (ej. nuevo socio en socios/padron.html)
+  const openDrawer = document.querySelector('.drawer.drawer--open, .drawer-overlay.drawer-overlay--open');
+  if (openDrawer) {
+    if (typeof cerrarDrawer === 'function') {
+      cerrarDrawer();
+    } else {
+      document.querySelectorAll('.drawer--open').forEach(el => el.classList.remove('drawer--open'));
+      document.querySelectorAll('.drawer-overlay--open').forEach(el => el.classList.remove('drawer-overlay--open'));
+    }
+    return;
+  }
+
+  // 5. Sidebar móvil expandido (ej. planillas/mapa, pagos/cobro-sede, cobrador/*)
+  const openSidebar = document.querySelector('.sidebar.sidebar--open');
+  if (openSidebar) {
+    openSidebar.classList.remove('sidebar--open');
+    const sidebarOverlay = document.getElementById('sidebarOverlay') || document.querySelector('.sidebar-overlay--visible');
+    if (sidebarOverlay) {
+      sidebarOverlay.classList.remove('sidebar-overlay--visible');
+    }
+  }
+});
+
