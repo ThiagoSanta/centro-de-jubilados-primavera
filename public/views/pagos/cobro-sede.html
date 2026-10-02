@@ -438,7 +438,22 @@
                 });
 
             initMobileSidebar();
-            cargarZonas();
+
+            // ── Auto-completar desde URL si viene ?dni= ──────────────────────────
+            // cargarZonas() devuelve su promesa: la búsqueda se dispara recién
+            // cuando las zonas terminaron de cargarse, sin depender de un timeout fijo.
+            (function () {
+                var dniParam = (new URLSearchParams(window.location.search)).get('dni');
+                cargarZonas().then(function () {
+                    if (dniParam) {
+                        var inputDni = document.getElementById('inputDni');
+                        if (inputDni) {
+                            inputDni.value = dniParam;
+                            buscarSocio();
+                        }
+                    }
+                });
+            }());
 
             var inputDni = document.getElementById('inputDni');
             if (inputDni) {
@@ -476,7 +491,7 @@
         }
 
         function cargarZonas() {
-            fetch(BASE_URL + '/api/zonas')
+            return fetch(BASE_URL + '/api/zonas')
                 .then(function (res) { return res.json(); })
                 .then(function (res) {
                     if (res.success && Array.isArray(res.data)) {
