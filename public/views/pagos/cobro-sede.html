@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cobro en Sede - Centro de Jubilados Primavera</title>
+    <title>Terminal de cobro - Centro de Jubilados Primavera</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -224,7 +224,7 @@
             <button class="btn-hamburger" id="btnToggleSidebar" aria-label="Abrir menú">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
-            <span class="mobile-header-bar__title">Centro Primavera — Cobro en Sede</span>
+            <span class="mobile-header-bar__title">Centro Primavera — Terminal de cobro</span>
         </div>
         <!-- Barra lateral (se rellena dinámicamente según el rol del usuario autenticado) -->
         <aside class="sidebar" id="appSidebar">
@@ -251,7 +251,7 @@
         <main class="content">
             <div class="content__header">
                 <div>
-                    <h1 class="content__title">Cobro en Sede</h1>
+                    <h1 class="content__title">Terminal de cobro</h1>
                     <p class="content__subtitle">Registro de pagos presenciales</p>
                 </div>
             </div>
@@ -383,7 +383,7 @@
                 icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
             },
             {
-                href: '/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html', label: 'Cobro en sede', active: true,
+                href: '/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html', label: 'Terminal de cobro', active: true,
                 icon: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
             },
             {
@@ -494,7 +494,7 @@
                 .catch(function () {});
         }
 
-        // ── Lógica de cobro en sede ───────────────────────────────────────────────
+        // ── Lógica de terminal de cobro ─────────────────────────────────────────────
         let socioActual = null;
         let deudasPendientes = [];
         let deudasSeleccionadas = [];
