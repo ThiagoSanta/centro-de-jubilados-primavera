@@ -164,3 +164,84 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
+/**
+ * Focus Trap — WCAG 2.1, criterio 2.1.2
+ *
+ * Confina el foco de teclado dentro de un modal mientras está abierto.
+ * Solo intercepta Tab/Shift+Tab; el Escape sigue siendo manejado por el
+ * listener global definido arriba, por lo que no hay conflicto.
+ *
+ * Uso:
+ *   var trap = initFocusTrap(document.getElementById('modalXxx')); // al abrir
+ *   trap.destroy();                                                 // al cerrar
+ *
+ * @param {HTMLElement} overlayEl - El .modal-overlay (contenedor del modal).
+ * @returns {{ destroy: function }}
+ */
+function initFocusTrap(overlayEl) {
+  // Recordar quién tenía el foco antes de abrir el modal
+  var triggerEl = document.activeElement;
+
+  // Selector canónico de elementos enfocables (excluye disabled y no visibles)
+  var FOCUSABLE_SEL = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(', ');
+
+  function getFocusable() {
+    return Array.from(overlayEl.querySelectorAll(FOCUSABLE_SEL)).filter(function (el) {
+      return !el.closest('[hidden]') && el.offsetParent !== null;
+    });
+  }
+
+  // Mover foco al primer elemento interactivo del modal
+  var focusables = getFocusable();
+  if (focusables.length > 0) {
+    focusables[0].focus();
+  } else {
+    // Fallback: si no hay elementos enfocables, enfocar el overlay (requiere tabindex="-1")
+    if (overlayEl.hasAttribute('tabindex')) {
+      overlayEl.focus();
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key !== 'Tab') return;
+
+    var focusables = getFocusable(); // re-evalúa (el contenido puede ser dinámico)
+    if (focusables.length === 0) return;
+
+    var first = focusables[0];
+    var last  = focusables[focusables.length - 1];
+
+    if (e.shiftKey) {
+      // Shift+Tab desde el primero → ir al último
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      // Tab desde el último → ir al primero
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  document.addEventListener('keydown', handleKeyDown);
+
+  return {
+    destroy: function () {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Devolver el foco al elemento que abrió el modal
+      if (triggerEl && typeof triggerEl.focus === 'function') {
+        triggerEl.focus();
+      }
+    }
+  };
+}
