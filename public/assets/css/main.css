@@ -19,6 +19,37 @@
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+    /* Canales RGB para transparencias de acento, estados y roles */
+    --color-accent-rgb: 37, 99, 235;
+    --color-estado-activo-rgb: 21, 128, 61;
+    --color-estado-suspendido-rgb: 180, 83, 9;
+    --color-estado-eliminado-rgb: 220, 38, 38;
+    --color-rol-admin: #7c3aed;
+    --color-rol-admin-rgb: 124, 58, 237;
+
+    /* Fondos y textos de badges de estado con contraste accesible */
+    --color-estado-activo-bg: #DCFCE7;
+    --color-estado-activo-text: #14532D;
+    --color-estado-suspendido-bg: #FEF3C7;
+    --color-estado-suspendido-text: #78350F;
+    --color-estado-eliminado-bg: #FEE2E2;
+    --color-estado-eliminado-text: #7F1D1D;
+    --color-estado-eliminado-hover: #b91c1c;
+
+    /* Alertas del sistema */
+    --color-alerta-info-bg: #eff6ff;
+    --color-alerta-info-border: #dbeafe;
+    --color-alerta-success-bg: #f0fdf4;
+    --color-alerta-success-border: #dcfce7;
+    --color-alerta-error-bg: #fef2f2;
+    --color-alerta-error-border: #fee2e2;
+
+    /* Overlays y elementos sobre sidebar oscuro */
+    --color-overlay: rgba(0, 0, 0, 0.45);
+    --color-sidebar-border: rgba(255, 255, 255, 0.08);
+    --color-sidebar-text-muted: rgba(255, 255, 255, 0.65);
+    --color-sidebar-item-hover: rgba(255, 255, 255, 0.1);
 }
 
 *,
@@ -73,7 +104,7 @@ a {
     width: 220px;
     flex-shrink: 0;
     background: var(--color-sidebar);
-    color: #ffffff;
+    color: var(--color-content);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -81,7 +112,7 @@ a {
 
 .sidebar__brand {
     padding: 1.25rem 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid var(--color-sidebar-border);
 }
 
 .sidebar__brand-title {
@@ -109,7 +140,7 @@ a {
     padding: 0.625rem 1rem;
     font-size: 0.8125rem;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--color-sidebar-text-muted);
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
     border-left: 3px solid transparent;
@@ -117,12 +148,12 @@ a {
 
 .sidebar-nav-item:hover {
     background: var(--color-sidebar-hover);
-    color: #ffffff;
+    color: var(--color-content);
 }
 
 .sidebar-nav-item--active {
     background: var(--color-sidebar-hover);
-    color: #ffffff;
+    color: var(--color-content);
     border-left-color: var(--color-accent);
 }
 
@@ -227,7 +258,7 @@ a {
 
 .toolbar__search input:focus {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.12);
 }
 
 .toolbar__search-icon {
@@ -296,28 +327,28 @@ a {
 }
 
 .badge--activo {
-    background: #DCFCE7;
-    color: #14532D;                       /* Ratio 7.1:1 sobre su fondo */
+    background: var(--color-estado-activo-bg);
+    color: var(--color-estado-activo-text);                       /* Ratio 7.1:1 sobre su fondo */
 }
 
 .badge--suspendido {
-    background: #FEF3C7;
-    color: #78350F;                       /* Ratio 7.3:1 sobre su fondo */
+    background: var(--color-estado-suspendido-bg);
+    color: var(--color-estado-suspendido-text);                   /* Ratio 7.3:1 sobre su fondo */
 }
 
 .badge--eliminado {
-    background: #FEE2E2;
-    color: #7F1D1D;                       /* Ratio 8.2:1 sobre su fondo */
+    background: var(--color-estado-eliminado-bg);
+    color: var(--color-estado-eliminado-text);                   /* Ratio 8.2:1 sobre su fondo */
 }
 
 .badge--pendiente {
-    background: #FEF3C7;
-    color: #78350F;
+    background: var(--color-estado-suspendido-bg);
+    color: var(--color-estado-suspendido-text);
 }
 
 .badge--resuelto {
-    background: #DCFCE7;
-    color: #14532D;
+    background: var(--color-estado-activo-bg);
+    color: var(--color-estado-activo-text);
 }
 
 /* Botones */
@@ -344,7 +375,7 @@ a {
 
 .btn--primary {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-content);
 }
 
 .btn--primary:hover:not(:disabled) {
@@ -363,11 +394,11 @@ a {
 
 .btn--danger {
     background: var(--color-estado-eliminado);
-    color: #ffffff;
+    color: var(--color-content);
 }
 
 .btn--danger:hover:not(:disabled) {
-    background: #b91c1c;
+    background: var(--color-estado-eliminado-hover);
 }
 
 .btn--sm {
@@ -531,7 +562,7 @@ a {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: var(--color-overlay);
     z-index: 1000;
     align-items: center;
     justify-content: center;
@@ -715,7 +746,7 @@ a {
 
 .form-control:focus {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.12);
 }
 
 .form-control--textarea {
@@ -784,21 +815,21 @@ a {
 }
 
 .alert--error {
-    background: #fef2f2;
+    background: var(--color-alerta-error-bg);
     color: var(--color-estado-eliminado);
-    border: 1px solid #fee2e2;
+    border: 1px solid var(--color-alerta-error-border);
 }
 
 .alert--success {
-    background: #f0fdf4;
+    background: var(--color-alerta-success-bg);
     color: var(--color-estado-activo);
-    border: 1px solid #dcfce7;
+    border: 1px solid var(--color-alerta-success-border);
 }
 
 .alert--info {
-    background: #eff6ff;
-    color: #2563eb;
-    border: 1px solid #dbeafe;
+    background: var(--color-alerta-info-bg);
+    color: var(--color-accent);
+    border: 1px solid var(--color-alerta-info-border);
 }
 
 /* Perfil — encabezado */
@@ -1032,7 +1063,7 @@ a {
 .drop-zone:hover,
 .drop-zone--dragover {
     border-color: var(--color-accent);
-    background: rgba(59, 130, 246, 0.04);
+    background: rgba(var(--color-accent-rgb), 0.04);
 }
 
 .drop-zone svg {
@@ -1095,13 +1126,13 @@ a {
 }
 
 .result-card--success {
-    background: rgba(22, 163, 74, 0.08);
-    border: 1px solid rgba(22, 163, 74, 0.2);
+    background: rgba(var(--color-estado-activo-rgb), 0.08);
+    border: 1px solid rgba(var(--color-estado-activo-rgb), 0.2);
 }
 
 .result-card--error {
-    background: rgba(220, 38, 38, 0.08);
-    border: 1px solid rgba(220, 38, 38, 0.2);
+    background: rgba(var(--color-estado-eliminado-rgb), 0.08);
+    border: 1px solid rgba(var(--color-estado-eliminado-rgb), 0.2);
 }
 
 .result-card__number {
@@ -1156,7 +1187,7 @@ a {
     height: 18px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
-    border-top-color: #ffffff;
+    border-top-color: var(--color-content);
     animation: spin 0.7s linear infinite;
 }
 
@@ -1179,7 +1210,7 @@ a {
 
 .sidebar__footer {
     padding: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--color-sidebar-item-hover);
     margin-top: auto;
 }
 
@@ -1202,8 +1233,8 @@ a {
 }
 
 .sidebar__footer-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background: var(--color-sidebar-item-hover);
+    color: var(--color-content);
 }
 
 .sidebar__footer-btn svg {
@@ -1214,12 +1245,12 @@ a {
 
 .btn--secondary {
     background-color: transparent;
-    color: var(--text-primary, #1F2937);
-    border: 1px solid var(--border, #E5E7EB);
+    color: var(--color-text, #1F2937);
+    border: 1px solid var(--color-border, #E5E7EB);
 }
 
 .btn--secondary:hover {
-    background-color: var(--surface-2, #F9FAFB);
+    background-color: var(--color-bg-subtle, #F9FAFB);
 }
 
 .sidebar__footer .btn--secondary {
@@ -1229,6 +1260,6 @@ a {
 }
 
 .sidebar__footer .btn--secondary:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background-color: var(--color-sidebar-item-hover);
+    color: var(--color-content);
 }

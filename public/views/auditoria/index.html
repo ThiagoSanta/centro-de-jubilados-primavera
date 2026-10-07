@@ -38,7 +38,7 @@
         .text-green-500 { color: var(--color-estado-activo); }
 
         /* Colores de fondo — badge de acción */
-        .bg-blue-100   { background-color: rgba(59, 130, 246, 0.12); }
+        .bg-blue-100   { background-color: rgba(var(--color-accent-rgb), 0.12); }
 
         /* Bordes y radios */
         .rounded-full  { border-radius: 9999px; }
@@ -54,10 +54,10 @@
             display: flex;
             gap: 1rem;
             margin-bottom: 2rem;
-            background: #fff;
+            background: var(--color-content);
             padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow-sm);
             flex-wrap: wrap;
         }
         .filter-group {
