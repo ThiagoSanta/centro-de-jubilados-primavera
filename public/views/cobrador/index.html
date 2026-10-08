@@ -45,28 +45,31 @@
         }
 
         .welcome-card__title {
-            font-size: 1.625rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
+            /* 1.625rem = --font-size-3xl; 700 = --font-weight-bold; -0.03em = --letter-spacing-tight */
+            font-size: var(--font-size-3xl);
+            font-weight: var(--font-weight-bold);
+            letter-spacing: var(--letter-spacing-tight);
             margin-bottom: 0.35rem;
         }
 
         .welcome-card__role-badge {
-            font-size: 0.75rem;
-            font-weight: 600;
+            /* 0.75rem = --font-size-xs; 600 = --font-weight-semibold; 0.05em = --letter-spacing-wide */
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
             background: rgba(59, 130, 246, 0.22);
             color: #93c5fd;
             padding: 0.25rem 0.65rem;
             border-radius: 999px;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: var(--letter-spacing-wide);
             display: inline-block;
         }
 
         /* ── Títulos de sección ────────────────────── */
         .section-title {
-            font-size: 1.125rem;
-            font-weight: 700;
+            /* 1.125rem = --font-size-xl; 700 = --font-weight-bold */
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
             color: var(--color-primary);
             margin-bottom: 1.25rem;
             display: flex;
@@ -148,14 +151,16 @@
             /* 1.0625rem (17px) unificado a --font-size-lg (1rem/16px): diferencia de 1px
                inapreciable, elimina valor aislado de la escala. */
             font-size: var(--font-size-lg);
-            font-weight: 700;
+            /* 700 = --font-weight-bold (encabezado de tarjeta en bloque anterior al responsive) */
+            font-weight: var(--font-weight-bold);
             color: var(--color-text);
         }
 
         .module-card__desc {
-            font-size: 0.875rem;
+            /* 0.875rem = --font-size-base; 1.45 = --line-height-snug */
+            font-size: var(--font-size-base);
             color: var(--color-text-muted);
-            line-height: 1.45;
+            line-height: var(--line-height-snug);
             flex: 1;
         }
 
@@ -163,8 +168,9 @@
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            font-size: 0.8125rem;
-            font-weight: 600;
+            /* 0.8125rem = --font-size-sm; 600 = --font-weight-semibold */
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
             color: var(--color-accent);
             margin-top: 0.5rem;
         }
@@ -231,8 +237,9 @@
             }
 
             .mobile-header-bar__title {
-                font-size: 0.9375rem;
-                font-weight: 700;
+                /* 0.9375rem = --font-size-md; 700 = --font-weight-bold */
+                font-size: var(--font-size-md);
+                font-weight: var(--font-weight-bold);
             }
 
             .sidebar {
@@ -270,7 +277,8 @@
             }
 
             .welcome-card__title {
-                font-size: 1.25rem;
+                /* 1.25rem = --font-size-xl2 (bloque @media responsive) */
+                font-size: var(--font-size-xl2);
             }
         }
     </style>

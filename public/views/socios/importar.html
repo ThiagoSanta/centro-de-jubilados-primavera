@@ -98,7 +98,7 @@
                         <input type="file" id="fileInput" accept=".csv" style="display:none;">
 
                         <div class="columns-table">
-                            <p style="font-size:0.8125rem;color:var(--color-text-muted);margin-top:1rem;">Columnas esperadas en el CSV:</p>
+                            <p style="font-size:var(--font-size-sm);color:var(--color-text-muted);margin-top:1rem;">Columnas esperadas en el CSV:</p>
                             <div class="table-wrapper" style="margin-top:0.5rem;">
                                 <table class="table">
                                     <thead>
@@ -129,13 +129,13 @@
                     <!-- Progreso en tiempo real con polling -->
                     <div id="seccionProgreso" style="display:none; margin-top:0.5rem;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                            <span id="progresoTexto" style="font-size:0.875rem; font-weight:500; color:var(--color-text);">Procesando: 0 de 0 filas (0 exitosos, 0 inconsistencias)</span>
-                            <span id="progresoPorcentaje" style="font-size:0.875rem; font-weight:600; color:var(--color-accent);">0%</span>
+                            <span id="progresoTexto" style="font-size:var(--font-size-base); font-weight:var(--font-weight-medium); color:var(--color-text);">Procesando: 0 de 0 filas (0 exitosos, 0 inconsistencias)</span>
+                            <span id="progresoPorcentaje" style="font-size:var(--font-size-base); font-weight:var(--font-weight-semibold); color:var(--color-accent);">0%</span>
                         </div>
                         <div class="progress-bar progress-bar--visible" id="progressBar" style="display:block; margin:0.5rem 0;">
                             <div class="progress-bar__fill" id="progressFill" style="width:0%;"></div>
                         </div>
-                        <p style="font-size:0.8125rem; color:var(--color-text-muted); margin-top:0.5rem;">
+                        <p style="font-size:var(--font-size-sm); color:var(--color-text-muted); margin-top:0.5rem;">
                             La importación y georreferenciación se ejecutan en segundo plano. Puede permanecer en esta página o volver más tarde sin interrumpir el proceso.
                         </p>
                     </div>
@@ -463,10 +463,10 @@
 
                     tbody.innerHTML = items.map(function (item) {
                         return '<tr class="fade-in">' +
-                            '<td style="font-size:0.8125rem;">' + formatDatosRegistro(item.datos_registro) + '</td>' +
-                            '<td style="font-size:0.8125rem;">' + escapeHtml(item.motivo_rechazo) + '</td>' +
+                            '<td style="font-size:var(--font-size-sm);">' + formatDatosRegistro(item.datos_registro) + '</td>' +
+                            '<td style="font-size:var(--font-size-sm);">' + escapeHtml(item.motivo_rechazo) + '</td>' +
                             '<td>' + estadoBadge(item.estado) + '</td>' +
-                            '<td style="font-size:0.8125rem;">' + formatDate(item.fecha_importacion) + '</td>' +
+                            '<td style="font-size:var(--font-size-sm);">' + formatDate(item.fecha_importacion) + '</td>' +
                         '</tr>';
                     }).join('');
                 })

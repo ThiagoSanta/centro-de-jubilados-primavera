@@ -55,7 +55,8 @@
         }
 
         .total-box {
-            font-size: 1.25rem;
+            /* 1.25rem = --font-size-xl2 */
+            font-size: var(--font-size-xl2);
             /* 'bold' reemplazado por valor numérico equivalente para consistencia
                con la escala --font-weight-bold declarada en el Lote 1. */
             font-weight: var(--font-weight-bold);
@@ -111,7 +112,8 @@
             border-radius: 4px;
             display: inline-flex;
             align-items: center;
-            font-weight: 500;
+            /* 500 = --font-weight-medium */
+            font-weight: var(--font-weight-medium);
         }
 
         .socio-select-item {
@@ -182,8 +184,9 @@
             }
 
             .mobile-header-bar__title {
-                font-size: 0.9375rem;
-                font-weight: 700;
+                /* 0.9375rem = --font-size-md; 700 = --font-weight-bold */
+                font-size: var(--font-size-md);
+                font-weight: var(--font-weight-bold);
             }
 
             .sidebar {
@@ -276,9 +279,9 @@
 
             <div class="deudas-container" id="deudasContainer">
                 <h3>Deudas Pendientes</h3>
-                <!-- font-size 0.9rem unificado a --font-size-base (0.875rem): diferencia de 0.4px
-                     inapreciable. Párrafo estático; los estilos JS de la vista NO se tocan. -->
-                <p style="color: #666; font-size: var(--font-size-base);">Debe seleccionar los períodos en orden cronológico.</p>
+                <!-- font-size 0.9rem unificado a --font-size-base (0.875rem) y color #666 unificado a --color-text-muted.
+                     Párrafo estático; los estilos JS de la vista NO se tocan. -->
+                <p style="color: var(--color-text-muted); font-size: var(--font-size-base);">Debe seleccionar los períodos en orden cronológico.</p>
 
                 <div id="listaDeudas"></div>
 
@@ -314,7 +317,8 @@
     <div class="modal-overlay" id="modalSeleccionSocio">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloModalSeleccionSocio" style="max-width: 600px;">
             <h2 id="tituloModalSeleccionSocio" style="margin-top: 0;">Seleccionar Socio</h2>
-            <p style="color: #64748b; font-size: 0.95rem;">Se encontraron múltiples coincidencias. Elija un socio para continuar:</p>
+            <!-- Color #64748b unificado a --color-text-muted para consistencia de texto secundario -->
+            <p style="color: var(--color-text-muted); font-size: 0.95rem;">Se encontraron múltiples coincidencias. Elija un socio para continuar:</p>
             <div id="listaSociosEncontrados" style="max-height: 320px; overflow-y: auto; margin-bottom: 1.5rem;"></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn--secondary" onclick="cerrarModalSeleccionSocio()">Cancelar</button>
@@ -569,7 +573,7 @@
                 item.className = 'socio-select-item';
                 item.innerHTML = `
                     <div>
-                        <strong style="color: #1e293b; font-size: 1rem;">${s.nombre_apellido}</strong>
+                        <strong style="color: #1e293b; font-size: var(--font-size-lg);">${s.nombre_apellido}</strong>
                         <div style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">
                             DNI: <strong>${s.dni || 'S/D'}</strong> | Socio N°: <strong>${s.numero_socio}</strong> | Zona: <strong>${s.zona_nombre || 'N/A'}</strong>
                         </div>
@@ -645,7 +649,7 @@
                             <input type="checkbox" class="deuda-checkbox" id="chk_${index}" data-index="${index}" data-id="${deuda.id}" data-monto="${deuda.monto}" onchange="manejarSeleccion(${index})">
                             <label for="chk_${index}" style="font-size: 1.1rem;">${labelPeriodo}</label>
                         </div>
-                        <div style="font-weight: 500;">
+                        <div style="font-weight: var(--font-weight-medium);">
                             $${parseFloat(deuda.monto).toFixed(2)}
                         </div>
                     `;

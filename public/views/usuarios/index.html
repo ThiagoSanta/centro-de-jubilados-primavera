@@ -32,8 +32,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 700;
+            /* 0.75rem = --font-size-xs; 700 = --font-weight-bold */
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
             color: var(--color-text-muted);
             flex-shrink: 0;
         }
@@ -43,19 +44,22 @@
             gap: 0.625rem;
         }
         .role-readonly {
-            font-size: 0.875rem;
+            /* 0.875rem = --font-size-base */
+            font-size: var(--font-size-base);
             color: var(--color-text-muted);
             font-style: italic;
         }
         .form-label {
             display: block;
-            font-size: 0.8125rem;
-            font-weight: 600;
+            /* 0.8125rem = --font-size-sm; 600 = --font-weight-semibold */
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
             color: var(--color-text);
             margin-bottom: 0.375rem;
         }
         .form-hint {
-            font-size: 0.75rem;
+            /* 0.75rem = --font-size-xs */
+            font-size: var(--font-size-xs);
             color: var(--color-text-muted);
             margin-top: 0.25rem;
         }

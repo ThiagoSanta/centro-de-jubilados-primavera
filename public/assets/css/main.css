@@ -44,6 +44,7 @@
     --color-alerta-success-border: #dcfce7;
     --color-alerta-error-bg: #fef2f2;
     --color-alerta-error-border: #fee2e2;
+    --color-warning-dark: #92400e;        /* Color oscuro para texto de advertencias con contraste accesible */
 
     /* Overlays y elementos sobre sidebar oscuro */
     --color-overlay: rgba(0, 0, 0, 0.45);
@@ -105,7 +106,7 @@ body {
     font-family: var(--font);
     color: var(--color-text);
     background: var(--color-bg-subtle);
-    line-height: 1.5;
+    line-height: var(--line-height-normal);
     -webkit-font-smoothing: antialiased;
 }
 
@@ -157,13 +158,13 @@ a {
 }
 
 .sidebar__brand-title {
-    font-size: 0.9375rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .sidebar__brand-sub {
-    font-size: 0.6875rem;
+    font-size: var(--font-size-2xs);
     color: rgba(255, 255, 255, 0.5);
     margin-top: 0.125rem;
 }
@@ -179,8 +180,8 @@ a {
     align-items: center;
     gap: 0.625rem;
     padding: 0.625rem 1rem;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     color: var(--color-sidebar-text-muted);
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
@@ -223,8 +224,8 @@ a {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-muted);
     margin-bottom: 1rem;
     transition: color 0.15s ease;
@@ -259,13 +260,13 @@ a {
 }
 
 .content__title {
-    font-size: 1.375rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .content__subtitle {
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-top: 0.125rem;
 }
@@ -289,7 +290,7 @@ a {
 .toolbar__search input {
     width: 100%;
     padding: 0.5rem 0.75rem 0.5rem 2.25rem;
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
     font-family: inherit;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
@@ -331,7 +332,7 @@ a {
 .filter-chip select {
     appearance: none;
     padding: 0.375rem 1.75rem 0.375rem 0.75rem;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     font-family: inherit;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
@@ -361,8 +362,8 @@ a {
     display: inline-flex;
     align-items: center;
     padding: 0.125rem 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     border-radius: 999px;
     white-space: nowrap;
 }
@@ -399,8 +400,8 @@ a {
     justify-content: center;
     gap: 0.375rem;
     padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
     font-family: inherit;
     border: none;
     border-radius: var(--radius);
@@ -445,7 +446,7 @@ a {
 .btn--sm {
     min-height: 38px;                    /* Área táctil ergonómica */
     padding: 0.4rem 0.75rem;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
 }
 
 .btn--icon {
@@ -477,7 +478,7 @@ a {
 .table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
 }
 
 .table thead {
@@ -487,10 +488,10 @@ a {
 .table th {
     padding: 0.625rem 0.875rem;
     text-align: left;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--letter-spacing-wide);
     color: var(--color-text-muted);
     border-bottom: 1px solid var(--color-border);
 }
@@ -530,13 +531,13 @@ a {
 /* Deuda */
 .deuda--si {
     color: var(--color-deuda);
-    font-weight: 600;
-    font-size: 0.8125rem;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
 }
 
 .deuda--no {
     color: var(--color-text-muted);
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
 }
 
 /* Modalidad ícono */
@@ -559,7 +560,7 @@ a {
     justify-content: space-between;
     padding: 0.875rem 0;
     margin-top: 0.5rem;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
 }
 
@@ -587,14 +588,14 @@ a {
 }
 
 .empty-state__title {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text);
     margin-bottom: 0.375rem;
 }
 
 .empty-state__text {
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
     max-width: 360px;
 }
 
@@ -634,8 +635,8 @@ a {
 }
 
 .modal__title {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
 }
 
 .modal__body {
@@ -650,10 +651,10 @@ a {
 }
 
 .modal__message {
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
     margin-bottom: 1rem;
-    line-height: 1.55;
+    line-height: var(--line-height-relaxed);
 }
 
 @keyframes modalIn {
@@ -741,8 +742,8 @@ a {
 }
 
 .drawer__title {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
 }
 
 .drawer__body {
@@ -768,8 +769,8 @@ a {
 .form-group .form-label,
 .form-label {
     display: block;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
     color: var(--color-text);
     margin-bottom: 0.375rem;
 }
@@ -777,7 +778,7 @@ a {
 .form-control {
     width: 100%;
     padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
     font-family: inherit;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
@@ -804,8 +805,8 @@ a {
     display: flex;
     align-items: center;
     gap: 0.375rem;
-    font-weight: 400;
-    font-size: 0.875rem;
+    font-weight: var(--font-weight-normal);
+    font-size: var(--font-size-base);
     cursor: pointer;
 }
 
@@ -830,7 +831,7 @@ a {
     display: block;
     width: 100%;
     padding: 0.5rem 1rem;
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
     font-family: inherit;
     text-align: left;
     background: none;
@@ -851,7 +852,7 @@ a {
 .alert {
     padding: 0.75rem 1rem;
     border-radius: var(--radius);
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
     margin-bottom: 1rem;
 }
 
@@ -884,9 +885,9 @@ a {
 }
 
 .profile-header__info h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-size: var(--font-size-profile);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .profile-header__meta {
@@ -894,7 +895,7 @@ a {
     align-items: center;
     gap: 0.75rem;
     margin-top: 0.375rem;
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
     color: var(--color-text-muted);
 }
 
@@ -927,8 +928,8 @@ a {
 .card__header {
     padding: 0.875rem 1.25rem;
     border-bottom: 1px solid var(--color-border);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
 }
 
 .card__body {
@@ -940,12 +941,12 @@ a {
     display: grid;
     grid-template-columns: 140px 1fr;
     gap: 0.625rem 1rem;
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
 }
 
 .data-list dt {
     color: var(--color-text-muted);
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .data-list dd {
@@ -972,7 +973,7 @@ a {
     height: 100%;
     background: var(--color-bg-subtle);
     color: var(--color-text-muted);
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
 }
 
 /* Tarjeta de deuda */
@@ -982,17 +983,17 @@ a {
 }
 
 .deuda-card__label {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--letter-spacing-wider);
     color: var(--color-text-muted);
     margin-bottom: 0.5rem;
 }
 
 .deuda-card__amount {
-    font-size: 1.75rem;
-    font-weight: 700;
+    font-size: var(--font-size-amount);
+    font-weight: var(--font-weight-bold);
 }
 
 .deuda-card__amount--deuda {
@@ -1012,8 +1013,8 @@ a {
 
 .tab {
     padding: 0.625rem 1.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     font-family: inherit;
     background: none;
     border: none;
@@ -1031,7 +1032,7 @@ a {
 .tab--active {
     color: var(--color-primary);
     border-bottom-color: var(--color-primary);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .tab-panel {
@@ -1053,13 +1054,13 @@ a {
 }
 
 .observacion-item__fecha {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     margin-bottom: 0.25rem;
 }
 
 .observacion-item__texto {
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
 }
 
 .observacion-form {
@@ -1081,14 +1082,14 @@ a {
 }
 
 .historial-item__fecha {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
     color: var(--color-text-muted);
     white-space: nowrap;
     min-width: 120px;
 }
 
 .historial-item__contenido {
-    font-size: 0.875rem;
+    font-size: var(--font-size-base);
 }
 
 /* Importar */
@@ -1115,21 +1116,21 @@ a {
 }
 
 .drop-zone__title {
-    font-size: 0.9375rem;
-    font-weight: 600;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
     margin-bottom: 0.25rem;
 }
 
 .drop-zone__hint {
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
 }
 
 .drop-zone__file {
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     color: var(--color-accent);
     margin-top: 0.5rem;
-    font-weight: 500;
+    font-weight: var(--font-weight-medium);
 }
 
 .progress-bar {
@@ -1177,8 +1178,8 @@ a {
 }
 
 .result-card__number {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: var(--font-size-kpi);
+    font-weight: var(--font-weight-bold);
 }
 
 .result-card--success .result-card__number {
@@ -1190,19 +1191,19 @@ a {
 }
 
 .result-card__label {
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     margin-top: 0.25rem;
 }
 
 .section-title {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
     margin: 2rem 0 1rem;
 }
 
 .columns-table {
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     margin-top: 1rem;
 }
 
@@ -1210,12 +1211,12 @@ a {
     background: var(--color-bg-subtle);
     padding: 0.125rem 0.375rem;
     border-radius: 3px;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
 }
 
 /* Coordenadas display */
 .coords-display {
-    font-size: 0.8125rem;
+    font-size: var(--font-size-sm);
     color: var(--color-text-muted);
     font-family: monospace;
     margin-top: 0.5rem;
@@ -1266,8 +1267,8 @@ a {
     background: transparent;
     color: rgba(255, 255, 255, 0.8);
     border-radius: var(--radius);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
     text-align: left;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;

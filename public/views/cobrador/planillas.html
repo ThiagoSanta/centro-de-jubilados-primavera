@@ -14,8 +14,9 @@
     <style>
         /* ── Títulos de sección ───────────────────── */
         .section-title {
-            font-size: 1.125rem;
-            font-weight: 700;
+            /* 1.125rem = --font-size-xl; 700 = --font-weight-bold */
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
             color: var(--color-primary);
             margin-bottom: 1.25rem;
             display: flex;
@@ -40,8 +41,9 @@
             border: 1px solid rgba(220, 38, 38, 0.15);
             padding: 0.35rem 0.75rem;
             border-radius: var(--radius);
-            font-size: 0.8125rem;
-            font-weight: 600;
+            /* 0.8125rem = --font-size-sm; 600 = --font-weight-semibold */
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
             transition: all 0.2s ease;
             text-decoration: none;
         }
@@ -113,8 +115,9 @@
             }
 
             .mobile-header-bar__title {
-                font-size: 0.9375rem;
-                font-weight: 700;
+                /* 0.9375rem = --font-size-md; 700 = --font-weight-bold */
+                font-size: var(--font-size-md);
+                font-weight: var(--font-weight-bold);
             }
 
             .sidebar {

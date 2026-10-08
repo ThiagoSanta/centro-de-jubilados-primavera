@@ -192,7 +192,8 @@
     <!-- Modal de Advertencia -->
     <div class="modal-overlay" id="modalAdvertencia">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloModalAdvertencia">
-            <h2 id="tituloModalAdvertencia" style="margin-top: 0; color: #d32f2f;">¡Atención! Deudas duplicadas</h2>
+            <!-- Color #d32f2f unificado a var(--color-estado-eliminado) -->
+            <h2 id="tituloModalAdvertencia" style="margin-top: 0; color: var(--color-estado-eliminado);">¡Atención! Deudas duplicadas</h2>
             <p>Se ha detectado que <strong id="cantDuplicados">0</strong> socios ya tienen deuda generada para este
                 período.</p>
             <p>¿Desea continuar de todas formas? Esto sobrescribirá el estado de esas deudas a "Pendiente".</p>

@@ -46,16 +46,26 @@
         }
         .table th {
             background-color: #f8f9fa;
-            font-weight: 600;
+            font-weight: var(--font-weight-semibold);
         }
+        /* Regla local .badge comentada para utilizar la definición global de main.css (0.75rem / 600 / border-radius pill) */
+        /*
         .badge {
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
             font-size: 0.85rem;
             font-weight: 500;
         }
-        .badge--registrado { background: #d4edda; color: #155724; }
-        .badge--anulado { background: #f8d7da; color: #721c24; }
+        */
+        /* Variantes locales alineadas con las variables del sistema (equivalentes a activo y eliminado) */
+        .badge--registrado {
+            background: var(--color-estado-activo-bg);
+            color: var(--color-estado-activo-text);
+        }
+        .badge--anulado {
+            background: var(--color-estado-eliminado-bg);
+            color: var(--color-estado-eliminado-text);
+        }
         
         .modal-overlay {
             display: none;
@@ -89,7 +99,8 @@
             text-decoration: underline;
         }
         .text-danger {
-            color: #dc3545;
+            /* Color de texto para estados de peligro/eliminado unificado con la variable del sistema */
+            color: var(--color-estado-eliminado);
         }
         .pagination {
             display: flex;
@@ -217,7 +228,8 @@
     <!-- Modal Anular -->
     <div class="modal-overlay" id="modalAnular">
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloModalAnular">
-            <h2 id="tituloModalAnular" style="margin-top: 0; color: #d32f2f;">Anular Pago</h2>
+            <!-- Color #d32f2f unificado a var(--color-estado-eliminado) -->
+            <h2 id="tituloModalAnular" style="margin-top: 0; color: var(--color-estado-eliminado);">Anular Pago</h2>
             <p>Está a punto de anular el pago. Las deudas asociadas volverán a estado "pendiente" y se generará una notificación para el socio (con 7 días para posible reversión).</p>
             <div class="form-group">
                 <label class="form-label" for="motivoAnulacion">Motivo de la anulación (Obligatorio)</label>
@@ -225,7 +237,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn--secondary" onclick="cerrarModalAnular()">Cancelar</button>
-                <button type="button" class="btn btn--primary" style="background-color: #dc3545; border-color: #dc3545;" onclick="confirmarAnular()">Confirmar Anulación</button>
+                <!-- Botón de acción destructiva: background-color y border-color unificados a var(--color-estado-eliminado) -->
+                <button type="button" class="btn btn--primary" style="background-color: var(--color-estado-eliminado); border-color: var(--color-estado-eliminado);" onclick="confirmarAnular()">Confirmar Anulación</button>
             </div>
         </div>
     </div>

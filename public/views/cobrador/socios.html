@@ -14,8 +14,9 @@
     <style>
         /* ── Títulos de sección ──────────── */
         .section-title {
-            font-size: 1.125rem;
-            font-weight: 700;
+            /* 1.125rem = --font-size-xl; 700 = --font-weight-bold */
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
             color: var(--color-primary);
             margin-bottom: 1.25rem;
             display: flex;
@@ -42,7 +43,8 @@
             padding: 0.55rem 0.75rem;
             border: 1px solid var(--color-border);
             border-radius: var(--radius);
-            font-size: 0.875rem;
+            /* 0.875rem = --font-size-base */
+            font-size: var(--font-size-base);
             font-family: inherit;
             outline: none;
             transition: border-color 0.15s, box-shadow 0.15s;
@@ -94,14 +96,16 @@
         }
 
         .search-result__label {
-            font-size: 0.8125rem;
+            /* 0.8125rem = --font-size-sm; 500 = --font-weight-medium */
+            font-size: var(--font-size-sm);
             color: var(--color-text-muted);
-            font-weight: 500;
+            font-weight: var(--font-weight-medium);
         }
 
         .search-result__value {
-            font-size: 0.875rem;
-            font-weight: 600;
+            /* 0.875rem = --font-size-base; 600 = --font-weight-semibold */
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
             color: var(--color-text);
         }
 
@@ -114,8 +118,9 @@
             display: inline-flex;
             align-items: center;
             padding: 0.125rem 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
+            /* 0.75rem = --font-size-xs; 600 = --font-weight-semibold */
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-semibold);
             border-radius: 999px;
         }
 
@@ -155,7 +160,8 @@
         .empty-placeholder {
             text-align: center;
             color: var(--color-text-muted);
-            font-size: 0.875rem;
+            /* 0.875rem = --font-size-base */
+            font-size: var(--font-size-base);
             padding: 2rem 1rem;
             display: flex;
             flex-direction: column;
@@ -180,8 +186,9 @@
             border: 1px solid rgba(59, 130, 246, 0.18);
             padding: 0.35rem 0.75rem;
             border-radius: var(--radius);
-            font-size: 0.8125rem;
-            font-weight: 600;
+            /* 0.8125rem = --font-size-sm; 600 = --font-weight-semibold */
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
             transition: all 0.2s ease;
             text-decoration: none;
             cursor: pointer;
@@ -278,8 +285,9 @@
             }
 
             .mobile-header-bar__title {
-                font-size: 0.9375rem;
-                font-weight: 700;
+                /* 0.9375rem = --font-size-md; 700 = --font-weight-bold */
+                font-size: var(--font-size-md);
+                font-weight: var(--font-weight-bold);
             }
 
             .sidebar {
@@ -352,9 +360,10 @@
             }
 
             .mobile-header-new__title {
-                font-size: 0.875rem;
-                font-weight: 700;
-                line-height: 1.3;
+                /* 0.875rem = --font-size-base; 700 = --font-weight-bold; 1.3 = --line-height-tight */
+                font-size: var(--font-size-base);
+                font-weight: var(--font-weight-bold);
+                line-height: var(--line-height-tight);
             }
 
             /* Botón ⋮ */
@@ -396,8 +405,9 @@
                 gap: 0.65rem;
                 width: 100%;
                 padding: 0.8rem 1rem;
-                font-size: 0.9rem;
-                font-weight: 500;
+                font-size: 0.9rem; /* sin variable exacta para 0.9rem */
+                /* 500 = --font-weight-medium */
+                font-weight: var(--font-weight-medium);
                 color: var(--color-text);
                 text-decoration: none;
                 background: transparent;
@@ -429,8 +439,9 @@
             }
 
             .mobile-search-label {
-                font-size: 0.8125rem;
-                font-weight: 700;
+                /* 0.8125rem = --font-size-sm; 700 = --font-weight-bold */
+                font-size: var(--font-size-sm);
+                font-weight: var(--font-weight-bold);
                 color: var(--color-primary);
                 display: flex;
                 align-items: center;
@@ -448,7 +459,8 @@
             .mobile-search-box input {
                 flex: 1;
                 padding: 0.75rem 1rem;
-                font-size: 1rem;
+                /* 1rem = --font-size-lg */
+                font-size: var(--font-size-lg);
                 border: 1.5px solid var(--color-border);
                 border-radius: var(--radius);
                 font-family: inherit;
@@ -482,7 +494,8 @@
                 color: #ffffff;
                 border-radius: var(--radius);
                 font-size: 0.9rem;
-                font-weight: 700;
+                /* 700 = --font-weight-bold */
+                font-weight: var(--font-weight-bold);
                 text-decoration: none;
                 transition: background 0.2s, box-shadow 0.2s;
                 margin-top: 0.25rem;
