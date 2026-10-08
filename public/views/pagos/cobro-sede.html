@@ -318,7 +318,7 @@
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloModalSeleccionSocio" style="max-width: 600px;">
             <h2 id="tituloModalSeleccionSocio" style="margin-top: 0;">Seleccionar Socio</h2>
             <!-- Color #64748b unificado a --color-text-muted para consistencia de texto secundario -->
-            <p style="color: var(--color-text-muted); font-size: 0.95rem;">Se encontraron múltiples coincidencias. Elija un socio para continuar:</p>
+            <p style="color: var(--color-text-muted); font-size: var(--font-size-md);">Se encontraron múltiples coincidencias. Elija un socio para continuar:</p>
             <div id="listaSociosEncontrados" style="max-height: 320px; overflow-y: auto; margin-bottom: 1.5rem;"></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn--secondary" onclick="cerrarModalSeleccionSocio()">Cancelar</button>
@@ -574,12 +574,12 @@
                 item.innerHTML = `
                     <div>
                         <strong style="color: #1e293b; font-size: var(--font-size-lg);">${s.nombre_apellido}</strong>
-                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">
+                        <div style="font-size: var(--font-size-sm); color: #64748b; margin-top: 2px;">
                             DNI: <strong>${s.dni || 'S/D'}</strong> | Socio N°: <strong>${s.numero_socio}</strong> | Zona: <strong>${s.zona_nombre || 'N/A'}</strong>
                         </div>
                     </div>
                     <div>
-                        <button type="button" class="btn btn--secondary" style="padding: 0.35rem 0.75rem; font-size: 0.85rem; pointer-events: none;">Seleccionar</button>
+                        <button type="button" class="btn btn--secondary" style="padding: 0.35rem 0.75rem; font-size: var(--font-size-sm); pointer-events: none;">Seleccionar</button>
                     </div>
                 `;
                 item.onclick = () => seleccionarSocio(s);
@@ -647,7 +647,7 @@
                     div.innerHTML = `
                         <div>
                             <input type="checkbox" class="deuda-checkbox" id="chk_${index}" data-index="${index}" data-id="${deuda.id}" data-monto="${deuda.monto}" onchange="manejarSeleccion(${index})">
-                            <label for="chk_${index}" style="font-size: 1.1rem;">${labelPeriodo}</label>
+                            <label for="chk_${index}" style="font-size: var(--font-size-lg);">${labelPeriodo}</label>
                         </div>
                         <div style="font-weight: var(--font-weight-medium);">
                             $${parseFloat(deuda.monto).toFixed(2)}
