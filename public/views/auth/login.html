@@ -160,7 +160,9 @@
         .form-control {
             width: 100%;
             padding: 0.875rem 1rem 0.875rem 2.75rem;
-            font-size: 0.95rem;
+            /* 0.95rem (~15.2px) alineado a 0.9375rem (15px) = --font-size-md del sistema.
+               Valor literal porque login.html no carga main.css. */
+            font-size: 0.9375rem;
             font-family: inherit;
             color: var(--text-main);
             background-color: #f9fafb;
@@ -215,7 +217,9 @@
             color: #ffffff;
             border: none;
             border-radius: 10px;
-            font-size: 0.95rem;
+            /* 0.95rem (~15.2px) alineado a 0.9375rem (15px) = --font-size-md del sistema.
+               Valor literal porque login.html no carga main.css. */
+            font-size: 0.9375rem;
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;

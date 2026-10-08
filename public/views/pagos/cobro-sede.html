@@ -56,7 +56,9 @@
 
         .total-box {
             font-size: 1.25rem;
-            font-weight: bold;
+            /* 'bold' reemplazado por valor numérico equivalente para consistencia
+               con la escala --font-weight-bold declarada en el Lote 1. */
+            font-weight: var(--font-weight-bold);
             text-align: right;
             padding: 1rem 0;
             margin-top: 1rem;
@@ -274,7 +276,9 @@
 
             <div class="deudas-container" id="deudasContainer">
                 <h3>Deudas Pendientes</h3>
-                <p style="color: #666; font-size: 0.9rem;">Debe seleccionar los períodos en orden cronológico.</p>
+                <!-- font-size 0.9rem unificado a --font-size-base (0.875rem): diferencia de 0.4px
+                     inapreciable. Párrafo estático; los estilos JS de la vista NO se tocan. -->
+                <p style="color: #666; font-size: var(--font-size-base);">Debe seleccionar los períodos en orden cronológico.</p>
 
                 <div id="listaDeudas"></div>
 

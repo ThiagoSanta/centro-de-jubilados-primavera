@@ -50,6 +50,47 @@
     --color-sidebar-border: rgba(255, 255, 255, 0.08);
     --color-sidebar-text-muted: rgba(255, 255, 255, 0.65);
     --color-sidebar-item-hover: rgba(255, 255, 255, 0.1);
+
+    /* ── Escala tipográfica (Lote 1) ──────────────────────────────────────────
+       Solo declaración. Los selectores existentes conservan sus valores literales
+       hasta que cada lote posterior los migre de forma controlada.
+       Esto permite adoptar las variables de forma incremental sin riesgo de
+       regresiones masivas.
+    */
+
+    /* Tamaños — de menor a mayor */
+    --font-size-2xs:    0.6875rem; /* 11px — brand-sub del sidebar */
+    --font-size-xs:     0.75rem;   /* 12px — badges, th de tabla, fechas secundarias */
+    --font-size-sm:     0.8125rem; /* 13px — nav, labels, metadatos, botones compactos */
+    --font-size-base:   0.875rem;  /* 14px — texto de cuerpo, inputs, celdas, botones */
+    --font-size-md:     0.9375rem; /* 15px — brand title, mensajes de notificación */
+    --font-size-lg:     1rem;      /* 16px — section-title, empty-state title */
+    --font-size-xl:     1.125rem;  /* 18px — modal/drawer title, section cobrador */
+    --font-size-xl2:    1.25rem;   /* 20px — total-box, mobile welcome title */
+    --font-size-2xl:    1.375rem;  /* 22px — content__title (h1 de página) */
+    --font-size-profile: 1.5rem;   /* 24px — profile-header h1 (nombre del socio) */
+    --font-size-3xl:    1.625rem;  /* 26px — welcome title cobrador (desktop) */
+    --font-size-amount: 1.75rem;   /* 28px — deuda-card__amount */
+    --font-size-kpi:    2rem;      /* 32px — valores KPI del dashboard */
+    --font-size-hero:   3rem;      /* 48px — cuota vigente (destacado máximo) */
+
+    /* Pesos */
+    --font-weight-normal:   400;
+    --font-weight-medium:   500;
+    --font-weight-semibold: 600;
+    --font-weight-bold:     700;
+
+    /* Alturas de línea */
+    --line-height-tight:   1.3;  /* headings compactos */
+    --line-height-snug:    1.45; /* descripciones cortas, mensajes de error */
+    --line-height-normal:  1.5;  /* body global (valor actual de body) */
+    --line-height-relaxed: 1.55; /* cuerpo de modal (valor actual de .modal__message) */
+
+    /* Espaciado entre letras */
+    --letter-spacing-tight:   -0.02em; /* títulos de página y sidebar brand */
+    --letter-spacing-tighter: -0.03em; /* KPI values y welcome title cobrador */
+    --letter-spacing-wide:     0.04em; /* th de tabla en mayúsculas */
+    --letter-spacing-wider:    0.05em; /* deuda-card__label y badges de rol */
 }
 
 *,
