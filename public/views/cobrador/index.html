@@ -14,8 +14,9 @@
     <style>
         /* ── Tarjeta de bienvenida ──────────────────── */
         .welcome-card {
-            background: linear-gradient(135deg, #1A1F3A 0%, #2A3154 100%);
-            color: #ffffff;
+            /* Gradiente y texto unificados con las variables de marca/sidebar y contenido del sistema */
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-sidebar-hover) 100%);
+            color: var(--color-content);
             border-radius: 12px;
             padding: 1.75rem 2rem;
             box-shadow: var(--shadow-lg);
@@ -127,24 +128,25 @@
             height: 22px;
         }
 
+        /* Fondos y textos de íconos de módulos unificados con variables del sistema */
         .module-card__icon--blue {
-            background: rgba(59, 130, 246, 0.1);
-            color: #2563eb;
+            background: rgba(var(--color-accent-rgb), 0.1);
+            color: var(--color-accent);
         }
 
         .module-card__icon--green {
-            background: rgba(22, 163, 74, 0.1);
-            color: #16a34a;
+            background: rgba(var(--color-estado-activo-rgb), 0.1);
+            color: var(--color-estado-activo);
         }
 
         .module-card__icon--amber {
-            background: rgba(217, 119, 6, 0.1);
-            color: #d97706;
+            background: rgba(var(--color-estado-suspendido-rgb), 0.1);
+            color: var(--color-estado-suspendido);
         }
 
         .module-card__icon--purple {
-            background: rgba(124, 58, 237, 0.1);
-            color: #7c3aed;
+            background: rgba(var(--color-rol-admin-rgb), 0.1);
+            color: var(--color-rol-admin);
         }
 
         .module-card__title {
@@ -193,7 +195,7 @@
         .btn-hamburger {
             background: transparent;
             border: none;
-            color: #ffffff;
+            color: var(--color-content);
             padding: 0.25rem;
             cursor: pointer;
             display: flex;
@@ -210,7 +212,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: var(--color-overlay);
             z-index: 1050;
             opacity: 0;
             pointer-events: none;
@@ -230,10 +232,10 @@
                 gap: 0.75rem;
                 padding: 0.75rem 1rem;
                 background: var(--color-sidebar);
-                color: #ffffff;
+                color: var(--color-content);
                 flex-shrink: 0;
                 z-index: 100;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                border-bottom: 1px solid var(--color-sidebar-border);
             }
 
             .mobile-header-bar__title {

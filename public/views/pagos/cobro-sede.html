@@ -20,20 +20,21 @@
 
         .socio-card {
             display: none;
-            background: #fff;
+            background: var(--color-content);
             padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm);
             margin-bottom: 2rem;
-            border-left: 4px solid var(--primary-color, #0d6efd);
+            /* Variable inexistente unificada con var(--color-accent) */
+            border-left: 4px solid var(--color-accent);
         }
 
         .deudas-container {
             display: none;
-            background: #fff;
+            background: var(--color-content);
             padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm);
         }
 
         .deuda-item {
@@ -41,7 +42,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem;
-            border-bottom: 1px solid #eee;
+            /* Borde unificado con var(--color-border) para WCAG 1.4.11 */
+            border-bottom: 1px solid var(--color-border);
         }
 
         .deuda-item:last-child {
@@ -63,7 +65,8 @@
             text-align: right;
             padding: 1rem 0;
             margin-top: 1rem;
-            border-top: 2px solid #eee;
+            /* Borde unificado con var(--color-border) para WCAG 1.4.11 */
+            border-top: 2px solid var(--color-border);
         }
 
         .payment-form {
@@ -84,7 +87,7 @@
         }
 
         .modal {
-            background: #fff;
+            background: var(--color-content);
             padding: 2rem;
             border-radius: 8px;
             max-width: 500px;
@@ -121,15 +124,16 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.75rem 1rem;
-            border: 1px solid #e2e8f0;
+            /* Borde unificado con var(--color-border) para WCAG 1.4.11 */
+            border: 1px solid var(--color-border);
             border-radius: 6px;
             margin-bottom: 0.5rem;
             cursor: pointer;
             transition: background 0.15s ease, border-color 0.15s ease;
         }
         .socio-select-item:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
+            background: var(--color-bg-subtle);
+            border-color: var(--color-border);
         }
 
         /* ── Responsivo móvil y menú hamburguesa ── */
@@ -140,7 +144,7 @@
         .btn-hamburger {
             background: transparent;
             border: none;
-            color: #ffffff;
+            color: var(--color-content);
             padding: 0.25rem;
             cursor: pointer;
             display: flex;
@@ -177,7 +181,7 @@
                 gap: 0.75rem;
                 padding: 0.75rem 1rem;
                 background: var(--color-sidebar);
-                color: #ffffff;
+                color: var(--color-content);
                 flex-shrink: 0;
                 z-index: 100;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -331,7 +335,7 @@
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloModalConfirmacion">
             <h2 id="tituloModalConfirmacion" style="margin-top: 0;">Confirmar Pago</h2>
             <p>Por favor, revise los datos del pago antes de confirmar.</p>
-            <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+            <div style="background: var(--color-bg-subtle); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
                 <p><strong>Socio:</strong> <span id="modalSocio"></span></p>
                 <p><strong>Total:</strong> $<span id="modalTotal"></span></p>
                 <p><strong>Método:</strong> <span id="modalMetodo"></span></p>
@@ -573,8 +577,8 @@
                 item.className = 'socio-select-item';
                 item.innerHTML = `
                     <div>
-                        <strong style="color: #1e293b; font-size: var(--font-size-lg);">${s.nombre_apellido}</strong>
-                        <div style="font-size: var(--font-size-sm); color: #64748b; margin-top: 2px;">
+                        <strong style="color: var(--color-text); font-size: var(--font-size-lg);">${s.nombre_apellido}</strong>
+                        <div style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 2px;">
                             DNI: <strong>${s.dni || 'S/D'}</strong> | Socio N°: <strong>${s.numero_socio}</strong> | Zona: <strong>${s.zona_nombre || 'N/A'}</strong>
                         </div>
                     </div>
@@ -785,13 +789,9 @@
         function mostrarAlerta(mensaje, tipo) {
             const container = document.getElementById('alertContainer');
             const alert = document.createElement('div');
-            alert.className = `alert alert--${tipo}`;
+            // Asignación de clases del sistema para coherencia visual con main.css
+            alert.className = tipo === 'success' ? 'alert alert--success' : 'alert alert--error';
             alert.textContent = mensaje;
-            alert.style.marginBottom = '1rem';
-            alert.style.padding = '1rem';
-            alert.style.borderRadius = '4px';
-            alert.style.backgroundColor = tipo === 'success' ? '#d4edda' : '#f8d7da';
-            alert.style.color = tipo === 'success' ? '#155724' : '#721c24';
 
             container.innerHTML = '';
             container.appendChild(alert);

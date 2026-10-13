@@ -11,7 +11,8 @@
     <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <style>
         .card-vigente {
-            background-color: var(--primary-color, #0d6efd);
+            /* Variable inexistente unificada con var(--color-accent) */
+            background-color: var(--color-accent);
             color: white;
             padding: 2rem;
             border-radius: 8px;
@@ -31,10 +32,10 @@
             gap: 1rem;
             align-items: flex-end;
             margin-bottom: 2rem;
-            background: #fff;
+            background: var(--color-content);
             padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow-sm);
         }
     </style>
 </head>
@@ -265,13 +266,9 @@
         function mostrarAlerta(mensaje, tipo) {
             const container = document.getElementById('alertContainer');
             const alert = document.createElement('div');
-            alert.className = `alert alert--${tipo}`;
+            // Asignación de clases del sistema para coherencia visual con main.css
+            alert.className = tipo === 'success' ? 'alert alert--success' : 'alert alert--error';
             alert.textContent = mensaje;
-            alert.style.marginBottom = '1rem';
-            alert.style.padding = '1rem';
-            alert.style.borderRadius = '4px';
-            alert.style.backgroundColor = tipo === 'success' ? '#d4edda' : '#f8d7da';
-            alert.style.color = tipo === 'success' ? '#155724' : '#721c24';
             
             container.innerHTML = '';
             container.appendChild(alert);
@@ -291,7 +288,7 @@
                     el.textContent = `Último backup: ${fecha} — hace ${d.dias_transcurridos} día(s)${d.usuario_nombre ? ' por ' + d.usuario_nombre : ''}.`;
                 } else {
                     el.textContent = 'No hay backups registrados aún.';
-                    el.style.color = 'var(--color-danger, #dc2626)';
+                    el.style.color = 'var(--color-estado-eliminado)';
                 }
             } catch (e) {
                 document.getElementById('backupStatus').textContent = 'No se pudo verificar el último backup.';

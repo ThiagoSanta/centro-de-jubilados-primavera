@@ -107,7 +107,7 @@
         .btn-hamburger {
             background: transparent;
             border: none;
-            color: #ffffff;
+            color: var(--color-content);
             padding: 0.25rem;
             cursor: pointer;
             display: flex;
@@ -124,7 +124,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: var(--color-overlay);
             z-index: 1050;
             opacity: 0;
             pointer-events: none;
@@ -144,10 +144,10 @@
                 gap: 0.75rem;
                 padding: 0.75rem 1rem;
                 background: var(--color-sidebar);
-                color: #ffffff;
+                color: var(--color-content);
                 flex-shrink: 0;
                 z-index: 100;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                border-bottom: 1px solid var(--color-sidebar-border);
             }
 
             .mobile-header-bar__title {

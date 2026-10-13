@@ -32,13 +32,14 @@
         }
 
         /* ── Tabla de planillas ────────────────────── */
+        /* Estilos del botón PDF unificados con las variables semánticas de estado eliminado / peligro */
         .btn-pdf {
             display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            color: #dc2626;
-            background: rgba(220, 38, 38, 0.08);
-            border: 1px solid rgba(220, 38, 38, 0.15);
+            color: var(--color-estado-eliminado);
+            background: rgba(var(--color-estado-eliminado-rgb), 0.08);
+            border: 1px solid rgba(var(--color-estado-eliminado-rgb), 0.15);
             padding: 0.35rem 0.75rem;
             border-radius: var(--radius);
             /* 0.8125rem = --font-size-sm; 600 = --font-weight-semibold */
@@ -49,10 +50,10 @@
         }
 
         .btn-pdf:hover {
-            background: #dc2626;
-            color: #ffffff;
-            border-color: #dc2626;
-            box-shadow: 0 2px 5px rgba(220, 38, 38, 0.22);
+            background: var(--color-estado-eliminado);
+            color: var(--color-content);
+            border-color: var(--color-estado-eliminado);
+            box-shadow: 0 2px 5px rgba(var(--color-estado-eliminado-rgb), 0.22);
         }
 
         .btn-pdf svg {
@@ -71,7 +72,7 @@
         .btn-hamburger {
             background: transparent;
             border: none;
-            color: #ffffff;
+            color: var(--color-content);
             padding: 0.25rem;
             cursor: pointer;
             display: flex;
@@ -88,7 +89,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: var(--color-overlay);
             z-index: 1050;
             opacity: 0;
             pointer-events: none;
@@ -108,10 +109,10 @@
                 gap: 0.75rem;
                 padding: 0.75rem 1rem;
                 background: var(--color-sidebar);
-                color: #ffffff;
+                color: var(--color-content);
                 flex-shrink: 0;
                 z-index: 100;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                border-bottom: 1px solid var(--color-sidebar-border);
             }
 
             .mobile-header-bar__title {

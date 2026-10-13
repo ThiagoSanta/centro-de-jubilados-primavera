@@ -48,11 +48,12 @@
             height: 20px;
         }
 
-        .kpi-card__icon--blue   { background: rgba(59,130,246,.12); color: #2563eb; }
-        .kpi-card__icon--red    { background: rgba(220,38,38,.12);  color: #dc2626; }
-        .kpi-card__icon--amber  { background: rgba(217,119,6,.12);  color: #d97706; }
-        .kpi-card__icon--green  { background: rgba(22,163,74,.12);  color: #16a34a; }
-        .kpi-card__icon--violet { background: rgba(124,58,237,.12); color: #7c3aed; }
+        /* Fondos y textos de íconos KPI unificados con las variables de color del sistema */
+        .kpi-card__icon--blue   { background: rgba(var(--color-accent-rgb), .12); color: var(--color-accent); }
+        .kpi-card__icon--red    { background: rgba(var(--color-estado-eliminado-rgb), .12);  color: var(--color-estado-eliminado); }
+        .kpi-card__icon--amber  { background: rgba(var(--color-estado-suspendido-rgb), .12);  color: var(--color-estado-suspendido); }
+        .kpi-card__icon--green  { background: rgba(var(--color-estado-activo-rgb), .12);  color: var(--color-estado-activo); }
+        .kpi-card__icon--violet { background: rgba(var(--color-rol-admin-rgb), .12); color: var(--color-rol-admin); }
 
         .kpi-card__value {
             /* 2rem = --font-size-kpi; 700 = --font-weight-bold; -0.03em = --letter-spacing-tight */
@@ -289,9 +290,9 @@
 
         <div id="alertContainer"></div>
 
-        <!-- Aviso de backup desactualizado (solo administradores). Color de texto unificado a var(--color-warning-dark) -->
+        <!-- Aviso de backup desactualizado (solo administradores). Colores unificados a variables del sistema (estado suspendido/alerta) -->
         <div id="backupWarning" style="display:none; margin-bottom:1rem; padding:0.875rem 1.25rem;
-             background:rgba(217,119,6,.1); border:1px solid rgba(217,119,6,.35);
+             background:rgba(var(--color-estado-suspendido-rgb), .1); border:1px solid rgba(var(--color-estado-suspendido-rgb), .35);
              border-radius:var(--radius); color:var(--color-warning-dark); font-size:0.875rem;
              display:flex; align-items:center; justify-content:space-between; gap:1rem;">
             <div style="display:flex; align-items:center; gap:0.625rem;">

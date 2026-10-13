@@ -52,7 +52,7 @@
 
         .search-box input:focus {
             border-color: var(--color-accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.15);
         }
 
         .search-box button {
@@ -124,13 +124,14 @@
             border-radius: 999px;
         }
 
+        /* Fondos translúcidos de badges de estado unificados con variables RGB del sistema */
         .status-badge--activo {
-            background: rgba(22, 163, 74, 0.1);
+            background: rgba(var(--color-estado-activo-rgb), 0.1);
             color: var(--color-estado-activo);
         }
 
         .status-badge--suspendido {
-            background: rgba(217, 119, 6, 0.1);
+            background: rgba(var(--color-estado-suspendido-rgb), 0.1);
             color: var(--color-estado-suspendido);
         }
 
@@ -144,16 +145,17 @@
             margin-bottom: 1rem;
         }
 
+        /* Fondos, bordes y textos de alertas unificados con las variables del sistema */
         .alert-box--error {
-            background-color: #fef2f2;
+            background-color: var(--color-alerta-error-bg);
             color: var(--color-estado-eliminado);
-            border: 1px solid #fee2e2;
+            border: 1px solid var(--color-alerta-error-border);
         }
 
         .alert-box--info {
-            background-color: #eff6ff;
-            color: #1e40af;
-            border: 1px solid #dbeafe;
+            background-color: var(--color-alerta-info-bg);
+            color: var(--color-accent);
+            border: 1px solid var(--color-alerta-info-border);
         }
 
         /* ── Placeholder de estado vacío ──── */
@@ -182,8 +184,8 @@
             align-items: center;
             gap: 0.35rem;
             color: var(--color-accent);
-            background: rgba(59, 130, 246, 0.08);
-            border: 1px solid rgba(59, 130, 246, 0.18);
+            background: rgba(var(--color-accent-rgb), 0.08);
+            border: 1px solid rgba(var(--color-accent-rgb), 0.18);
             padding: 0.35rem 0.75rem;
             border-radius: var(--radius);
             /* 0.8125rem = --font-size-sm; 600 = --font-weight-semibold */
@@ -197,9 +199,9 @@
 
         .btn-ver:hover {
             background: var(--color-accent);
-            color: #ffffff;
+            color: var(--color-content);
             border-color: var(--color-accent);
-            box-shadow: 0 2px 5px rgba(59, 130, 246, 0.25);
+            box-shadow: 0 2px 5px rgba(var(--color-accent-rgb), 0.25);
         }
 
         .btn-ver svg {
@@ -241,7 +243,7 @@
         .btn-hamburger {
             background: transparent;
             border: none;
-            color: #ffffff;
+            color: var(--color-content);
             padding: 0.25rem;
             cursor: pointer;
             display: flex;
@@ -258,7 +260,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.45);
+            background: var(--color-overlay);
             z-index: 1050;
             opacity: 0;
             pointer-events: none;
@@ -278,10 +280,10 @@
                 gap: 0.75rem;
                 padding: 0.75rem 1rem;
                 background: var(--color-sidebar);
-                color: #ffffff;
+                color: var(--color-content);
                 flex-shrink: 0;
                 z-index: 100;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                border-bottom: 1px solid var(--color-sidebar-border);
             }
 
             .mobile-header-bar__title {
@@ -352,10 +354,10 @@
                 justify-content: space-between;
                 padding: 0.85rem 1.1rem;
                 background: var(--color-sidebar);
-                color: #ffffff;
+                color: var(--color-content);
                 flex-shrink: 0;
                 z-index: 200;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                border-bottom: 1px solid var(--color-sidebar-border);
                 position: relative;
             }
 
@@ -370,7 +372,7 @@
             .btn-dots {
                 background: transparent;
                 border: none;
-                color: #ffffff;
+                color: var(--color-content);
                 cursor: pointer;
                 padding: 0.4rem;
                 display: flex;
@@ -387,7 +389,7 @@
                 position: absolute;
                 top: calc(100% + 4px);
                 right: 0;
-                background: #ffffff;
+                background: var(--color-content);
                 border: 1px solid var(--color-border);
                 border-radius: var(--radius);
                 box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
@@ -466,11 +468,11 @@
                 font-family: inherit;
                 outline: none;
                 transition: border-color 0.15s, box-shadow 0.15s;
-                background: #ffffff;
+                background: var(--color-content);
             }
             .mobile-search-box input:focus {
                 border-color: var(--color-accent);
-                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+                box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.15);
             }
 
             .mobile-search-box .btn--primary {
@@ -491,7 +493,7 @@
                 width: 100%;
                 padding: 0.75rem 1rem;
                 background: var(--color-accent);
-                color: #ffffff;
+                color: var(--color-content);
                 border-radius: var(--radius);
                 font-size: var(--font-size-base);
                 /* 700 = --font-weight-bold */
@@ -501,8 +503,8 @@
                 margin-top: 0.25rem;
             }
             .btn-cobrar:hover {
-                background: #2563eb;
-                box-shadow: 0 3px 8px rgba(59, 130, 246, 0.3);
+                background: var(--color-accent);
+                box-shadow: 0 3px 8px rgba(var(--color-accent-rgb), 0.3);
             }
             .btn-cobrar svg { width: 16px; height: 16px; }
         }

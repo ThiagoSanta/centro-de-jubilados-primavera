@@ -12,17 +12,18 @@
         :root {
             --primary: #1A1F3A;
             --primary-light: #2A3154;
-            --accent: #3B82F6;
-            --accent-hover: #2563EB;
+            /* Paleta de acento, bordes y texto secundario alineada con la escala de diseño global del sistema */
+            --accent: #2563EB;
+            --accent-hover: #1D4ED8;
             --bg-gradient: linear-gradient(135deg, #1A1F3A 0%, #0d1020 100%);
             --card-bg: #ffffff;
             --text-main: #1f2937;
-            --text-muted: #6b7280;
+            --text-muted: #4B5563;
             --error-bg: #fef2f2;
             --error-text: #dc2626;
             --error-border: #fee2e2;
-            --border-color: #e5e7eb;
-            --border-focus: #3b82f6;
+            --border-color: #D1D5DB;
+            --border-focus: #2563EB;
             --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
 
@@ -175,7 +176,8 @@
         .form-control:focus {
             border-color: var(--border-focus);
             background-color: #ffffff;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+            /* Anillo de foco con canal RGB de acento alineado al sistema (#2563EB = 37, 99, 235) */
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
         }
 
         .form-group:focus-within .input-icon {
