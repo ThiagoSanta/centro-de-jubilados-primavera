@@ -38,9 +38,10 @@ class SocioService
     public function crear(array $datos, string $usuarioId): array
     {
         // 1. Validar integridad de campos obligatorios, formatos de fecha y tipo de documento
+        // normalizarYValidarDocumento normaliza y valida el documento de identidad asignándolo en $datos['dni']
         $this->validarDatosSocio($datos);
 
-        $dni = trim($datos['dni']);
+        $dni = $datos['dni'];
         if ($this->repository->findByDni($dni) !== null) {
             throw new AppException("El DNI ingresado ya pertenece a un socio.", 409);
         }
@@ -68,11 +69,11 @@ class SocioService
         // 5. Generar y almacenar la imagen del código QR identificatorio del socio
         $qrUrl = $this->generarQR($socioId);
 
-        // 6. Estructurar el payload final para la inserción en la base de datos
+        // 6. Estructurar el payload final para la inserción en la base de datos con los valores normalizados
         $payload = [
             'id'                        => $socioId,
             'numero_socio'              => $numeroSocio,
-            'tipo_documento'           => !empty($datos['tipo_documento']) ? $datos['tipo_documento'] : 'dni',
+            'tipo_documento'           => $datos['tipo_documento'],
             'nombre_apellido'           => trim($datos['nombre_apellido']),
             'dni'                       => $dni,
             'fecha_nacimiento'          => $datos['fecha_nacimiento'],
@@ -163,20 +164,11 @@ class SocioService
             $valAnterior['modalidad_cobranza'] = $socio['modalidad_cobranza'];
         }
 
-        // 2. Detección y verificación de cambio en el documento de identidad
-        $dniCambiado = isset($datos['dni']) && trim($datos['dni']) !== $socio['dni'];
+        // 2. Detección y verificación de cambio en el documento de identidad o tipo de documento
         $tipoDocCambiado = isset($datos['tipo_documento']) && trim($datos['tipo_documento']) !== ($socio['tipo_documento'] ?? 'dni');
+        $dniCambiado = isset($datos['dni']) && trim($datos['dni']) !== $socio['dni'];
 
-        if ($tipoDocCambiado) {
-            $tipoDoc = trim($datos['tipo_documento']);
-            $tiposValidos = ['dni', 'libreta_civica', 'libreta_enrolamiento', 'pasaporte'];
-            if (!in_array($tipoDoc, $tiposValidos, true)) {
-                throw new AppException("Tipo de documento inválido.", 400);
-            }
-            $payload['tipo_documento'] = $tipoDoc;
-            $valAnterior['tipo_documento'] = $socio['tipo_documento'] ?? 'dni';
-        }
-
+        // Si no cambia ninguno de los dos, no se revalida para no bloquear edición de socios antiguos
         if ($dniCambiado || $tipoDocCambiado) {
             // Verificar si el operador posee permisos suficientes para alterar el documento del socio
             $rol = $this->repository->getUserRole($usuarioId);
@@ -188,34 +180,27 @@ class SocioService
             if ($dniCambiado && (!isset($datos['confirmar_cambio_dni']) || $datos['confirmar_cambio_dni'] !== true)) {
                 throw new AppException("Se requiere doble confirmación para modificar el DNI.", 400);
             }
-        }
 
-        if ($dniCambiado) {
-            $newDni = trim($datos['dni']);
-            if (empty($newDni)) {
-                throw new AppException("El número de documento es obligatorio.", 400);
+            $targetTipoDoc = isset($datos['tipo_documento']) ? trim($datos['tipo_documento']) : ($socio['tipo_documento'] ?? 'dni');
+            $targetDni = $dniCambiado ? trim($datos['dni']) : $socio['dni'];
+
+            // Validar y normalizar el número según el tipo (si solo cambió el tipo, valida el número existente contra el nuevo tipo)
+            $dniNormalizado = $this->normalizarYValidarDocumento($targetTipoDoc, $targetDni);
+
+            if ($tipoDocCambiado) {
+                $payload['tipo_documento'] = $targetTipoDoc;
+                $valAnterior['tipo_documento'] = $socio['tipo_documento'] ?? 'dni';
             }
 
-            // Garantizar la unicidad del nuevo DNI verificando que no pertenezca a otro socio registrado
-            if ($this->repository->findByDni($newDni) !== null) {
-                throw new AppException("El documento ingresado ya pertenece a otro socio.", 409);
-            }
-
-            // Validar formato de documento según la tipología seleccionada (DNI, Pasaporte, Cédula)
-            $activeTipoDoc = $payload['tipo_documento'] ?? ($socio['tipo_documento'] ?? 'dni');
-            $dniLimpio = preg_replace('/[^0-9a-zA-Z]/', '', $newDni);
-            if ($activeTipoDoc === 'pasaporte') {
-                if (!preg_match('/^[a-zA-Z0-9]+$/', $dniLimpio)) {
-                    throw new AppException("El pasaporte solo puede contener caracteres alfanuméricos.", 400);
+            if ($dniCambiado || $dniNormalizado !== $socio['dni']) {
+                // Garantizar la unicidad del nuevo DNI verificando que no pertenezca a otro socio registrado
+                if ($dniNormalizado !== $socio['dni'] && $this->repository->findByDni($dniNormalizado) !== null) {
+                    throw new AppException("El documento ingresado ya pertenece a otro socio.", 409);
                 }
-            } else {
-                if (!ctype_digit($dniLimpio)) {
-                    throw new AppException("El número de documento debe ser exclusivamente numérico.", 400);
-                }
-            }
 
-            $payload['dni'] = $newDni;
-            $valAnterior['dni'] = $socio['dni'];
+                $payload['dni'] = $dniNormalizado;
+                $valAnterior['dni'] = $socio['dni'];
+            }
         }
 
         // 3. Detectar si el domicilio postal fue modificado para re-geolocalizarlo
@@ -566,9 +551,21 @@ class SocioService
         if (empty($rowData['nombre_apellido'])) {
             $errors[] = "nombre_apellido es obligatorio";
         }
+
+        $tipoDoc = !empty($rowData['tipo_documento']) ? trim($rowData['tipo_documento']) : 'dni';
+        $dniNormalizado = null;
+
         if (empty($rowData['dni'])) {
             $errors[] = "dni es obligatorio";
+        } else {
+            try {
+                // Valida y normaliza el documento según el tipo especificado (o 'dni' por defecto)
+                $dniNormalizado = $this->normalizarYValidarDocumento($tipoDoc, $rowData['dni']);
+            } catch (AppException $e) {
+                $errors[] = $e->getMessage();
+            }
         }
+
         if (empty($rowData['fecha_nacimiento']) || !$this->validarFecha($rowData['fecha_nacimiento'])) {
             $errors[] = "fecha_nacimiento inválida (esperado YYYY-MM-DD)";
         }
@@ -585,9 +582,9 @@ class SocioService
             $errors[] = "modalidad_cobranza incorrecta (esperado 'cobranza_domiciliaria' o 'cobranza_en_sede')";
         }
 
-        // 2. Descartar filas con documentos de identidad duplicados respecto a socios ya existentes
-        if (!empty($rowData['dni'])) {
-            if ($this->repository->findByDni($rowData['dni']) !== null) {
+        // 2. Descartar filas con documentos de identidad duplicados respecto a socios ya existentes usando el valor normalizado
+        if ($dniNormalizado !== null) {
+            if ($this->repository->findByDni($dniNormalizado) !== null) {
                 $errors[] = "DNI ya existente en el sistema";
             }
         }
@@ -623,9 +620,9 @@ class SocioService
             $payload = [
                 'id'                        => $socioId,
                 'numero_socio'              => $numeroSocio,
-                'tipo_documento'           => !empty($rowData['tipo_documento']) ? $rowData['tipo_documento'] : 'dni',
+                'tipo_documento'           => $tipoDoc,
                 'nombre_apellido'           => $rowData['nombre_apellido'],
-                'dni'                       => $rowData['dni'],
+                'dni'                       => $dniNormalizado,
                 'fecha_nacimiento'          => $rowData['fecha_nacimiento'],
                 'telefono'                  => $rowData['telefono'],
                 'mutual'                    => !empty($rowData['mutual']) ? $rowData['mutual'] : null,
@@ -863,6 +860,20 @@ class SocioService
     }
 
     /**
+     * Marca una importación como 'error' con un mensaje descriptivo.
+     * Se utiliza cuando el controller no puede lanzar el proceso worker (ejecutable
+     * no encontrado, popen falla, etc.) para no dejar la importación en estado
+     * 'pendiente' de forma indefinida.
+     *
+     * @param string $importacionId UUID de la importación a marcar
+     * @param string $motivo        Descripción del error que impidió el arranque
+     */
+    public function marcarImportacionError(string $importacionId, string $motivo): void
+    {
+        $this->repository->finalizarImportacion($importacionId, 'error', $motivo);
+    }
+
+    /**
      * Obtiene las inconsistencias registradas en importaciones CSV según los filtros indicados.
      *
      * @param array $filtros Filtros de consulta (ej. 'estado' => 'pendiente'|'resuelto')
@@ -919,47 +930,84 @@ class SocioService
 
         $path = $dir . '/' . $socioId . '.png';
 
-        $qrCode = new QrCode($url);
-        $writer = new PngWriter();
-        $result = $writer->write($qrCode);
-        $result->saveToFile($path);
+        try {
+            $qrCode = new QrCode($url);
+            $writer = new PngWriter();
+            $result = $writer->write($qrCode);
+            $result->saveToFile($path);
+        } catch (\Throwable $e) {
+            // Si la extensión GD no está disponible (ej. CLI) o falla la generación del gráfico, se preserva la URL sin interrumpir el proceso
+        }
 
         return $url;
     }
 
     /**
-     * Valida la consistencia, presencia y formatos válidos de los campos de un socio.
+     * Normaliza y valida el número de documento según el tipo especificado.
      *
-     * @param array $datos Datos a verificar
+     * @param string $tipo Tipo de documento ('dni', 'libreta_civica', 'libreta_enrolamiento', 'pasaporte')
+     * @param string $numero Número de documento ingresado
+     * @return string Número de documento normalizado
+     * @throws AppException Si el tipo es desconocido o el número no cumple las reglas de formato o longitud
+     */
+    public function normalizarYValidarDocumento(string $tipo, string $numero): string
+    {
+        $tipo = trim($tipo);
+        $tiposValidos = ['dni', 'libreta_civica', 'libreta_enrolamiento', 'pasaporte'];
+        if (!in_array($tipo, $tiposValidos, true)) {
+            throw new AppException("Tipo de documento inválido.", 400);
+        }
+
+        $numero = trim($numero);
+        if ($numero === '') {
+            throw new AppException("El número de documento es obligatorio.", 400);
+        }
+
+        $mensajes = [
+            'dni'                  => 'El DNI debe tener entre 6 y 8 dígitos numéricos.',
+            'libreta_civica'       => 'La Libreta Cívica debe tener entre 6 y 8 dígitos numéricos.',
+            'libreta_enrolamiento' => 'La Libreta de Enrolamiento debe tener entre 6 y 8 dígitos numéricos.',
+        ];
+
+        if (isset($mensajes[$tipo])) {
+            // Quitar espacios, puntos y guiones
+            $normalizado = str_replace([' ', '.', '-'], '', $numero);
+            if (!ctype_digit($normalizado) || strlen($normalizado) < 6 || strlen($normalizado) > 8) {
+                throw new AppException($mensajes[$tipo], 400);
+            }
+            return $normalizado;
+        }
+
+        if ($tipo === 'pasaporte') {
+            // Quitar espacios y convertir a mayúsculas
+            $normalizado = strtoupper(str_replace(' ', '', $numero));
+            if (!preg_match('/^[A-Z0-9]{6,12}$/', $normalizado)) {
+                throw new AppException("El pasaporte debe tener entre 6 y 12 caracteres alfanuméricos.", 400);
+            }
+            return $normalizado;
+        }
+
+        throw new AppException("Tipo de documento inválido.", 400);
+    }
+
+    /**
+     * Valida la consistencia, presencia y formatos válidos de los campos de un socio.
+     * Normaliza el tipo y número de documento asignándolos en el array $datos.
+     *
+     * @param array $datos Datos a verificar (se pasa por referencia para conservar los valores normalizados)
      * @return void
      * @throws Exception Si algún campo no cumple las reglas de negocio
      */
-    private function validarDatosSocio(array $datos): void
+    private function validarDatosSocio(array &$datos): void
     {
         if (empty($datos['nombre_apellido'])) {
             throw new AppException("El nombre y apellido son obligatorios.", 400);
         }
 
         $tipoDoc = !empty($datos['tipo_documento']) ? $datos['tipo_documento'] : 'dni';
-        $tiposValidos = ['dni', 'libreta_civica', 'libreta_enrolamiento', 'pasaporte'];
-        if (!in_array($tipoDoc, $tiposValidos, true)) {
-            throw new AppException("Tipo de documento inválido.", 400);
-        }
-
-        if (empty($datos['dni'])) {
-            throw new AppException("El número de documento es obligatorio.", 400);
-        }
-
-        $dniLimpio = preg_replace('/[^0-9a-zA-Z]/', '', $datos['dni']);
-        if ($tipoDoc === 'pasaporte') {
-            if (!preg_match('/^[a-zA-Z0-9]+$/', $dniLimpio)) {
-                throw new AppException("El pasaporte solo puede contener caracteres alfanuméricos.", 400);
-            }
-        } else {
-            if (!ctype_digit($dniLimpio)) {
-                throw new AppException("El número de documento debe ser exclusivamente numérico.", 400);
-            }
-        }
+        $dniNormalizado = $this->normalizarYValidarDocumento($tipoDoc, $datos['dni'] ?? '');
+        $datos['tipo_documento'] = $tipoDoc;
+        $datos['dni'] = $dniNormalizado;
 
         if (empty($datos['fecha_nacimiento']) || !$this->validarFecha($datos['fecha_nacimiento'])) {
             throw new AppException("Formato de fecha de nacimiento incorrecto (debe ser YYYY-MM-DD).", 400);

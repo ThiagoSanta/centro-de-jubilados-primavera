@@ -199,7 +199,11 @@ class PagoService
         $pdf->SetFont('Arial', '', 12);
         $pdf->Cell(0, 8, utf8_decode('Fecha y Hora: ' . date('d/m/Y H:i:s', strtotime($pago['fecha_hora']))), 0, 1);
         $pdf->Cell(0, 8, utf8_decode('Nro. de Socio: ' . $socio['numero_socio']), 0, 1);
-        $pdf->Cell(0, 8, utf8_decode('Socio: ' . $socio['nombre'] . ' ' . $socio['apellido']), 0, 1);
+        // El campo real en la tabla socios es nombre_apellido (campo unico).
+        // Se usa el operador ?? para evitar Warning si el valor no esta definido,
+        // asignando 'Socio' como texto por defecto seguro.
+        $socioNombreCompleto = $socio['nombre_apellido'] ?? 'Socio';
+        $pdf->Cell(0, 8, utf8_decode('Socio: ' . $socioNombreCompleto), 0, 1);
         $pdf->Cell(0, 8, utf8_decode('Cobrador: ' . $cobrador), 0, 1);
         $pdf->Cell(0, 8, utf8_decode('Método de Pago: ' . ucfirst($pago['metodo_pago'])), 0, 1);
         $pdf->Ln(5);

@@ -310,7 +310,8 @@ class SocioController
         }
 
         $importacionId = Uuid::uuid4()->toString();
-        $importsDir = dirname(__DIR__, 2) . '/storage/imports';
+        // dirname(__DIR__, 3): desde app/modules/socios sube tres niveles hasta la raiz del proyecto
+        $importsDir = dirname(__DIR__, 3) . '/storage/imports';
         if (!is_dir($importsDir)) {
             mkdir($importsDir, 0755, true);
         }
@@ -347,16 +348,103 @@ class SocioController
             $phpCli = file_exists($defaultPhp) ? $defaultPhp : 'php';
         }
 
-        $scriptPath = realpath(dirname(__DIR__, 2) . '/scripts/importar_csv_worker.php');
+        // dirname(__DIR__, 3): scripts/ esta en la raiz del proyecto, tres niveles arriba de app/modules/socios/
+        $scriptPath = realpath(dirname(__DIR__, 3) . '/scripts/importar_csv_worker.php');
+
+        // Validar que el ejecutable PHP existe en disco antes de intentar usarlo.
+        // Si PHP_CLI_PATH apunta a un binario distinto al de Apache (caso windowsXamppPhp),
+        // file_exists detecta de inmediato si la ruta es incorrecta o el archivo fue movido.
+        if (!file_exists($phpCli)) {
+            $motivo = 'El ejecutable PHP CLI configurado no existe en disco: ' . $phpCli;
+            error_log('[worker-importacion] ' . $motivo . ' (importacion_id=' . $importacionId . ')');
+            $this->socioService->marcarImportacionError($importacionId, $motivo);
+            ResponseHelper::error('No se pudo iniciar la importacion: el ejecutable PHP no fue encontrado.', 500);
+            return;
+        }
+
+        // Validar que el script worker existe en disco.
+        // realpath() devuelve false si la ruta no existe; capturarlo aqui evita armar un
+        // comando con la cadena literal "false" como ruta.
+        if ($scriptPath === false || !file_exists($scriptPath)) {
+            $motivo = 'El script worker no existe en la ruta esperada: scripts/importar_csv_worker.php';
+            error_log('[worker-importacion] ' . $motivo . ' (importacion_id=' . $importacionId . ')');
+            $this->socioService->marcarImportacionError($importacionId, $motivo);
+            ResponseHelper::error('No se pudo iniciar la importacion: el script worker no fue encontrado.', 500);
+            return;
+        }
+
+        // Determinar el php.ini que debe usar el worker.
+        // El binario CLI configurado en PHP_CLI_PATH puede diferir del PHP de Apache y no
+        // leer automaticamente el php.ini de XAMPP. Sin ese ini, extensiones como pdo_mysql
+        // no se cargan y el worker falla silenciosamente al intentar conectar a la BD.
+        // Estrategia de resolucion (en orden de prioridad):
+        //   1. php_ini_loaded_file(): devuelve la ruta del ini que cargo el proceso HTTP actual.
+        //      Si Apache cargo C:\xampp\php\php.ini, ese mismo ini es el correcto para el worker.
+        //   2. Si lo anterior devuelve false, buscar php.ini en el directorio padre del ejecutable CLI
+        //      (ej. C:\xampp\php\php.ini cuando el binario esta en C:\xampp\php\windowsXamppPhp\php.exe).
+        //   3. Si ninguno de los anteriores existe, lanzar sin -c y registrar una advertencia.
+        $phpIniArg = '';
+        $iniDetectado = php_ini_loaded_file();
+        if ($iniDetectado !== false && file_exists($iniDetectado)) {
+            // Caso 1: usar el mismo ini que cargo el proceso Apache actual
+            $phpIniArg = ' -c "' . $iniDetectado . '"';
+        } else {
+            // Caso 2: buscar php.ini en el directorio padre del ejecutable CLI
+            $iniCandidato = dirname(dirname($phpCli)) . DIRECTORY_SEPARATOR . 'php.ini';
+            if (file_exists($iniCandidato)) {
+                $phpIniArg = ' -c "' . $iniCandidato . '"';
+            } else {
+                // Caso 3: no hay ini conocido; el worker puede arrancar sin pdo_mysql
+                error_log(
+                    '[worker-importacion] Advertencia: no se pudo determinar php.ini para el worker CLI. '
+                    . 'El worker arrancara sin -c; es posible que falten extensiones (pdo_mysql, curl). '
+                    . 'Importacion ID: ' . $importacionId
+                );
+            }
+        }
+
+        // Preparar directorio y ruta del archivo de log del worker.
+        // La salida (stdout + stderr) se acumula en worker.log en lugar de descartarse a NUL,
+        // lo que permite diagnosticar errores fatales del proceso hijo (extensiones faltantes,
+        // errores de conexion, etc.) que de otro modo serian invisibles.
+        // dirname(__DIR__, 3): storage/ esta en la raiz del proyecto, tres niveles arriba de app/modules/socios/
+        $logsDir = dirname(__DIR__, 3) . '/storage/logs';
+        if (!is_dir($logsDir)) {
+            mkdir($logsDir, 0755, true);
+        }
+        $workerLog = $logsDir . DIRECTORY_SEPARATOR . 'worker.log';
 
         // Disparar worker en segundo plano desacoplado del ciclo de vida HTTP
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $cmd = 'start /B "" "' . $phpCli . '" "' . $scriptPath . '" ' . escapeshellarg($importacionId) . ' > NUL 2>&1';
-            pclose(popen($cmd, 'r'));
+            // En Windows se usa "start /B" para desacoplar el proceso hijo del proceso padre.
+            // El titulo de ventana vacio "" es obligatorio cuando el primer argumento de start
+            // es una ruta entre comillas (sin el "", cmd.exe lo interpreta como el titulo).
+            // Se usa >> (modo append) para no sobreescribir entradas previas en el log.
+            $cmd = 'start /B "" "' . $phpCli . '"' . $phpIniArg . ' "' . $scriptPath . '" '
+                 . escapeshellarg($importacionId) . ' >> "' . $workerLog . '" 2>&1';
+            $proc = popen($cmd, 'r');
         } else {
-            $cmd = '"' . $phpCli . '" "' . $scriptPath . '" ' . escapeshellarg($importacionId) . ' > /dev/null 2>&1 &';
-            exec($cmd);
+            // En Linux/Mac el proceso se desacopla con & al final.
+            $cmd = '"' . $phpCli . '"' . $phpIniArg . ' "' . $scriptPath . '" '
+                 . escapeshellarg($importacionId) . ' >> "' . $workerLog . '" 2>&1 &';
+            $proc = popen($cmd, 'r');
         }
+
+        // Verificar que popen pudo abrir el proceso (fallo a nivel de sistema operativo,
+        // por ejemplo si cmd.exe no es accesible o el proceso padre no tiene permisos).
+        // Nota: con "start /B" en Windows, popen/pclose retorna 0 inmediatamente porque
+        // cmd.exe no espera al proceso hijo; no es posible detectar desde aqui si el worker
+        // murio segundos despues. Para ese caso, el log en worker.log es el mecanismo de
+        // diagnostico.
+        if ($proc === false) {
+            $motivo = 'popen() no pudo abrir el proceso para el worker (error del sistema operativo).';
+            error_log('[worker-importacion] ' . $motivo . ' Comando intentado: ' . $cmd);
+            $this->socioService->marcarImportacionError($importacionId, $motivo);
+            ResponseHelper::error('No se pudo iniciar la importacion: error al abrir el proceso en segundo plano.', 500);
+            return;
+        }
+
+        pclose($proc);
 
         ResponseHelper::success([
             'id'               => $importacionId,

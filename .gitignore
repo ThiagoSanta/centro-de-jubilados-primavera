@@ -1,6 +1,7 @@
 /vendor/
 
 /storage/*.log
+/storage/logs/*.log
 
 /storage/cache/
 

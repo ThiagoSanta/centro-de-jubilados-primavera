@@ -14,7 +14,11 @@ class WhatsAppService
      */
     public function generarLinkPago(array $socio, array $deudas, array $pago): string
     {
-        $texto = "Hola {$socio['nombre']}, confirmamos su pago en el Centro de Jubilados Primavera.\n\n";
+        // El campo real en la tabla socios es nombre_apellido (campo unico).
+        // Se usa el operador ?? para evitar Warning si el valor no esta definido,
+        // asignando 'Socio' como texto de saludo por defecto seguro.
+        $socioNombre = $socio['nombre_apellido'] ?? 'Socio';
+        $texto = "Hola {$socioNombre}, confirmamos su pago en el Centro de Jubilados Primavera.\n\n";
         $texto .= "Monto Total: $" . number_format($pago['monto_total'], 2, ',', '.') . "\n";
         $texto .= "Períodos abonados:\n";
         foreach ($deudas as $deuda) {

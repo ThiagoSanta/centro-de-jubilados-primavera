@@ -31,26 +31,29 @@ define('COBRADOR_PASS', 'Cobrador1!');
 define('TEST_PREFIX',   'TEST_');
 define('TEST_DNI',      '99999998');   // DNI reservado para socio de prueba principal
 define('TEST_DNI2',     '99999997');   // DNI reservado para segundo socio de prueba
+define('TEST_DNI_PUNTOS', '99.888.777'); // DNI con puntos para prueba de normalizacion
+define('TEST_DNI_NORMALIZADO', '99888777'); // DNI normalizado esperado para limpieza
 
 // ============================================================
 //  ESTADO GLOBAL
 // ============================================================
 
 $ctx = [
-    'tests'           => 0,
-    'passed'          => 0,
-    'failed'          => 0,
-    'omitted'         => 0,             // pruebas omitidas por precondicion no cumplida
-    'failures'        => [],
-    'admin_cookie'    => null,
-    'cobrador_cookie' => null,
-    'socio_id'        => null,
-    'socio_id2'       => null,
-    'deuda_id'        => null,
-    'pago_id'         => null,
-    'planilla_id'     => null,
-    'cobrador_id'     => null,
-    'periodo_test'    => '2099-01',    // periodo ficticio para no pisar datos reales
+    'tests'              => 0,
+    'passed'             => 0,
+    'failed'             => 0,
+    'omitted'            => 0,             // pruebas omitidas por precondicion no cumplida
+    'failures'           => [],
+    'admin_cookie'       => null,
+    'cobrador_cookie'    => null,
+    'socio_id'           => null,
+    'socio_id2'          => null,
+    'deuda_id'           => null,
+    'pago_id'            => null,
+    'planilla_id'        => null,
+    'cobrador_id'        => null,
+    'importacion_csv_id' => null,        // ID de la importacion CSV de prueba (Bloque 7b)
+    'periodo_test'       => '2099-01',   // periodo ficticio para no pisar datos reales
 ];
 
 // ============================================================
@@ -86,6 +89,39 @@ function apiRequest(string $method, string $path, ?array $body = null, ?string $
     curl_close($ch);
     $parsed = json_decode((string)$raw, true);
     return ['status' => $status, 'body' => $parsed ?? (string)$raw];
+}
+
+/**
+ * Sube un archivo local al endpoint de importacion CSV via multipart/form-data.
+ * Retorna el mismo formato que apiRequest: ['status' => int, 'body' => array|string].
+ */
+function apiRequestUpload(string $path, string $rutaArchivo, ?string $cookie = null): array
+{
+    $url = BASE_URL . $path;
+    $ch  = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST,           true);
+    curl_setopt($ch, CURLOPT_TIMEOUT,        20);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+
+    // cURL gestiona el Content-Type multipart/form-data automaticamente al recibir CURLFile
+    $postFields = [
+        'archivo' => new CURLFile($rutaArchivo, 'text/csv', basename($rutaArchivo)),
+    ];
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
+
+    $headers = ['Accept: application/json'];
+    if ($cookie !== null && $cookie !== '') {
+        curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+        $headers[] = 'Cookie: ' . $cookie;
+    }
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+    $raw    = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    $parsed = json_decode((string) $raw, true);
+    return ['status' => $status, 'body' => $parsed ?? (string) $raw];
 }
 
 /**
@@ -305,7 +341,7 @@ if (in_array('--limpiar', $argv ?? [], true)) {
         } catch (Exception $e) { /* ignorar */ }
 
         // Borrado por seguridad de cualquier socio residual
-        $pdo->prepare("DELETE FROM socios WHERE nombre_apellido LIKE 'TEST\_%' OR dni IN (?, ?)")->execute([TEST_DNI, TEST_DNI2]);
+        $pdo->prepare("DELETE FROM socios WHERE nombre_apellido LIKE 'TEST\_%' OR dni IN (?, ?, ?)")->execute([TEST_DNI, TEST_DNI2, TEST_DNI_NORMALIZADO]);
 
         // 5.b. Pagos registrados por el cobrador TEST_ (evita error FK fk_pagos_usuario)
         if ($cobradorId) {
@@ -324,6 +360,11 @@ if (in_array('--limpiar', $argv ?? [], true)) {
         try {
             $pdo->prepare("DELETE FROM zonas WHERE nombre LIKE 'TEST\_%'")->execute();
         } catch (Exception $e) { /* ignorar */ }
+
+        // 8. Limpiar registros de importacion CSV residuales (datos_registro con prefijo TEST_Csv)
+        try {
+            $pdo->prepare("DELETE FROM importacion_inconsistencias WHERE datos_registro LIKE '%TEST_Csv%'")->execute();
+        } catch (Exception $e) { /* ignorar si la tabla no existe */ }
 
         $pdo->commit();
 
@@ -507,6 +548,33 @@ $r = apiRequest('POST', '/api/socios', $socioPayload, $adminCookie);
 assertStatus($ctx, 'POST /api/socios DNI duplicado -> 409', 'POST', '/api/socios', 409, $r);
 $r = apiRequest('POST', '/api/socios', ['nombre_apellido' => 'TEST_Incompleto'], $adminCookie);
 assertStatus($ctx, 'POST /api/socios campos faltantes -> 400', 'POST', '/api/socios', 400, $r);
+
+// Pruebas de validación de formato y longitud de documento según tipo (Lote 1)
+$socioDniInvalido = array_merge($socioPayload, [
+    'nombre_apellido' => 'TEST_Dni Corto',
+    'dni'             => '123'
+]);
+$r = apiRequest('POST', '/api/socios', $socioDniInvalido, $adminCookie);
+assertStatus($ctx, 'POST /api/socios DNI corto (3 digitos) -> 400', 'POST', '/api/socios', 400, $r);
+
+$socioDniPuntos = array_merge($socioPayload, [
+    'nombre_apellido' => 'TEST_Socio Con Puntos',
+    'dni'             => TEST_DNI_PUNTOS
+]);
+$r = apiRequest('POST', '/api/socios', $socioDniPuntos, $adminCookie);
+assertStatus($ctx, 'POST /api/socios DNI con puntos -> 201', 'POST', '/api/socios', 201, $r);
+if ($r['status'] === 201) {
+    $dniGuardado = $r['body']['data']['dni'] ?? '';
+    $ctx['tests']++;
+    if ($dniGuardado === TEST_DNI_NORMALIZADO) {
+        $ctx['passed']++;
+        echo "  DNI guardado normalizado ({$dniGuardado}) \033[32mOK\033[0m" . PHP_EOL;
+    } else {
+        $ctx['failed']++;
+        $ctx['failures'][] = "DNI guardado no normalizado: esperado " . TEST_DNI_NORMALIZADO . ", recibido {$dniGuardado}";
+        echo "  DNI guardado no normalizado: esperado " . TEST_DNI_NORMALIZADO . ", recibido {$dniGuardado} \033[31mFALLO\033[0m" . PHP_EOL;
+    }
+}
 $r = apiRequest('POST', '/api/socios', $socioPayload);
 assertStatus($ctx, 'POST /api/socios sin auth -> 401', 'POST', '/api/socios', 401, $r);
 $r = apiRequest('GET', '/api/socios', null, $adminCookie);
@@ -545,6 +613,124 @@ assertStatus($ctx, 'POST /api/socios (2do socio TEST_) -> 201', 'POST', '/api/so
 if ($r['status'] === 201) {
     $ctx['socio_id2'] = $r['body']['data']['id'] ?? null;
     echo "  2do Socio TEST_ creado con ID: " . $ctx['socio_id2'] . PHP_EOL;
+}
+
+// ============================================================
+//  BLOQUE 7b — IMPORTACION CSV: VALIDACION DE DOCUMENTO
+// ============================================================
+
+section('BLOQUE 7b: Importacion CSV -- Validacion de documento');
+
+// Construir un CSV temporal con 2 filas:
+//   Fila 1: socio valido con prefijo TEST_ y DNI de 8 digitos -> debe importarse
+//   Fila 2: socio con DNI de solo 3 digitos -> debe quedar como inconsistencia
+// Se usa sys_get_temp_dir() para no dejar residuos en el proyecto.
+$csvTmpPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test_importacion_cjp.csv';
+$csvContenido  = "nombre_apellido;dni;fecha_nacimiento;telefono;direccion;modalidad_cobranza" . PHP_EOL;
+// Fila valida: el nombre tiene prefijo TEST_ para que el Bloque 19 la limpie automaticamente
+$csvContenido .= "TEST_CsvSocioValido;99777666;1960-01-15;3411234567;Av. Siempre Viva 742;cobranza_en_sede" . PHP_EOL;
+// Fila invalida: DNI de 3 digitos, debe rechazarse con motivo claro
+$csvContenido .= "TEST_CsvDocInvalido;123;1970-05-20;3417654321;Calle Falsa 123;cobranza_domiciliaria" . PHP_EOL;
+file_put_contents($csvTmpPath, $csvContenido);
+
+if ($adminCookie) {
+    // Subir el CSV a la API de importacion
+    $rImport = apiRequestUpload('/api/socios/importar', $csvTmpPath, $adminCookie);
+    assertStatus($ctx, 'POST /api/socios/importar CSV 2 filas -> 202', 'POST', '/api/socios/importar', 202, $rImport);
+
+    $importacionId = $rImport['body']['data']['id'] ?? null;
+
+    if ($importacionId) {
+        // Esperar a que el worker finalice el procesamiento (polling, maximo 30 segundos)
+        $estadoFinal  = null;
+        $maxIntentos  = 30;
+        $intentos     = 0;
+        while ($intentos < $maxIntentos) {
+            sleep(1);
+            $rEstado = apiRequest('GET', '/api/socios/importar/' . $importacionId . '/estado', null, $adminCookie);
+            $estadoFinal = $rEstado['body']['data']['estado'] ?? null;
+            // El worker puede terminar en 'completado' o 'error'
+            if ($estadoFinal === 'completado' || $estadoFinal === 'error') {
+                break;
+            }
+            $intentos++;
+        }
+
+        // Verificar que el worker termino dentro del tiempo maximo
+        $ctx['tests']++;
+        if ($estadoFinal === 'completado' || $estadoFinal === 'error') {
+            $ctx['passed']++;
+            echo "  Worker CSV finalizo con estado '{$estadoFinal}' en {$intentos}s \033[32mOK\033[0m" . PHP_EOL;
+        } else {
+            $ctx['failed']++;
+            $ctx['failures'][] = "Worker CSV no finalizo en {$maxIntentos}s (ultimo estado: '" . ($estadoFinal ?? 'sin respuesta') . "')";
+            echo "  Worker CSV no finalizo en {$maxIntentos}s \033[31mFALLO\033[0m" . PHP_EOL;
+        }
+
+        if ($estadoFinal === 'completado') {
+            // Verificar que exactamente 1 fila fue exitosa
+            $exitosos = (int) ($rEstado['body']['data']['exitosos'] ?? -1);
+            $ctx['tests']++;
+            if ($exitosos === 1) {
+                $ctx['passed']++;
+                echo "  CSV: 1 fila exitosa \033[32mOK\033[0m" . PHP_EOL;
+            } else {
+                $ctx['failed']++;
+                $ctx['failures'][] = "CSV importacion: exitosos esperado 1, recibido {$exitosos}";
+                echo "  CSV: exitosos esperado 1, recibido {$exitosos} \033[31mFALLO\033[0m" . PHP_EOL;
+            }
+
+            // Verificar que exactamente 1 fila fue rechazada
+            $fallidos = (int) ($rEstado['body']['data']['fallidos'] ?? -1);
+            $ctx['tests']++;
+            if ($fallidos === 1) {
+                $ctx['passed']++;
+                echo "  CSV: 1 fila rechazada \033[32mOK\033[0m" . PHP_EOL;
+            } else {
+                $ctx['failed']++;
+                $ctx['failures'][] = "CSV importacion: fallidos esperado 1, recibido {$fallidos}";
+                echo "  CSV: fallidos esperado 1, recibido {$fallidos} \033[31mFALLO\033[0m" . PHP_EOL;
+            }
+
+            // Verificar que la inconsistencia tiene un motivo que menciona el documento invalido
+            $rInc = apiRequest('GET', '/api/socios/inconsistencias', null, $adminCookie);
+            assertStatus($ctx, 'GET /api/socios/inconsistencias post-CSV -> 200', 'GET', '/api/socios/inconsistencias', 200, $rInc);
+            $inconsistencias = $rInc['body']['data'] ?? [];
+            // Buscar la inconsistencia mas reciente de esta importacion por motivo de documento invalido
+            $motivoEncontrado = false;
+            foreach ($inconsistencias as $inc) {
+                $motivo = strtolower($inc['motivo_rechazo'] ?? '');
+                // El motivo debe mencionar dni o documento y algun indicador de longitud o digitos
+                if (str_contains($motivo, 'dni') || str_contains($motivo, 'documento')) {
+                    $motivoEncontrado = true;
+                    break;
+                }
+            }
+            $ctx['tests']++;
+            if ($motivoEncontrado) {
+                $ctx['passed']++;
+                echo "  CSV: inconsistencia registrada con motivo de documento invalido \033[32mOK\033[0m" . PHP_EOL;
+            } else {
+                $ctx['failed']++;
+                $ctx['failures'][] = "CSV importacion: no se encontro inconsistencia con motivo de documento invalido";
+                echo "  CSV: inconsistencia sin motivo de documento \033[31mFALLO\033[0m" . PHP_EOL;
+            }
+        }
+
+        // Guardar el importacionId para que el bloque 19 limpie los registros asociados
+        $ctx['importacion_csv_id'] = $importacionId;
+    } else {
+        echo "  No se obtuvo importacion_id de la respuesta; se omiten verificaciones del worker." . PHP_EOL;
+        $ctx['omitted'] += 5;
+    }
+} else {
+    echo "  Sin sesion de administrador; se omite el bloque de importacion CSV." . PHP_EOL;
+    $ctx['omitted'] += 5;
+}
+
+// Limpiar el archivo CSV temporal creado para la prueba
+if (file_exists($csvTmpPath)) {
+    @unlink($csvTmpPath);
 }
 
 // ============================================================
@@ -1022,8 +1208,8 @@ try {
     } catch (Exception $e) { /* ignorar */ }
 
     // 5. Socios, pagos y deudas
-    $stmt = $pdo->prepare("SELECT id FROM socios WHERE nombre_apellido LIKE 'TEST\_%' OR dni IN (?, ?)");
-    $stmt->execute([TEST_DNI, TEST_DNI2]);
+    $stmt = $pdo->prepare("SELECT id FROM socios WHERE nombre_apellido LIKE 'TEST\_%' OR dni IN (?, ?, ?)");
+    $stmt->execute([TEST_DNI, TEST_DNI2, TEST_DNI_NORMALIZADO]);
     $testSocioIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
     $socioIds = array_values(array_unique(array_filter(array_merge(
         [$ctx['socio_id'] ?? null, $ctx['socio_id2'] ?? null],
@@ -1056,7 +1242,7 @@ try {
         }
         $pdo->prepare("DELETE FROM socios WHERE id IN ({$in})")->execute($socioIds);
     }
-    $pdo->prepare("DELETE FROM socios WHERE nombre_apellido LIKE 'TEST\_%' OR dni IN (?, ?)")->execute([TEST_DNI, TEST_DNI2]);
+    $pdo->prepare("DELETE FROM socios WHERE nombre_apellido LIKE 'TEST\_%' OR dni IN (?, ?, ?)")->execute([TEST_DNI, TEST_DNI2, TEST_DNI_NORMALIZADO]);
 
     // 5.b. Pagos registrados por el cobrador TEST_ (evita error FK fk_pagos_usuario)
     if ($cobradorId) {
@@ -1071,6 +1257,19 @@ try {
     try {
         $pdo->prepare("DELETE FROM zonas WHERE nombre LIKE 'TEST\_%'")->execute();
     } catch (Exception $e) { /* ignorar */ }
+
+    // 8. Limpiar registros de importacion CSV de prueba (importacion_inconsistencias e importaciones_csv)
+    // Solo se borran las que tienen importacion_id coincidente con la prueba o cuyo datos_registro contenga TEST_
+    try {
+        if (!empty($ctx['importacion_csv_id'])) {
+            $pdo->prepare("DELETE FROM importacion_inconsistencias WHERE importacion_id = ?")
+                ->execute([$ctx['importacion_csv_id']]);
+            $pdo->prepare("DELETE FROM importaciones_csv WHERE id = ?")
+                ->execute([$ctx['importacion_csv_id']]);
+        }
+        // Borrado de seguridad: inconsistencias con nombre de prueba en datos_registro
+        $pdo->prepare("DELETE FROM importacion_inconsistencias WHERE datos_registro LIKE '%TEST_Csv%'")->execute();
+    } catch (Exception $e) { /* ignorar si la tabla no existe en este entorno */ }
 
     $pdo->commit();
     $cleaned = true;
