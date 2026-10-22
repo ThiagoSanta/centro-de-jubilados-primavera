@@ -268,6 +268,7 @@
             <div id="alertContainer"></div>
 
             <div class="search-container" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; margin-bottom: 2rem; max-width: 800px;">
+                <label class="form-label" for="inputDni" style="width: 100%; margin-bottom: 0;">Buscar socio por nombre, DNI o N° de socio</label>
                 <input type="text" id="inputDni" class="form-control" placeholder="Buscar por DNI, nombre o n° de socio..." style="flex: 2; min-width: 220px;" aria-label="Buscar por DNI, nombre o número de socio">
                 <select id="filtroZona" class="form-control" style="flex: 1; min-width: 180px;" aria-label="Filtrar por zona">
                     <option value="">Todas las zonas</option>
@@ -313,6 +314,8 @@
             <div class="result-actions" id="resultActions">
                 <a href="#" target="_blank" class="btn btn--secondary" id="linkComprobante">Ver Comprobante (PDF)</a>
                 <a href="#" target="_blank" class="btn-whatsapp" id="linkWhatsapp">Enviar por WhatsApp</a>
+                <!-- Boton de reinicio inmediato: cancela el temporizador y limpia la pantalla sin esperar -->
+                <button type="button" class="btn btn--secondary" id="btnNuevoCobro" onclick="reiniciarTerminal()">Nuevo cobro ahora</button>
             </div>
         </main>
     </div>
@@ -363,8 +366,12 @@
                 icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
             },
             {
-                href: '/centro-de-jubilados-primavera/public/views/pagos/listado.html', label: 'Cobranza', active: true,
+                href: '/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html', label: 'Terminal de cobro', active: true,
                 icon: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+            },
+            {
+                href: '/centro-de-jubilados-primavera/public/views/pagos/listado.html', label: 'Listado de pagos',
+                icon: '<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>'
             },
             {
                 href: '/centro-de-jubilados-primavera/public/views/planillas/generar.html', label: 'Planillas y Ruteo',
@@ -538,16 +545,48 @@
             }
 
             try {
-                const params = new URLSearchParams();
-                if (termino) params.append('busqueda', termino);
-                if (zonaId) params.append('zona_id', zonaId);
-                params.append('estado', 'activo');
+                // El backend (SocioRepository::findAll) filtra s.estado = :estado cuando se envia 'estado',
+                // o no filtra estado si no se envia (incluyendo socios eliminados).
+                // Al no soportar multiples valores en un solo parametro, se consultan en paralelo los
+                // socios con estado activo y suspendido, unificando los resultados sin duplicados y
+                // garantizando que nunca se incluyan socios eliminados.
+                const baseParams = new URLSearchParams();
+                if (termino) baseParams.append('busqueda', termino);
+                if (zonaId) baseParams.append('zona_id', zonaId);
 
-                const res = await fetch(`${BASE_URL}/api/socios?${params.toString()}`);
-                const data = await res.json();
+                const paramsActivo = new URLSearchParams(baseParams);
+                paramsActivo.append('estado', 'activo');
 
-                if (data.success && data.data && data.data.data && data.data.data.length > 0) {
-                    const socios = data.data.data;
+                const paramsSuspendido = new URLSearchParams(baseParams);
+                paramsSuspendido.append('estado', 'suspendido');
+
+                const [resActivo, resSuspendido] = await Promise.all([
+                    fetch(`${BASE_URL}/api/socios?${paramsActivo.toString()}`),
+                    fetch(`${BASE_URL}/api/socios?${paramsSuspendido.toString()}`)
+                ]);
+
+                const [dataActivo, dataSuspendido] = await Promise.all([
+                    resActivo.json(),
+                    resSuspendido.json()
+                ]);
+
+                const listaActivos = (dataActivo.success && dataActivo.data && Array.isArray(dataActivo.data.data))
+                    ? dataActivo.data.data
+                    : [];
+                const listaSuspendidos = (dataSuspendido.success && dataSuspendido.data && Array.isArray(dataSuspendido.data.data))
+                    ? dataSuspendido.data.data
+                    : [];
+
+                // Unificar resultados evitando duplicados mediante el id unico de cada socio
+                const sociosMap = new Map();
+                listaActivos.forEach(s => { if (s && s.id) sociosMap.set(s.id, s); });
+                listaSuspendidos.forEach(s => { if (s && s.id) sociosMap.set(s.id, s); });
+
+                const socios = Array.from(sociosMap.values());
+                // Ordenar por numero de socio ascendente para mantener consistencia con el backend
+                socios.sort((a, b) => (Number(a.numero_socio) || 0) - (Number(b.numero_socio) || 0));
+
+                if (socios.length > 0) {
                     if (socios.length === 1) {
                         seleccionarSocio(socios[0]);
                     } else {
@@ -569,17 +608,39 @@
             cargarDeudas(socioActual.id);
         }
 
+        // Funcion utilitaria para sanitizar cadenas contra XSS al renderizar en el DOM
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         function mostrarModalSeleccionSocio(socios) {
             const container = document.getElementById('listaSociosEncontrados');
             container.innerHTML = '';
             socios.forEach(s => {
                 const item = document.createElement('div');
                 item.className = 'socio-select-item';
+                // Escapar campos provenientes de la API para prevenir inyecciones XSS
+                const sNombre = escapeHtml(s.nombre_apellido);
+                const sDni = s.dni ? escapeHtml(s.dni) : 'S/D';
+                const sNumero = escapeHtml(s.numero_socio);
+                const sZona = s.zona_nombre ? escapeHtml(s.zona_nombre) : 'N/A';
+
+                // Mostrar etiqueta de suspendido junto al nombre si el estado del socio es suspendido
+                const badgeSuspendido = s.estado === 'suspendido'
+                    ? '<span class="badge badge--suspendido" style="margin-left: 0.5rem; vertical-align: middle;">Suspendido</span>'
+                    : '';
+
                 item.innerHTML = `
                     <div>
-                        <strong style="color: var(--color-text); font-size: var(--font-size-lg);">${s.nombre_apellido}</strong>
+                        <strong style="color: var(--color-text); font-size: var(--font-size-lg);">${sNombre}</strong>${badgeSuspendido}
                         <div style="font-size: var(--font-size-sm); color: var(--color-text-muted); margin-top: 2px;">
-                            DNI: <strong>${s.dni || 'S/D'}</strong> | Socio N°: <strong>${s.numero_socio}</strong> | Zona: <strong>${s.zona_nombre || 'N/A'}</strong>
+                            DNI: <strong>${sDni}</strong> | Socio N°: <strong>${sNumero}</strong> | Zona: <strong>${sZona}</strong>
                         </div>
                     </div>
                     <div>
@@ -600,7 +661,12 @@
         }
 
         function mostrarSocio(socio) {
-            document.getElementById('socioNombre').textContent = socio.nombre_apellido;
+            // Escapar datos de la API antes de concatenar en innerHTML
+            const sNombre = escapeHtml(socio.nombre_apellido);
+            const badgeSuspendido = socio.estado === 'suspendido'
+                ? '<span class="badge badge--suspendido" style="margin-left: 0.5rem; vertical-align: middle;">Suspendido</span>'
+                : '';
+            document.getElementById('socioNombre').innerHTML = sNombre + (badgeSuspendido ? ' ' + badgeSuspendido : '');
             document.getElementById('socioNumero').textContent = socio.numero_socio;
             document.getElementById('socioEstado').textContent = socio.estado;
             document.getElementById('socioZona').textContent = socio.zona_nombre || 'N/A';
@@ -755,15 +821,27 @@
                 });
 
                 cerrarModal();
-                mostrarAlerta('Pago registrado con éxito.', 'success');
 
                 document.getElementById('deudasContainer').style.display = 'none';
 
                 // Pago exitoso: mostrar enlaces al comprobante PDF y al mensaje de WhatsApp
                 const actions = document.getElementById('resultActions');
                 actions.style.display = 'flex';
-                document.getElementById('linkComprobante').href = data.data.comprobante_url;
+                // Se antepone BASE_URL porque el backend devuelve una ruta relativa al
+                // servidor (/api/pagos/{id}/comprobante). Sin el prefijo, el navegador
+                // resuelve contra la raiz del servidor y Apache devuelve 404.
+                // El mismo patron ya lo usa listado.html (L345): BASE_URL + '/api/pagos/...'.
+                document.getElementById('linkComprobante').href = BASE_URL + data.data.comprobante_url;
                 document.getElementById('linkWhatsapp').href = data.data.whatsapp_url;
+
+                // Deshabilitar controles de cobro para evitar un doble registro
+                // mientras corre la cuenta regresiva.
+                document.getElementById('btnBuscarSocio').disabled = true;
+                document.getElementById('inputDni').disabled = true;
+                document.getElementById('filtroZona').disabled = true;
+
+                // Iniciar cuenta regresiva y mostrar alerta persistente con texto dinamico.
+                iniciarCuentaRegresiva(10);
 
             } catch (err) {
                 // Si el error es de red o timeout, no podemos saber si el pago se procesó
@@ -780,23 +858,81 @@
                     mostrarAlerta(clasificarErrorRed(err), 'error');
                 }
             } finally {
-                // Restaurar botones siempre, haya éxito o error
-                if (btnOk) { btnOk.disabled = false; btnOk.textContent = 'Confirmar Pago'; }
-                if (btnCancel) btnCancel.disabled = false;
+                // En caso de error: restaurar los botones del modal para permitir reintentar.
+                // En caso de exito: los botones del modal ya fueron cerrados por cerrarModal()
+                // y la cuenta regresiva toma el control; restaurarlos aqui seria incorrecto.
+                if (btnOk && btnOk.disabled) { btnOk.disabled = false; btnOk.textContent = 'Confirmar Pago'; }
+                if (btnCancel && btnCancel.disabled) btnCancel.disabled = false;
             }
         }
 
         function mostrarAlerta(mensaje, tipo) {
             const container = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
+            const alerta = document.createElement('div');
             // Asignación de clases del sistema para coherencia visual con main.css
-            alert.className = tipo === 'success' ? 'alert alert--success' : 'alert alert--error';
-            alert.textContent = mensaje;
+            alerta.className = tipo === 'success' ? 'alert alert--success' : 'alert alert--error';
+            alerta.id = 'alertaPrincipal';
+            alerta.textContent = mensaje;
 
             container.innerHTML = '';
-            container.appendChild(alert);
+            container.appendChild(alerta);
 
-            setTimeout(() => { alert.remove(); }, 5000);
+            // Los errores se auto-eliminan a los 5 segundos.
+            // Las alertas de exito son persistentes: la cuenta regresiva las controla.
+            if (tipo !== 'success') {
+                setTimeout(() => { alerta.remove(); }, 5000);
+            }
+        }
+
+        // Referencia al temporizador activo para poder cancelarlo con 'Nuevo cobro ahora'.
+        let _timerId = null;
+
+        /**
+         * Inicia una cuenta regresiva de `segundos` segundos.
+         * Actualiza el texto de la alerta en cada tick y navega al terminar.
+         * Si el usuario pulsa 'Nuevo cobro ahora', reiniciarTerminal() cancela el timer.
+         */
+        function iniciarCuentaRegresiva(segundos) {
+            let restantes = segundos;
+
+            function actualizarTexto() {
+                const alerta = document.getElementById('alertaPrincipal');
+                if (alerta) {
+                    alerta.textContent =
+                        'Pago registrado correctamente. La pantalla se reiniciara en ' +
+                        restantes + ' segundo' + (restantes !== 1 ? 's' : '') + '.';
+                }
+            }
+
+            // Mostrar el texto inicial antes de que pase el primer segundo.
+            mostrarAlerta('', 'success');
+            actualizarTexto();
+
+            _timerId = setInterval(function () {
+                restantes -= 1;
+                actualizarTexto();
+
+                if (restantes <= 0) {
+                    clearInterval(_timerId);
+                    _timerId = null;
+                    // Navegar sin parametros de URL para evitar que el autocompletado
+                    // ?dni= vuelva a disparar una busqueda al recargar.
+                    window.location.replace(window.location.pathname);
+                }
+            }, 1000);
+        }
+
+        /**
+         * Cancela el temporizador activo y navega de inmediato.
+         * Se invoca desde el boton 'Nuevo cobro ahora'.
+         */
+        function reiniciarTerminal() {
+            if (_timerId !== null) {
+                clearInterval(_timerId);
+                _timerId = null;
+            }
+            // Limpiar parametros de URL por la misma razon que en la cuenta regresiva.
+            window.location.replace(window.location.pathname);
         }
     
         document.getElementById('modalSeleccionSocio').addEventListener('click', function (e) {

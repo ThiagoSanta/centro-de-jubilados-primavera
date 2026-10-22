@@ -9,6 +9,56 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
     <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
+    <style>
+        /* Ajuste de altura uniforme (38px) y alineacion para todos los controles de la barra de filtros */
+        .toolbar__search input,
+        .filter-chip select,
+        #btnLimpiarFiltros {
+            height: 38px;
+            box-sizing: border-box;
+        }
+
+        /* Estilo del boton Limpiar filtros en armonia con los chips de filtro */
+        #btnLimpiarFiltros {
+            white-space: nowrap;
+            align-self: center;
+        }
+
+        /* En pantallas moviles (hasta 768px) los controles se ajustan sin desbordar horizontalmente */
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .toolbar__search {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .filter-chips {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                width: 100%;
+            }
+
+            .filter-chip {
+                flex: 1 1 calc(50% - 0.25rem);
+                min-width: 130px;
+            }
+
+            .filter-chip select {
+                width: 100%;
+            }
+
+            #btnLimpiarFiltros {
+                width: 100%;
+                flex: 1 1 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="layout">
@@ -27,9 +77,13 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Socios
             </a>
-            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
+            <a href="/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html" class="sidebar-nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Cobranza
+                Terminal de cobro
+            </a>
+            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Listado de pagos
             </a>
             <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="sidebar-nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -115,6 +169,8 @@
                             <option value="0">Al día</option>
                         </select>
                     </div>
+                    <!-- Boton para restablecer todos los filtros y recargar el padron -->
+                    <button type="button" class="btn btn--secondary btn--sm" id="btnLimpiarFiltros">Limpiar filtros</button>
                 </div>
             </div>
 
@@ -317,6 +373,16 @@
                     opt.textContent = zona.nombre;
                     select.appendChild(opt);
                 });
+                var urlParams = new URLSearchParams(window.location.search);
+                var zonaParam = urlParams.get('zona') || urlParams.get('zona_id');
+                if (zonaParam !== null) {
+                    for (var z = 0; z < select.options.length; z++) {
+                        if (select.options[z].value === zonaParam) {
+                            select.value = zonaParam;
+                            break;
+                        }
+                    }
+                }
             }).catch(function () {
                 /* Las zonas son opcionales; si el endpoint falla, se omiten sin bloquear la carga */
             });
@@ -644,6 +710,32 @@
             });
         });
 
+        /* --- Limpiar filtros y reiniciar listado --- */
+        // Restablece el campo de busqueda y los 4 selects a su valor vacio,
+        // cancela temporizadores pendientes de debounce para evitar dobles peticiones,
+        // reinicia la paginacion a la primera pagina y recarga el padron de socios.
+        function limpiarFiltros() {
+            clearTimeout(state.debounceTimer);
+            state.debounceTimer = null;
+
+            document.getElementById('inputBusqueda').value = '';
+            document.getElementById('filtroEstado').value = '';
+            document.getElementById('filtroZona').value = '';
+            document.getElementById('filtroModalidad').value = '';
+            document.getElementById('filtroDeuda').value = '';
+
+            state.pagina = 1;
+            cargarSocios();
+        }
+
+        // Expone la funcion globalmente para eventuales pruebas o llamadas externas
+        window.limpiarFiltros = limpiarFiltros;
+
+        var btnLimpiar = document.getElementById('btnLimpiarFiltros');
+        if (btnLimpiar) {
+            btnLimpiar.addEventListener('click', limpiarFiltros);
+        }
+
         document.getElementById('btnPagAnterior').addEventListener('click', function () {
             if (state.pagina > 1) {
                 state.pagina--;
@@ -658,6 +750,51 @@
                 cargarSocios();
             }
         });
+
+        /* --- Aplicar filtros desde la URL en la carga inicial --- */
+        // Lee los parametros de consulta de la URL y los asigna a los campos de filtro
+        // antes de realizar la primera carga, ignorando valores que no existan en los selects.
+        function aplicarFiltrosDesdeUrl() {
+            var urlParams = new URLSearchParams(window.location.search);
+
+            var busqueda = urlParams.get('busqueda');
+            if (busqueda !== null) {
+                document.getElementById('inputBusqueda').value = busqueda;
+            }
+
+            var estado = urlParams.get('estado');
+            if (estado !== null) {
+                var selectEstado = document.getElementById('filtroEstado');
+                for (var i = 0; i < selectEstado.options.length; i++) {
+                    if (selectEstado.options[i].value === estado) {
+                        selectEstado.value = estado;
+                        break;
+                    }
+                }
+            }
+
+            var modalidad = urlParams.get('modalidad') || urlParams.get('modalidad_cobranza');
+            if (modalidad !== null) {
+                var selectModalidad = document.getElementById('filtroModalidad');
+                for (var j = 0; j < selectModalidad.options.length; j++) {
+                    if (selectModalidad.options[j].value === modalidad) {
+                        selectModalidad.value = modalidad;
+                        break;
+                    }
+                }
+            }
+
+            var deuda = urlParams.get('deuda') !== null ? urlParams.get('deuda') : urlParams.get('con_deuda');
+            if (deuda !== null) {
+                var selectDeuda = document.getElementById('filtroDeuda');
+                for (var k = 0; k < selectDeuda.options.length; k++) {
+                    if (selectDeuda.options[k].value === deuda) {
+                        selectDeuda.value = deuda;
+                        break;
+                    }
+                }
+            }
+        }
 
         /* --- Inicialización --- */
         fetch(API_BASE + '/auth/me')
@@ -677,6 +814,7 @@
                         : BASE_URL + '/views/auth/login.html');
                     return;
                 }
+                aplicarFiltrosDesdeUrl();
                 Promise.all([cargarZonas(), cargarSocios()]).then(function () {
                     renderTabla();
                 });

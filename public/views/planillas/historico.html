@@ -10,18 +10,70 @@
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
     <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <style>
-        .form-card {
-            margin-bottom: 1.5rem;
-        }
-        .form-grid {
+        /*
+         * Estilos del contenedor de filtros igualados al modelo de auditoria/index.html.
+         * Se replica fondo (--color-content), sombra (--shadow-sm), radio (8px), padding (1.5rem)
+         * y margen inferior, eliminando el borde rigido de tarjeta.
+         */
+        .filters-container {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 140px;
-            gap: 1.25rem;
+            /* 3 campos proporcionales y 1 columna ajustada al tamaño de los botones */
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1rem;
             align-items: flex-end;
+            margin-bottom: 2rem;
+            background: var(--color-content);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
         }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Estilo unificado de etiquetas (.form-label) para compartir tamaño, peso y margen */
+        .form-label {
+            display: block;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text);
+            margin-bottom: 0.375rem;
+        }
+
+        /* Unificacion de altura a 38px para que los selects y el input date compartan la misma altura de fila */
+        .filters-container .form-control {
+            height: 38px;
+            box-sizing: border-box;
+        }
+
+        /* Contenedor de botones alineado con la base de los controles */
+        .filter-group--actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        /* Altura coherente de botones con los campos */
+        .filter-group--actions .btn {
+            height: 38px;
+            box-sizing: border-box;
+        }
+
+        /* En pantallas moviles se apilan verticalmente sin desbordar */
         @media (max-width: 768px) {
-            .form-grid {
+            .filters-container {
                 grid-template-columns: 1fr;
+            }
+
+            .filter-group--actions {
+                flex-direction: column;
+            }
+
+            .filter-group--actions .btn {
+                width: 100%;
             }
         }
     </style>
@@ -43,9 +95,13 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     Socios
                 </a>
-                <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
+                <a href="/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html" class="sidebar-nav-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    Cobranza
+                    Terminal de cobro
+                </a>
+                <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Listado de pagos
                 </a>
                 <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="sidebar-nav-item sidebar-nav-item--active">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -90,27 +146,25 @@
             </div>
 
             <!-- Filtros -->
-            <div class="card form-card">
-                <form id="formFiltros">
-                    <div class="form-grid">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label" for="zonaFilter">Zona</label>
-                            <select id="zonaFilter" class="form-control"></select>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label" for="cobradorFilter">Cobrador</label>
-                            <select id="cobradorFilter" class="form-control"></select>
-                        </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label class="form-label" for="fechaDesdeFilter">Fecha Desde</label>
-                            <input type="date" id="fechaDesdeFilter" class="form-control">
-                        </div>
-                        <div>
-                            <button type="submit" class="btn btn--primary" style="width: 100%;">Filtrar</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+            <form id="formFiltros" class="filters-container">
+                <div class="filter-group">
+                    <label class="form-label" for="zonaFilter">Zona</label>
+                    <select id="zonaFilter" class="form-control"></select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label" for="cobradorFilter">Cobrador</label>
+                    <select id="cobradorFilter" class="form-control"></select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label" for="fechaDesdeFilter">Fecha Desde</label>
+                    <input type="date" id="fechaDesdeFilter" class="form-control">
+                </div>
+                <!-- Botones de accion alineados con la base de los controles -->
+                <div class="filter-group filter-group--actions">
+                    <button type="submit" class="btn btn--primary" style="white-space: nowrap;">Filtrar</button>
+                    <button type="button" onclick="limpiarFiltros()" class="btn btn--secondary btn--sm" style="white-space: nowrap;">Limpiar filtros</button>
+                </div>
+            </form>
 
             <!-- Tabla de planillas generadas con columnas de fecha, zona, cobrador y acciones -->
             <div class="table-container">
@@ -173,6 +227,17 @@
                 loadPlanillas();
             });
 
+            loadPlanillas();
+        }
+
+        /* --- Limpiar filtros y reiniciar listado --- */
+        // Restablece los filtros de zona, cobrador y fecha a su valor vacio,
+        // reinicia la paginacion a la pagina 1 y recarga el historico de planillas.
+        function limpiarFiltros() {
+            document.getElementById('zonaFilter').value = '';
+            document.getElementById('cobradorFilter').value = '';
+            document.getElementById('fechaDesdeFilter').value = '';
+            currentPage = 1;
             loadPlanillas();
         }
 

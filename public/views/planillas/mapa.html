@@ -268,7 +268,9 @@
                             <option value="pago_sede">Sede</option>
                             <option value="transferencia">Transferencia</option>
                         </select>
-                        <button onclick="loadSocios()" class="btn btn--primary btn--sm" style="width: 100%;">Aplicar</button>
+                        <!-- Botones de accion: Aplicar y Limpiar filtros en el panel de mapa -->
+                        <button type="button" onclick="loadSocios()" class="btn btn--primary btn--sm" style="width: 100%;">Aplicar</button>
+                        <button type="button" onclick="limpiarFiltros()" class="btn btn--secondary btn--sm" style="width: 100%;">Limpiar filtros</button>
                     </div>
                 </div>
 
@@ -293,8 +295,12 @@
                 icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
             },
             {
-                href: '/centro-de-jubilados-primavera/public/views/pagos/listado.html', label: 'Cobranza',
+                href: '/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html', label: 'Terminal de cobro',
                 icon: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+            },
+            {
+                href: '/centro-de-jubilados-primavera/public/views/pagos/listado.html', label: 'Listado de pagos',
+                icon: '<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>'
             },
             {
                 href: '/centro-de-jubilados-primavera/public/views/planillas/generar.html', label: 'Planillas y Ruteo', active: true,
@@ -386,6 +392,16 @@
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
+        }
+
+        /* --- Limpiar filtros del mapa --- */
+        // Restablece los filtros de zona, estado y modalidad a su valor vacio
+        // y recarga la totalidad de socios en el mapa interactivo.
+        function limpiarFiltros() {
+            document.getElementById('zonaFilter').value = '';
+            document.getElementById('estadoFilter').value = '';
+            document.getElementById('modalidadFilter').value = '';
+            loadSocios();
         }
 
         async function loadSocios() {

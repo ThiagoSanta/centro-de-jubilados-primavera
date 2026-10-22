@@ -27,11 +27,20 @@
             display: flex;
             flex-direction: column;
             gap: 0.75rem;
-            transition: box-shadow 0.15s;
+            transition: box-shadow 0.15s, border-color 0.15s;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
         }
 
         .kpi-card:hover {
             box-shadow: var(--shadow-md);
+            border-color: var(--color-accent);
+        }
+
+        .kpi-card:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
         }
 
         .kpi-card__icon {
@@ -142,6 +151,20 @@
             gap: 1rem;
             margin-bottom: 1.25rem;
             background: var(--color-content);
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: box-shadow 0.15s, border-color 0.15s;
+        }
+
+        .notif-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--color-accent);
+        }
+
+        .notif-card:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
         }
 
         .notif-card__left {
@@ -242,9 +265,13 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 Socios
             </a>
-            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
+            <a href="/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html" class="sidebar-nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                Cobranza
+                Terminal de cobro
+            </a>
+            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="sidebar-nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Listado de pagos
             </a>
             <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="sidebar-nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -307,47 +334,47 @@
                class="btn btn--secondary btn--sm">Ir a Configuración</a>
         </div>
 
-        <!-- Tarjetas de indicadores clave (KPI) -->
+        <!-- Tarjetas de indicadores clave (KPI) convertidas en enlaces accesibles -->
         <div class="kpi-grid" id="kpiGrid">
-            <div class="kpi-card">
+            <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html?estado=activo" class="kpi-card" id="cardSociosActivos">
                 <div class="kpi-card__icon kpi-card__icon--blue">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
                 <div class="kpi-card__value kpi-card__value--loading" id="kpiSociosActivos">—</div>
                 <div class="kpi-card__label">Socios activos</div>
-            </div>
-            <div class="kpi-card">
+            </a>
+            <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html?deuda=1" class="kpi-card" id="cardSociosConDeuda">
                 <div class="kpi-card__icon kpi-card__icon--red">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 </div>
                 <div class="kpi-card__value kpi-card__value--loading" id="kpiSociosConDeuda">—</div>
                 <div class="kpi-card__label">Socios con deuda</div>
-            </div>
-            <div class="kpi-card">
+            </a>
+            <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html?deuda=1" class="kpi-card" id="cardMontoAdeudado">
                 <div class="kpi-card__icon kpi-card__icon--amber">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </div>
                 <div class="kpi-card__value kpi-card__value--loading" id="kpiMontoAdeudado">—</div>
                 <div class="kpi-card__label">Monto adeudado total</div>
-            </div>
-            <div class="kpi-card">
+            </a>
+            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="kpi-card" id="cardPagosDelMes">
                 <div class="kpi-card__icon kpi-card__icon--green">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 </div>
                 <div class="kpi-card__value kpi-card__value--loading" id="kpiPagosDelMes">—</div>
                 <div class="kpi-card__label">Pagos del mes</div>
-            </div>
-            <div class="kpi-card">
+            </a>
+            <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html" class="kpi-card" id="cardCobranzasHoy">
                 <div class="kpi-card__icon kpi-card__icon--violet">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 </div>
                 <div class="kpi-card__value kpi-card__value--loading" id="kpiCobranzasHoy">—</div>
                 <div class="kpi-card__label">Cobranzas hoy</div>
-            </div>
+            </a>
         </div>
 
         <!-- Notificaciones sin leer -->
-        <div class="notif-card" id="notifCard">
+        <a href="/centro-de-jubilados-primavera/public/views/notificaciones/index.html?estado=no_leida" class="notif-card" id="notifCard">
             <div class="notif-card__left">
                 <div class="notif-card__dot"></div>
                 <div>
@@ -355,8 +382,8 @@
                     <div class="notif-card__label">Notificaciones sin leer</div>
                 </div>
             </div>
-            <a href="/centro-de-jubilados-primavera/public/views/notificaciones/index.html" class="btn btn--secondary btn--sm">Ver notificaciones</a>
-        </div>
+            <span class="btn btn--secondary btn--sm">Ver notificaciones</span>
+        </a>
 
         <!-- Sección inferior: actividad reciente y accesos rápidos -->
         <div class="dash-grid">
@@ -391,7 +418,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                         Generar planilla
                     </a>
-                    <a href="/centro-de-jubilados-primavera/public/views/pagos/listado.html#cobro" class="quick-access-link" id="btnCobroSede">
+                    <a href="/centro-de-jubilados-primavera/public/views/pagos/cobro-sede.html" class="quick-access-link" id="btnCobroSede">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                         Terminal de cobro
                     </a>
@@ -525,6 +552,46 @@
             .replace(/"/g, '&quot;');
     }
 
+    // ─── Enlaces dinámicos de tarjetas KPI ──────────────────────────────────────
+    function actualizarEnlacesDashboard() {
+        var hoy = new Date();
+        var yyyy = hoy.getFullYear();
+        var mm = String(hoy.getMonth() + 1).padStart(2, '0');
+        var dd = String(hoy.getDate()).padStart(2, '0');
+        var fechaHoy = yyyy + '-' + mm + '-' + dd;
+        var primerDiaMes = yyyy + '-' + mm + '-01';
+
+        var cardActivos = document.getElementById('cardSociosActivos');
+        if (cardActivos) {
+            cardActivos.href = BASE_URL + '/views/socios/padron.html?estado=activo';
+        }
+
+        var cardDeuda = document.getElementById('cardSociosConDeuda');
+        if (cardDeuda) {
+            cardDeuda.href = BASE_URL + '/views/socios/padron.html?deuda=1';
+        }
+
+        var cardMonto = document.getElementById('cardMontoAdeudado');
+        if (cardMonto) {
+            cardMonto.href = BASE_URL + '/views/socios/padron.html?deuda=1';
+        }
+
+        var cardPagos = document.getElementById('cardPagosDelMes');
+        if (cardPagos) {
+            cardPagos.href = BASE_URL + '/views/pagos/listado.html?fecha_desde=' + primerDiaMes + '&fecha_hasta=' + fechaHoy;
+        }
+
+        var cardCobranzas = document.getElementById('cardCobranzasHoy');
+        if (cardCobranzas) {
+            cardCobranzas.href = BASE_URL + '/views/pagos/listado.html?fecha_desde=' + fechaHoy + '&fecha_hasta=' + fechaHoy;
+        }
+
+        var cardNotif = document.getElementById('notifCard');
+        if (cardNotif) {
+            cardNotif.href = BASE_URL + '/views/notificaciones/index.html?estado=no_leida';
+        }
+    }
+
     // ─── Inicializar ──────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', function () {
         fetch(API_BASE + '/auth/me')
@@ -544,6 +611,7 @@
                         : BASE_URL + '/views/auth/login.html');
                     return;
                 }
+                actualizarEnlacesDashboard();
                 cargarMetricas();
                 cargarActividad();
                 verificarBackup();
