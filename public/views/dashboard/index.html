@@ -334,6 +334,23 @@
                class="btn btn--secondary btn--sm">Ir a Configuración</a>
         </div>
 
+        <!-- Aviso de deuda mensual no generada (solo administradores) -->
+        <div id="deudaWarning" style="display:none; margin-bottom:1rem; padding:0.875rem 1.25rem;
+             background:rgba(var(--color-estado-suspendido-rgb), .1); border:1px solid rgba(var(--color-estado-suspendido-rgb), .35);
+             border-radius:var(--radius); color:var(--color-warning-dark); font-size:0.875rem;
+             display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:0.625rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span id="deudaWarningMsg">Verificando estado de emisión de deuda...</span>
+            </div>
+            <a id="btnIrConfiguracionDeuda" href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html"
+               class="btn btn--secondary btn--sm">Ir a Configuración</a>
+        </div>
+
         <!-- Tarjetas de indicadores clave (KPI) convertidas en enlaces accesibles -->
         <div class="kpi-grid" id="kpiGrid">
             <a href="/centro-de-jubilados-primavera/public/views/socios/padron.html?estado=activo" class="kpi-card" id="cardSociosActivos">
@@ -410,7 +427,7 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                         Nuevo socio
                     </a>
-                    <a href="/centro-de-jubilados-primavera/public/views/deuda/generar.html" class="quick-access-link" id="btnGenerarDeuda">
+                    <a href="/centro-de-jubilados-primavera/public/views/deuda/configuracion-cuota.html" class="quick-access-link" id="btnGenerarDeuda">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
                         Generar deuda mensual
                     </a>
@@ -473,6 +490,33 @@
                     var el = document.getElementById(f[0]);
                     if (el) el.textContent = f[1];
                 });
+
+                // Alerta de emision de deuda mensual del periodo en curso
+                var deudaWarn = document.getElementById('deudaWarning');
+                var deudaMsg  = document.getElementById('deudaWarningMsg');
+                if (deudaWarn && deudaMsg) {
+                    if (d.deuda_mes_generada === false) {
+                        var periodoStr = d.deuda_mes_periodo || '';
+                        var mesAnioTexto = '';
+                        if (periodoStr && typeof periodoStr === 'string') {
+                            var partes = periodoStr.split('-');
+                            var nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+                            var numMes = parseInt(partes[1], 10);
+                            if (!isNaN(numMes) && numMes >= 1 && numMes <= 12 && partes[0]) {
+                                mesAnioTexto = nombresMeses[numMes - 1] + ' de ' + partes[0];
+                            }
+                        }
+                        if (!mesAnioTexto) {
+                            var fechaActual = new Date();
+                            var nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+                            mesAnioTexto = nombresMeses[fechaActual.getMonth()] + ' de ' + fechaActual.getFullYear();
+                        }
+                        deudaMsg.textContent = 'Todavia no se genero la deuda de ' + mesAnioTexto + '.';
+                        deudaWarn.style.display = 'flex';
+                    } else {
+                        deudaWarn.style.display = 'none';
+                    }
+                }
             })
             .catch(function () {
                 showAlert('No se pudieron cargar las métricas. Verifique su conexión.', 'error');
@@ -589,6 +633,11 @@
         var cardNotif = document.getElementById('notifCard');
         if (cardNotif) {
             cardNotif.href = BASE_URL + '/views/notificaciones/index.html?estado=no_leida';
+        }
+
+        var btnDeuda = document.getElementById('btnIrConfiguracionDeuda');
+        if (btnDeuda) {
+            btnDeuda.href = BASE_URL + '/views/deuda/configuracion-cuota.html';
         }
     }
 

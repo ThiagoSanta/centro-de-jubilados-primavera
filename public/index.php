@@ -33,6 +33,7 @@ use CJP\Modules\Observaciones\ObservacionController;
 use CJP\Modules\Dashboard\DashboardController;
 use CJP\Modules\Usuarios\UsuarioController;
 use CJP\Modules\Backup\BackupController;
+use CJP\Modules\Backup\RestoreController;
 
 // Carga del autoloader de Composer y archivos esenciales de configuración y base de datos
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -149,8 +150,10 @@ $router->post('/api/observaciones', [ObservacionController::class, 'agregar']);
 $router->get('/api/dashboard/metricas', [DashboardController::class, 'metricas']);
 
 // Rutas de generación y descarga de copias de seguridad
-$router->post('/api/backup/generar', [BackupController::class, 'generar']);
-$router->get('/api/backup/ultimo',   [BackupController::class, 'ultimo']);
+$router->post('/api/backup/generar',   [BackupController::class, 'generar']);
+$router->post('/api/backup/restaurar', [RestoreController::class, 'restaurar']);
+$router->get('/api/backup/ultimo',     [BackupController::class, 'ultimo']);
+$router->get('/api/backup/historial',  [BackupController::class, 'historial']);
 
 // Rutas de administración de usuarios (rutas estáticas antes de las parametrizadas)
 $router->get('/api/usuarios', [UsuarioController::class, 'getAll']);

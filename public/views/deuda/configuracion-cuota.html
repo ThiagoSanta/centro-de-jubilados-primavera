@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuración de Cuota - Centro de Jubilados Primavera</title>
+    <title>Configuración del Sistema - Centro de Jubilados Primavera</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -36,6 +36,113 @@
             padding: 1.5rem;
             border-radius: 8px;
             box-shadow: var(--shadow-sm);
+        }
+        /* Contenedor compacto del histórico de cuotas para limitar altura y evitar desbordes */
+        .table-container {
+            max-height: 220px;
+            overflow-y: auto;
+            overflow-x: auto;
+            background: var(--color-content);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+        }
+        .table-container .table {
+            min-width: 480px; /* Evita que las columnas colapsen en pantallas móviles */
+        }
+        .table-container thead th {
+            position: sticky;
+            top: 0;
+            background-color: var(--color-bg-subtle);
+            z-index: 1;
+        }
+        /* Contenedor compacto del historial de respaldos */
+        .table-container--backup {
+            max-height: 150px;
+        }
+
+        /* Grid responsivo de dos columnas para cuota y generación de deuda (Lote 3) */
+        .grid-cuota-deuda {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: stretch; /* Estira ambas tarjetas a la misma altura para alinear bordes */
+        }
+        @media (max-width: 768px) {
+            .grid-cuota-deuda {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .modal-footer {
+                flex-direction: column-reverse;
+                gap: 0.75rem;
+            }
+            .modal-footer .btn {
+                width: 100%;
+            }
+            #restaurarSection .btn {
+                width: 100%;
+            }
+            #backupSection .card__body {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            #backupSection .btn {
+                width: 100%;
+            }
+            #inputArchivoSql {
+                max-width: 100% !important;
+            }
+        }
+        .card-seccion {
+            background: var(--color-content);
+            padding: 1.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            height: 100%; /* Permite igualar la altura de ambas tarjetas en escritorio */
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        /* Estilos del modal de advertencia y resultados de deuda (Lote 3) */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--color-overlay);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal {
+            background: var(--color-content);
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-footer {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        .resultados-card {
+            display: none;
+            background: var(--color-alerta-success-bg);
+            border: 1px solid var(--color-alerta-success-border);
+            color: var(--color-estado-activo-text);
+            padding: 1.25rem;
+            border-radius: var(--radius);
+            margin-top: 1.25rem;
         }
     </style>
 </head>
@@ -101,50 +208,15 @@
         <main class="content">
             <div class="content__header">
                 <div>
-                    <h1 class="content__title">Configuración de Cuota</h1>
-                    <p class="content__subtitle">Gestiona el valor histórico y actual de la cuota social</p>
+                    <h1 class="content__title">Configuración del Sistema</h1>
+                    <p class="content__subtitle">Copias de seguridad, valor de cuota social y emisión de deuda mensual</p>
                 </div>
             </div>
 
             <div id="alertContainer"></div>
 
-            <div class="card-vigente" id="cardVigente">
-                <h2>Cargando...</h2>
-                <p>Monto vigente actual</p>
-            </div>
-
-            <form id="formCuota" class="form-inline">
-                <div class="form-group" style="flex: 1; margin: 0;">
-                    <label class="form-label" for="inputMonto">Monto ($)</label>
-                    <input type="number" id="inputMonto" class="form-control" step="0.01" min="0.01" required>
-                </div>
-                <div class="form-group" style="flex: 1; margin: 0;">
-                    <label class="form-label" for="inputFechaVigencia">Vigente Desde</label>
-                    <input type="date" id="inputFechaVigencia" class="form-control" required>
-                </div>
-                <div style="flex: 1;">
-                    <button type="submit" class="btn btn--primary" style="width: 100%;">Registrar nuevo valor</button>
-                </div>
-            </form>
-
-            <div class="table-container">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Monto</th>
-                            <th>Vigente Desde</th>
-                            <th>Registrado Por</th>
-                            <th>Fecha de Registro</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaHistorico">
-                        <tr><td colspan="4" style="text-align: center;">Cargando histórico...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Backup de base de datos -->
-            <div class="card" style="margin-top: 2rem;" id="backupSection">
+            <!-- Backup de base de datos reubicado al inicio de la pantalla de configuración -->
+            <div class="card" style="margin-bottom: 2rem;" id="backupSection">
                 <div class="card__body" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
                     <div>
                         <h2 style="font-size:var(--font-size-lg); font-weight:var(--font-weight-bold); margin:0 0 0.25rem;">Backup de base de datos</h2>
@@ -162,10 +234,166 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Tarjeta Restaurar backup ubicada debajo de #backupSection y antes de Últimos respaldos -->
+            <div class="card card-seccion" id="restaurarSection" style="margin-bottom: 2rem;">
+                <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); margin: 0 0 0.5rem; color: var(--color-estado-eliminado);">Restaurar backup</h2>
+                <p style="font-size: var(--font-size-base); color: var(--color-text-muted); margin: 0 0 1rem; line-height: 1.5;">
+                    Esta acción reemplaza <strong>TODA</strong> la base de datos (incluyendo socios, cuotas, cobros, usuarios y contraseñas) por la información del archivo de respaldo seleccionado. Antes de aplicar la restauración, el sistema genera automáticamente una copia de seguridad de resguardo en el servidor. Al concluir el proceso, se cerrará su sesión de inmediato por motivos de seguridad. <em>Aviso importante:</em> solo se aceptan copias generadas desde este sistema (los respaldos descargados antes de esta actualización no son compatibles; debe generar y descargar uno nuevo previamente con el botón superior).
+                </p>
+
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label class="form-label" for="inputArchivoSql" style="font-weight: var(--font-weight-medium); display: block; margin-bottom: 0.5rem;">
+                        Archivo de respaldo (.sql)
+                    </label>
+                    <input type="file" id="inputArchivoSql" accept=".sql" class="form-control" style="width: 100%; max-width: 480px;">
+                    <div id="msgErrorArchivoSql" style="display: none; color: var(--color-estado-eliminado); font-size: var(--font-size-sm); margin-top: 0.5rem; font-weight: var(--font-weight-medium);"></div>
+                </div>
+
+                <div>
+                    <button type="button" id="btnIniciarRestaurar" class="btn btn--danger" disabled style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                        Restaurar backup
+                    </button>
+                </div>
+            </div>
+
+            <!-- Lista compacta de ultimos respaldos realizados -->
+            <div style="margin-bottom: 2rem;">
+                <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); margin: 0 0 0.75rem;">Últimos respaldos</h2>
+                <div class="table-container table-container--backup">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha y hora</th>
+                                <th>Usuario</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaHistorialBackups">
+                            <tr><td colspan="2" style="text-align: center;">Cargando historial...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tarjeta de cuota vigente de ancho completo por encima de las dos columnas -->
+            <div class="card-vigente" id="cardVigente" style="margin-bottom: 2rem;">
+                <h2>Cargando...</h2>
+                <p>Monto vigente actual</p>
+            </div>
+
+            <!-- Bloque de dos columnas con igual altura: Registrar nueva cuota (izq) y Generar deuda mensual (der) -->
+            <div class="grid-cuota-deuda">
+                <!-- Tarjeta izquierda: Registrar nuevo valor de cuota -->
+                <div class="card-seccion">
+                    <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); margin: 0 0 1rem;">Registrar nuevo valor de cuota</h2>
+                    <form id="formCuota" style="display: flex; flex-direction: column; flex: 1;">
+                        <div class="form-group">
+                            <label class="form-label" for="inputMonto">Monto ($)</label>
+                            <input type="number" id="inputMonto" class="form-control" step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="inputFechaVigencia">Vigente Desde</label>
+                            <input type="date" id="inputFechaVigencia" class="form-control" required>
+                        </div>
+                        <div style="margin-top: auto;">
+                            <button type="submit" class="btn btn--primary" style="width: 100%;">Registrar nuevo valor</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tarjeta derecha: Generar Deuda Mensual -->
+                <div class="card-seccion">
+                    <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); margin: 0 0 0.5rem;">Generar deuda mensual</h2>
+                    <p style="font-size: var(--font-size-base); color: var(--color-text-muted); margin: 0 0 1.25rem;">Emisión masiva de deudas para socios activos según el valor vigente.</p>
+
+                    <form id="formGenerar">
+                        <div class="form-group">
+                            <label class="form-label" for="inputPeriodo">Período (Mes y Año)</label>
+                            <input type="month" id="inputPeriodo" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn--primary" style="width: 100%;">Generar deuda mensual</button>
+                        <p id="msgSinCuota" style="display: none; color: var(--color-estado-eliminado); font-size: var(--font-size-sm); margin: 0.75rem 0 0;">Debe configurar el valor de la cuota antes de poder generar deudas.</p>
+                    </form>
+
+                    <div class="resultados-card" id="resultadosCard">
+                        <h3 style="margin-top: 0; font-size: var(--font-size-md);">Resultado de la generación</h3>
+                        <p id="resGeneradas" style="margin: 0.25rem 0;">Deudas generadas: 0</p>
+                        <p id="resOmitidas" style="margin: 0.25rem 0;">Deudas omitidas (ya existían): 0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historial compacto de cuotas -->
+            <h2 style="font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); margin: 0 0 0.75rem;">Historial de valores de cuota</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Monto</th>
+                            <th>Vigente Desde</th>
+                            <th>Registrado Por</th>
+                            <th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaHistorico">
+                        <tr><td colspan="4" style="text-align: center;">Cargando histórico...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </main>
     </div>
 
+    <div class="modal-overlay" id="modalAdvertencia">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloModalAdvertencia">
+            <h2 id="tituloModalAdvertencia" style="margin-top: 0; color: var(--color-estado-eliminado);">¡Atención! Deudas duplicadas</h2>
+            <p>Se ha detectado que <strong id="cantDuplicados">0</strong> socios ya tienen deuda generada para este período.</p>
+            <p>¿Desea continuar de todas formas? Esto sobrescribirá el estado de esas deudas a "Pendiente".</p>
+            <div class="modal-footer">
+                <button type="button" class="btn btn--secondary" onclick="cerrarModalAdvertencia()">Cancelar</button>
+                <button type="button" class="btn btn--primary" id="btnConfirmarDuplicados">Confirmar de todas formas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación de restauración de backup -->
+    <div class="modal-overlay" id="modalRestaurar" style="display: none;">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloModalRestaurar">
+            <h2 id="tituloModalRestaurar" style="margin-top: 0; color: var(--color-estado-eliminado);">Acción destructiva e irreversible</h2>
+            <p style="margin-bottom: 0.75rem;">
+                Está a punto de restaurar la base de datos completa. Todos los registros actuales del sistema serán eliminados y sustituidos por los contenidos en el archivo:
+            </p>
+            <div style="background-color: var(--color-bg-subtle); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 0.75rem; margin-bottom: 1rem; font-size: var(--font-size-sm);">
+                <div><strong>Archivo:</strong> <span id="txtModalNombreArchivo">-</span></div>
+                <div style="margin-top: 0.25rem;"><strong>Tamaño:</strong> <span id="txtModalTamanoArchivo">-</span></div>
+            </div>
+            <p style="color: var(--color-estado-eliminado); font-weight: var(--font-weight-medium); margin-bottom: 1rem;">
+                Advertencia: Esta acción no se puede deshacer de forma automática. Aunque se guardará un respaldo previo en el servidor, si el archivo restaurado contiene usuarios o datos desactualizados, se perderán las operaciones recientes y se cerrará su sesión de inmediato.
+            </p>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="inputConfirmacionRestaurar" class="form-label" style="display: block; font-weight: var(--font-weight-medium); margin-bottom: 0.5rem;">
+                    Para confirmar, escriba exactamente la palabra <strong>RESTAURAR</strong>:
+                </label>
+                <input type="text" id="inputConfirmacionRestaurar" class="form-control" autocomplete="off" placeholder="RESTAURAR" style="width: 100%;">
+            </div>
+            <div id="msgProgresoRestauracion" style="display: none; margin-bottom: 1rem; font-weight: var(--font-weight-medium); color: var(--color-accent);">
+                Restaurando la base de datos. No cierre ni recargue esta ventana.
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnCancelarRestaurar" class="btn btn--secondary" onclick="cerrarModalRestaurar()">Cancelar</button>
+                <button type="button" id="btnConfirmarRestaurarModal" class="btn btn--danger" disabled>Confirmar restauración</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        /* --- Variables de estado de generación de deuda (Lote 3) --- */
+        let periodoActual = '';
+        let _modalAdvTrap = null;
+
         /* --- Inicialización y autenticación --- */
         document.addEventListener('DOMContentLoaded', () => {
             fetch(API_BASE + '/auth/me')
@@ -187,6 +415,7 @@
                     cargarCuotaVigente();
                     cargarHistorico();
                     cargarUltimoBackup();
+                    cargarHistorialBackups();
 
                     document.getElementById('formCuota').addEventListener('submit', async (e) => {
                         e.preventDefault();
@@ -213,6 +442,36 @@
                             mostrarAlerta('Error de red al registrar cuota.', 'error');
                         }
                     });
+
+                    // Manejadores de eventos para la generación de deuda mensual (Lote 3)
+                    document.getElementById('formGenerar').addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        periodoActual = document.getElementById('inputPeriodo').value;
+                        await procesarGeneracion(false);
+                    });
+
+                    document.getElementById('btnConfirmarDuplicados').addEventListener('click', async () => {
+                        cerrarModalAdvertencia();
+                        await procesarGeneracion(true);
+                    });
+
+                    // Eventos para la tarjeta de restauración de backup
+                    const inputSql = document.getElementById('inputArchivoSql');
+                    inputSql.addEventListener('change', function () {
+                        validarArchivoSeleccionado(this.files && this.files[0]);
+                    });
+
+                    document.getElementById('btnIniciarRestaurar').addEventListener('click', () => {
+                        abrirModalRestaurar();
+                    });
+
+                    document.getElementById('inputConfirmacionRestaurar').addEventListener('input', function () {
+                        document.getElementById('btnConfirmarRestaurarModal').disabled = (this.value !== 'RESTAURAR');
+                    });
+
+                    document.getElementById('btnConfirmarRestaurarModal').addEventListener('click', async () => {
+                        await ejecutarRestauracion();
+                    });
                 })
                 .catch(() => {
                     window.location.replace(BASE_URL + '/views/auth/login.html');
@@ -226,20 +485,251 @@
                 const data = await res.json();
                 
                 const card = document.getElementById('cardVigente');
+                const btnSubmitGenerar = document.querySelector('#formGenerar button[type="submit"]');
+                const msgSinCuota = document.getElementById('msgSinCuota');
+
                 if (data.success && data.data) {
                     const monto = parseFloat(data.data.monto).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
                     card.innerHTML = `
                         <h2>${monto}</h2>
                         <p>Vigente desde: ${new Date(data.data.fecha_vigencia_desde).toLocaleDateString('es-AR')}</p>
                     `;
+                    // Habilitar emisión de deuda si hay cuota configurada
+                    if (btnSubmitGenerar) btnSubmitGenerar.disabled = false;
+                    if (msgSinCuota) msgSinCuota.style.display = 'none';
                 } else {
                     card.innerHTML = `
                         <h2>Sin cuota</h2>
                         <p>No hay cuotas configuradas aún</p>
                     `;
+                    // Deshabilitar emisión de deuda y alertar si falta la cuota
+                    if (btnSubmitGenerar) btnSubmitGenerar.disabled = true;
+                    if (msgSinCuota) msgSinCuota.style.display = 'block';
                 }
             } catch (err) {
                 console.error(err);
+            }
+        }
+
+        /* --- Procesamiento de emisión masiva de deuda (Lote 3) --- */
+        async function procesarGeneracion(confirmarDuplicado) {
+            const btnSubmit = document.querySelector('#formGenerar button[type="submit"]');
+            const btnDuplicados = document.getElementById('btnConfirmarDuplicados');
+
+            if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.textContent = 'Generando...'; }
+            if (btnDuplicados) btnDuplicados.disabled = true;
+
+            try {
+                const data = await fetchJson(`${API_BASE}/deuda/generar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        periodo: periodoActual,
+                        confirmar_duplicado: confirmarDuplicado
+                    })
+                });
+
+                if (data.success) {
+                    const result = data.data;
+
+                    if (result.advertencias && result.advertencias.length > 0 && !confirmarDuplicado) {
+                        // Advertir al usuario si se detectan deudas previas en el período seleccionado
+                        document.getElementById('cantDuplicados').textContent = result.advertencias.length;
+                        const modalAdvEl = document.getElementById('modalAdvertencia');
+                        modalAdvEl.style.display = 'flex';
+                        _modalAdvTrap = initFocusTrap(modalAdvEl);
+                    } else {
+                        // Resumen exitoso de la generación
+                        document.getElementById('resultadosCard').style.display = 'block';
+                        document.getElementById('resGeneradas').textContent = `Deudas generadas: ${result.generadas}`;
+                        document.getElementById('resOmitidas').textContent = `Deudas omitidas (ya existían): ${result.omitidas}`;
+                        mostrarAlerta('Proceso completado.', 'success');
+                    }
+                } else {
+                    mostrarAlerta(data.message || 'Error al generar deuda.', 'error');
+                }
+            } catch (err) {
+                mostrarAlerta(clasificarErrorRed(err), 'error');
+            } finally {
+                if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = 'Generar deuda mensual'; }
+                if (btnDuplicados) btnDuplicados.disabled = false;
+            }
+        }
+
+        function cerrarModalAdvertencia() {
+            if (_modalAdvTrap) { _modalAdvTrap.destroy(); _modalAdvTrap = null; }
+            const m = document.getElementById('modalAdvertencia');
+            if (m) m.style.display = 'none';
+        }
+
+        function cerrarModalRestaurar() {
+            if (_estaRestaurando) return; // Prevenir cierre accidental mientras se procesa la restauracion
+            if (_modalRestaurTrap) { _modalRestaurTrap.destroy(); _modalRestaurTrap = null; }
+            const m = document.getElementById('modalRestaurar');
+            if (m) m.style.display = 'none';
+            const inputConf = document.getElementById('inputConfirmacionRestaurar');
+            if (inputConf) inputConf.value = '';
+            const btnConf = document.getElementById('btnConfirmarRestaurarModal');
+            if (btnConf) btnConf.disabled = true;
+        }
+
+        // Funcion despachadora para compatibilidad con el listener global de Escape en app.js
+        function cerrarModal() {
+            const modalRestaurar = document.getElementById('modalRestaurar');
+            if (modalRestaurar && modalRestaurar.style.display === 'flex') {
+                cerrarModalRestaurar();
+            } else {
+                cerrarModalAdvertencia();
+            }
+        }
+
+        // Cierre accesible de modales por clic en fondo
+        document.getElementById('modalAdvertencia').addEventListener('click', function (e) {
+            if (e.target === this) cerrarModalAdvertencia();
+        });
+
+        document.getElementById('modalRestaurar').addEventListener('click', function (e) {
+            if (e.target === this) cerrarModalRestaurar();
+        });
+
+        // Cierre accesible por tecla Escape local
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                if (_estaRestaurando) return;
+                const modalRest = document.getElementById('modalRestaurar');
+                if (modalRest && modalRest.style.display === 'flex') {
+                    cerrarModalRestaurar();
+                    return;
+                }
+                const modalAdv = document.getElementById('modalAdvertencia');
+                if (modalAdv && modalAdv.style.display === 'flex') {
+                    cerrarModalAdvertencia();
+                }
+            }
+        });
+
+        /* --- Logica de restauracion de base de datos --- */
+        let _modalRestaurTrap = null;
+        let archivoSeleccionadoSql = null;
+        let _estaRestaurando = false;
+
+        function validarArchivoSeleccionado(file) {
+            const msgError = document.getElementById('msgErrorArchivoSql');
+            const btnIniciar = document.getElementById('btnIniciarRestaurar');
+            const MAX_BYTES = 20 * 1024 * 1024; // 20 MB
+
+            msgError.style.display = 'none';
+            msgError.textContent = '';
+            btnIniciar.disabled = true;
+            archivoSeleccionadoSql = null;
+
+            if (!file) return;
+
+            const nombre = file.name || '';
+            if (!nombre.toLowerCase().endsWith('.sql')) {
+                msgError.textContent = 'El archivo seleccionado debe tener extensión .sql.';
+                msgError.style.display = 'block';
+                return;
+            }
+
+            if (file.size > MAX_BYTES) {
+                const mb = (file.size / (1024 * 1024)).toFixed(2);
+                msgError.textContent = `El archivo supera el tamaño máximo permitido de 20 MB (tamaño actual: ${mb} MB).`;
+                msgError.style.display = 'block';
+                return;
+            }
+
+            archivoSeleccionadoSql = file;
+            btnIniciar.disabled = false;
+        }
+
+        function abrirModalRestaurar() {
+            if (!archivoSeleccionadoSql) return;
+
+            document.getElementById('txtModalNombreArchivo').textContent = archivoSeleccionadoSql.name;
+            const tamanoMb = (archivoSeleccionadoSql.size / (1024 * 1024)).toFixed(2);
+            document.getElementById('txtModalTamanoArchivo').textContent = `${archivoSeleccionadoSql.size.toLocaleString('es-AR')} bytes (${tamanoMb} MB)`;
+
+            const inputConf = document.getElementById('inputConfirmacionRestaurar');
+            inputConf.value = '';
+            document.getElementById('btnConfirmarRestaurarModal').disabled = true;
+
+            const modalEl = document.getElementById('modalRestaurar');
+            modalEl.style.display = 'flex';
+            _modalRestaurTrap = initFocusTrap(modalEl);
+        }
+
+        function alternarControlesRestauracion(deshabilitar) {
+            document.getElementById('inputArchivoSql').disabled = deshabilitar;
+            document.getElementById('btnIniciarRestaurar').disabled = deshabilitar || !archivoSeleccionadoSql;
+            document.getElementById('inputConfirmacionRestaurar').disabled = deshabilitar;
+            document.getElementById('btnCancelarRestaurar').disabled = deshabilitar;
+            document.getElementById('btnConfirmarRestaurarModal').disabled = deshabilitar || (document.getElementById('inputConfirmacionRestaurar').value !== 'RESTAURAR');
+            document.getElementById('msgProgresoRestauracion').style.display = deshabilitar ? 'block' : 'none';
+        }
+
+        async function ejecutarRestauracion() {
+            if (!archivoSeleccionadoSql) return;
+            const inputConf = document.getElementById('inputConfirmacionRestaurar');
+            if (inputConf.value !== 'RESTAURAR') return;
+
+            _estaRestaurando = true;
+            alternarControlesRestauracion(true);
+
+            const formData = new FormData();
+            formData.append('archivo', archivoSeleccionadoSql);
+            formData.append('confirmacion', inputConf.value);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 300_000); // 300 segundos
+
+            try {
+                const res = await fetch(`${API_BASE}/backup/restaurar`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    signal: controller.signal,
+                    body: formData
+                });
+
+                let data = null;
+                const text = await res.text();
+                if (text) {
+                    try { data = JSON.parse(text); } catch (e) {
+                        throw new Error(`Respuesta inválida del servidor (${res.status}).`);
+                    }
+                }
+
+                if (!res.ok) {
+                    let mensajeError = data?.message || `Error en el servidor (${res.status}).`;
+                    if (res.status === 500) {
+                        mensajeError += ' Se guardó una copia de seguridad en storage/backups. Debe contactar al administrador técnico.';
+                    }
+                    _estaRestaurando = false;
+                    cerrarModalRestaurar();
+                    alternarControlesRestauracion(false);
+                    mostrarAlerta(mensajeError, 'error', false);
+                    return;
+                }
+
+                // Éxito: cerrar modal y alertar antes de redirigir
+                _estaRestaurando = false;
+                cerrarModalRestaurar();
+                const mensajeExito = data?.message || 'Base de datos restaurada. Por seguridad se cerró la sesión: vuelva a iniciar sesión.';
+                mostrarAlerta(mensajeExito, 'success', false);
+
+                // Redirigir a login tras 3 segundos sin invocar APIs adicionales
+                setTimeout(() => {
+                    window.location.replace(BASE_URL + '/views/auth/login.html');
+                }, 3000);
+
+            } catch (err) {
+                _estaRestaurando = false;
+                cerrarModalRestaurar();
+                alternarControlesRestauracion(false);
+                const mensajeError = clasificarErrorRed(err);
+                mostrarAlerta(mensajeError, 'error', false);
+            } finally {
+                clearTimeout(timeoutId);
             }
         }
 
@@ -278,7 +768,7 @@
                 .replace(/'/g, '&#039;');
         }
 
-        function mostrarAlerta(mensaje, tipo) {
+        function mostrarAlerta(mensaje, tipo, autoCerrar = true) {
             const container = document.getElementById('alertContainer');
             const alert = document.createElement('div');
             // Asignación de clases del sistema para coherencia visual con main.css
@@ -288,7 +778,9 @@
             container.innerHTML = '';
             container.appendChild(alert);
             
-            setTimeout(() => { alert.remove(); }, 5000);
+            if (autoCerrar) {
+                setTimeout(() => { alert.remove(); }, 5000);
+            }
         }
 
         /* --- Gestión de copias de seguridad (Backup) --- */
@@ -333,11 +825,49 @@
                 URL.revokeObjectURL(url);
                 mostrarAlerta('Backup generado y descargado con éxito.', 'success');
                 cargarUltimoBackup();
+                cargarHistorialBackups();
             } catch (e) {
                 mostrarAlerta('Error de red al generar el backup.', 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Descargar backup ahora';
+            }
+        }
+
+        /* --- Cargar historial de respaldos de base de datos --- */
+        async function cargarHistorialBackups() {
+            const tbody = document.getElementById('tablaHistorialBackups');
+            if (!tbody) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/backup/historial`);
+                if (!res.ok) {
+                    tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--color-estado-eliminado);">Error al cargar el historial de respaldos.</td></tr>';
+                    return;
+                }
+                const resData = await res.json();
+                const lista = (resData.success && Array.isArray(resData.data)) ? resData.data : [];
+
+                if (lista.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--color-text-muted);">Todavia no se realizo ningun respaldo</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = lista.map(item => {
+                    const fechaObj = new Date(item.fecha_hora);
+                    const fechaTxt = isNaN(fechaObj.getTime()) ? item.fecha_hora : fechaObj.toLocaleString('es-AR');
+                    const usuarioTxt = item.usuario_nombre || 'Sistema';
+
+                    return `
+                        <tr>
+                            <td>${escapeHtml(fechaTxt)}</td>
+                            <td>${escapeHtml(usuarioTxt)}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--color-estado-eliminado);">Error de conexión al cargar el historial.</td></tr>';
             }
         }
     </script>
