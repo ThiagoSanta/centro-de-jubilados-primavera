@@ -33,6 +33,12 @@ define('TEST_DNI',      '99999998');   // DNI reservado para socio de prueba pri
 define('TEST_DNI2',     '99999997');   // DNI reservado para segundo socio de prueba
 define('TEST_DNI_PUNTOS', '99.888.777'); // DNI con puntos para prueba de normalizacion
 define('TEST_DNI_NORMALIZADO', '99888777'); // DNI normalizado esperado para limpieza
+// Valores exactos usados por el BLOQUE 16 al crear la cuota de prueba via POST /api/cuota.
+// Se definen como constantes para que el borrado en limpieza use exactamente los mismos
+// valores y nunca pueda borrar una cuota real (que tendria una fecha en el rango actual).
+define('TEST_CUOTA_MONTO',        500.00);      // monto fijo que usa el bloque 16
+define('TEST_CUOTA_FECHA',        '2099-06-01'); // fecha_vigencia_desde que usa el bloque 16
+define('TEST_CUOTA_FECHA_MINIMA', '2099-01-01'); // umbral para el WHERE: cubre corridas acumuladas
 
 // ============================================================
 //  ESTADO GLOBAL
@@ -92,10 +98,10 @@ function apiRequest(string $method, string $path, ?array $body = null, ?string $
 }
 
 /**
- * Sube un archivo local al endpoint de importacion CSV via multipart/form-data.
+ * Sube un archivo local al endpoint especificado via multipart/form-data.
  * Retorna el mismo formato que apiRequest: ['status' => int, 'body' => array|string].
  */
-function apiRequestUpload(string $path, string $rutaArchivo, ?string $cookie = null): array
+function apiRequestUpload(string $path, string $rutaArchivo, ?string $cookie = null, array $extraFields = []): array
 {
     $url = BASE_URL . $path;
     $ch  = curl_init($url);
@@ -104,10 +110,12 @@ function apiRequestUpload(string $path, string $rutaArchivo, ?string $cookie = n
     curl_setopt($ch, CURLOPT_TIMEOUT,        20);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 
-    // cURL gestiona el Content-Type multipart/form-data automaticamente al recibir CURLFile
-    $postFields = [
-        'archivo' => new CURLFile($rutaArchivo, 'text/csv', basename($rutaArchivo)),
-    ];
+    $postFields = $extraFields;
+    if ($rutaArchivo !== '' && file_exists($rutaArchivo)) {
+        $ext = strtolower(pathinfo($rutaArchivo, PATHINFO_EXTENSION));
+        $mime = ($ext === 'sql' || $ext === 'txt') ? 'text/plain' : 'text/csv';
+        $postFields['archivo'] = new CURLFile($rutaArchivo, $mime, basename($rutaArchivo));
+    }
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postFields);
 
     $headers = ['Accept: application/json'];
@@ -366,6 +374,21 @@ if (in_array('--limpiar', $argv ?? [], true)) {
             $pdo->prepare("DELETE FROM importacion_inconsistencias WHERE datos_registro LIKE '%TEST_Csv%'")->execute();
         } catch (Exception $e) { /* ignorar si la tabla no existe */ }
 
+        // 8.b. Limpiar cuotas de prueba acumuladas del BLOQUE 16.
+        // El WHERE combina fecha_vigencia_desde >= TEST_CUOTA_FECHA_MINIMA (anno 2099) con el
+        // monto exacto de prueba. Esta combinacion hace imposible borrar cuotas reales:
+        // ninguna cuota de produccion tendra fecha en el siglo XXII.
+        // No hay claves foraneas apuntando a configuracion_cuota (verificado con INFORMATION_SCHEMA).
+        $deletedCuotas = 0;
+        try {
+            $sCuota = $pdo->prepare(
+                "DELETE FROM configuracion_cuota
+                 WHERE fecha_vigencia_desde >= ? AND monto = ?"
+            );
+            $sCuota->execute([TEST_CUOTA_FECHA_MINIMA, TEST_CUOTA_MONTO]);
+            $deletedCuotas = $sCuota->rowCount();
+        } catch (Exception $e) { /* ignorar si la tabla no existe en este entorno */ }
+
         $pdo->commit();
 
         echo "  Auditoría eliminada     : {$deletedAuditoria}" . PHP_EOL;
@@ -375,6 +398,7 @@ if (in_array('--limpiar', $argv ?? [], true)) {
         echo "  Socios eliminados       : {$deletedSocios}"    . PHP_EOL;
         echo "  Usuarios TEST_ borrados : {$deletedUsuarios}"  . PHP_EOL;
         echo "  Notificaciones elim.    : {$deletedNotificaciones}" . PHP_EOL;
+        echo "  Cuotas TEST_ borradas   : {$deletedCuotas}"   . PHP_EOL;
         echo PHP_EOL;
         echo "\033[32m  Limpieza completada exitosamente.\033[0m" . PHP_EOL . PHP_EOL;
     } catch (Exception $e) {
@@ -1104,8 +1128,8 @@ if ($ctx['socio_id']) {
 
 section('BLOQUE 16: Cuotas -- Registrar');
 $r = apiRequest('POST', '/api/cuota', [
-    'monto'                => 500.00,
-    'fecha_vigencia_desde' => '2099-06-01',
+    'monto'                => TEST_CUOTA_MONTO,
+    'fecha_vigencia_desde' => TEST_CUOTA_FECHA,
     'descripcion'          => 'TEST_ cuota de prueba automatizada',
 ], $adminCookie);
 $ctx['tests']++;
@@ -1149,10 +1173,126 @@ if ($deudaExonerarId) {
 }
 
 // ============================================================
-//  BLOQUE 18 — LOGOUT
+//  BLOQUE 18 — HISTORIAL DE BACKUPS Y METRICAS DE DEUDA
 // ============================================================
 
-section('BLOQUE 18: Logout');
+section('BLOQUE 18: Historial de backups y metricas de deuda');
+
+// GET /api/backup/historial - admin debe recibir 200 con array en data
+$r = apiRequest('GET', '/api/backup/historial', null, $adminCookie);
+assertStatus($ctx, 'GET /api/backup/historial (admin) -> 200', 'GET', '/api/backup/historial', 200, $r);
+$ctx['tests']++;
+// Verificar que la respuesta contiene un array en data (puede estar vacio si no hay backups)
+if (isset($r['body']['success']) && $r['body']['success'] === true && isset($r['body']['data']) && is_array($r['body']['data'])) {
+    $ctx['passed']++;
+    echo "  GET /api/backup/historial data es array                        \033[32mOK\033[0m" . PHP_EOL;
+} else {
+    $ctx['failed']++;
+    $det = is_array($r['body']) ? ($r['body']['message'] ?? json_encode($r['body'])) : $r['body'];
+    $ctx['failures'][] = "GET /api/backup/historial: data no es array -> {$det}";
+    echo "  GET /api/backup/historial data no es array                     \033[31mFALLO\033[0m" . PHP_EOL;
+}
+
+// GET /api/backup/historial - cobrador debe recibir 403
+if ($ctx['cobrador_cookie']) {
+    $r = apiRequest('GET', '/api/backup/historial', null, $ctx['cobrador_cookie']);
+    assertStatus($ctx, 'GET /api/backup/historial (cobrador) -> 403', 'GET', '/api/backup/historial', 403, $r);
+}
+
+// GET /api/backup/historial - sin sesion debe recibir 401
+$r = apiRequest('GET', '/api/backup/historial', null, null);
+assertStatus($ctx, 'GET /api/backup/historial (sin sesion) -> 401', 'GET', '/api/backup/historial', 401, $r);
+
+// GET /api/dashboard/metricas - verificar que devuelve deuda_mes_generada como booleano
+$r = apiRequest('GET', '/api/dashboard/metricas', null, $adminCookie);
+assertStatus($ctx, 'GET /api/dashboard/metricas (con deuda_mes_generada) -> 200', 'GET', '/api/dashboard/metricas', 200, $r);
+$ctx['tests']++;
+// deuda_mes_generada debe ser un booleano (true o false) en el payload
+if (
+    isset($r['body']['success']) && $r['body']['success'] === true
+    && isset($r['body']['data']['deuda_mes_generada'])
+    && is_bool($r['body']['data']['deuda_mes_generada'])
+) {
+    $ctx['passed']++;
+    $val = $r['body']['data']['deuda_mes_generada'] ? 'true' : 'false';
+    echo "  GET /api/dashboard/metricas deuda_mes_generada es bool ({$val})  \033[32mOK\033[0m" . PHP_EOL;
+} else {
+    $ctx['failed']++;
+    $det = is_array($r['body']) ? json_encode($r['body']['data'] ?? $r['body']) : $r['body'];
+    $ctx['failures'][] = "GET /api/dashboard/metricas: deuda_mes_generada no es bool -> {$det}";
+    echo "  GET /api/dashboard/metricas deuda_mes_generada no es bool       \033[31mFALLO\033[0m" . PHP_EOL;
+}
+
+// ============================================================
+//  BLOQUE 19 — RESTAURAR BACKUP - SEGURIDAD
+// ============================================================
+
+section('BLOQUE 19: Restaurar backup - seguridad');
+
+$env = loadEnv();
+$dbName = $env['DB_NAME'] ?? 'centro_jubilados_primavera';
+
+// 1. sin sesion -> 401
+$r = apiRequestUpload('/api/backup/restaurar', '', null);
+assertStatus($ctx, 'POST /api/backup/restaurar (sin sesion) -> 401', 'POST', '/api/backup/restaurar', 401, $r);
+
+// 2. con cobrador -> 403
+if ($ctx['cobrador_cookie']) {
+    $r = apiRequestUpload('/api/backup/restaurar', '', $ctx['cobrador_cookie']);
+    assertStatus($ctx, 'POST /api/backup/restaurar (cobrador) -> 403', 'POST', '/api/backup/restaurar', 403, $r);
+}
+
+// 3. administrador sin confirmacion -> 400
+$tmpSinConf = tempnam(sys_get_temp_dir(), 'test_rest_');
+file_put_contents($tmpSinConf, "-- CJP-BACKUP-V1\n");
+$r = apiRequestUpload('/api/backup/restaurar', $tmpSinConf, $adminCookie, []);
+@unlink($tmpSinConf);
+assertStatus($ctx, 'POST /api/backup/restaurar (sin confirmacion) -> 400', 'POST', '/api/backup/restaurar', 400, $r);
+
+// 4. administrador con confirmacion pero sin archivo -> 400
+$r = apiRequestUpload('/api/backup/restaurar', '', $adminCookie, ['confirmacion' => 'RESTAURAR']);
+assertStatus($ctx, 'POST /api/backup/restaurar (con confirmacion sin archivo) -> 400', 'POST', '/api/backup/restaurar', 400, $r);
+
+// 5. archivo .txt -> 400
+$tmpTxt = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test_backup_' . uniqid() . '.txt';
+file_put_contents($tmpTxt, "Contenido plano no SQL\n");
+$r = apiRequestUpload('/api/backup/restaurar', $tmpTxt, $adminCookie, ['confirmacion' => 'RESTAURAR']);
+@unlink($tmpTxt);
+assertStatus($ctx, 'POST /api/backup/restaurar (archivo .txt) -> 400', 'POST', '/api/backup/restaurar', 400, $r);
+
+// 6. .sql sin cabecera CJP -> 400
+$tmpNoCjp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test_backup_' . uniqid() . '.sql';
+file_put_contents($tmpNoCjp, "-- MySQL dump 10.13\nSELECT 1;\n-- Dump completed\n");
+$r = apiRequestUpload('/api/backup/restaurar', $tmpNoCjp, $adminCookie, ['confirmacion' => 'RESTAURAR']);
+@unlink($tmpNoCjp);
+assertStatus($ctx, 'POST /api/backup/restaurar (.sql sin cabecera CJP) -> 400', 'POST', '/api/backup/restaurar', 400, $r);
+
+// 7. .sql con cabecera CJP pero "-- Base: otra_base" -> 400
+$tmpOtraBase = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test_backup_' . uniqid() . '.sql';
+file_put_contents($tmpOtraBase, "-- CJP-BACKUP-V1\n-- Base: otra_base_invalida\n-- Dump completed\n");
+$r = apiRequestUpload('/api/backup/restaurar', $tmpOtraBase, $adminCookie, ['confirmacion' => 'RESTAURAR']);
+@unlink($tmpOtraBase);
+assertStatus($ctx, 'POST /api/backup/restaurar (.sql con cabecera CJP pero otra base) -> 400', 'POST', '/api/backup/restaurar', 400, $r);
+
+// 8. .sql con cabecera y base correctas pero con una linea "DROP DATABASE x;" -> 400
+$tmpDropDb = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test_backup_' . uniqid() . '.sql';
+file_put_contents($tmpDropDb, "-- CJP-BACKUP-V1\n-- Base: {$dbName}\nDROP DATABASE x;\n-- Dump completed\n");
+$r = apiRequestUpload('/api/backup/restaurar', $tmpDropDb, $adminCookie, ['confirmacion' => 'RESTAURAR']);
+@unlink($tmpDropDb);
+assertStatus($ctx, 'POST /api/backup/restaurar (.sql con sentencia DROP DATABASE) -> 400', 'POST', '/api/backup/restaurar', 400, $r);
+
+// 9. .sql con cabecera y base correctas pero sin "-- Dump completed" -> 400
+$tmpTruncado = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'test_backup_' . uniqid() . '.sql';
+file_put_contents($tmpTruncado, "-- CJP-BACKUP-V1\n-- Base: {$dbName}\n-- Archivo truncado sin marca final\n");
+$r = apiRequestUpload('/api/backup/restaurar', $tmpTruncado, $adminCookie, ['confirmacion' => 'RESTAURAR']);
+@unlink($tmpTruncado);
+assertStatus($ctx, 'POST /api/backup/restaurar (.sql sin -- Dump completed) -> 400', 'POST', '/api/backup/restaurar', 400, $r);
+
+// ============================================================
+//  BLOQUE 20 — LOGOUT
+// ============================================================
+
+section('BLOQUE 20: Logout');
 $r = apiRequest('POST', '/api/auth/logout', null, $adminCookie);
 assertStatus($ctx, 'POST /api/auth/logout (admin) -> 200', 'POST', '/api/auth/logout', 200, $r);
 $r = apiRequest('GET', '/api/socios', null, $adminCookie);
@@ -1163,10 +1303,10 @@ if ($ctx['cobrador_cookie']) {
 }
 
 // ============================================================
-//  BLOQUE 19 — LIMPIEZA FINAL (respetando FKs)
+//  BLOQUE 21 — LIMPIEZA FINAL (respetando FKs)
 // ============================================================
 
-section('BLOQUE 19: Limpieza de datos TEST_');
+section('BLOQUE 21: Limpieza de datos TEST_');
 echo "  Conectando a la base de datos para limpieza directa..." . PHP_EOL;
 $cleaned = false;
 try {
@@ -1269,6 +1409,18 @@ try {
         }
         // Borrado de seguridad: inconsistencias con nombre de prueba en datos_registro
         $pdo->prepare("DELETE FROM importacion_inconsistencias WHERE datos_registro LIKE '%TEST_Csv%'")->execute();
+    } catch (Exception $e) { /* ignorar si la tabla no existe en este entorno */ }
+
+    // 9. Limpiar cuotas de prueba acumuladas del BLOQUE 16.
+    // El WHERE combina fecha_vigencia_desde >= TEST_CUOTA_FECHA_MINIMA (anno 2099) con el
+    // monto exacto de prueba. Esta combinacion hace imposible borrar cuotas reales:
+    // ninguna cuota de produccion tendra fecha en el siglo XXII.
+    // No hay claves foraneas apuntando a configuracion_cuota (verificado con INFORMATION_SCHEMA).
+    try {
+        $pdo->prepare(
+            "DELETE FROM configuracion_cuota
+             WHERE fecha_vigencia_desde >= ? AND monto = ?"
+        )->execute([TEST_CUOTA_FECHA_MINIMA, TEST_CUOTA_MONTO]);
     } catch (Exception $e) { /* ignorar si la tabla no existe en este entorno */ }
 
     $pdo->commit();

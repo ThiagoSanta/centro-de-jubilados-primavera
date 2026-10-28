@@ -55,4 +55,16 @@ class BackupController
         $info = $this->backupService->getUltimoBackup();
         ResponseHelper::success($info, $info ? 'Último backup encontrado.' : 'No hay backups registrados.');
     }
+
+    /**
+     * GET /api/backup/historial — admin-only
+     * Retorna los últimos 20 respaldos registrados en el sistema.
+     */
+    public function historial(array $params = []): void
+    {
+        AuthMiddleware::requireAuth('administrador');
+
+        $historial = $this->backupService->getHistorialBackups();
+        ResponseHelper::success($historial, 'Historial de backups obtenido correctamente.');
+    }
 }

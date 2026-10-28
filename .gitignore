@@ -5,6 +5,9 @@
 
 /storage/cache/
 
+/storage/backups/*
+!/storage/backups/.gitkeep
+
 .env
 
 *.env

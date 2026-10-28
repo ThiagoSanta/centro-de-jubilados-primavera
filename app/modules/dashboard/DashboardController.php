@@ -85,6 +85,13 @@ class DashboardController
         $stmt->execute();
         $notificacionesSinLeer = (int) $stmt->fetchColumn();
 
+        // Métrica 7: Alerta de deuda del mes en curso
+        // Se evalúa si ya existe al menos una deuda registrada para el período mensual actual ('YYYY-MM')
+        $periodoActual = (new \DateTimeImmutable())->format('Y-m');
+        $stmt = $db->prepare("SELECT COUNT(*) FROM deudas WHERE periodo = :periodo LIMIT 1");
+        $stmt->execute(['periodo' => $periodoActual]);
+        $deudaMesGenerada = ((int) $stmt->fetchColumn()) > 0;
+
         ResponseHelper::success([
             'socios_activos'           => $sociosActivos,
             'socios_con_deuda'         => $sociosConDeuda,
@@ -92,6 +99,8 @@ class DashboardController
             'pagos_del_mes'            => $pagosDelMes,
             'cobranzas_hoy'            => $cobranzasHoy,
             'notificaciones_sin_leer'  => $notificacionesSinLeer,
+            'deuda_mes_generada'       => $deudaMesGenerada,
+            'deuda_mes_periodo'        => $periodoActual,
         ], 'Métricas del dashboard obtenidas correctamente.');
     }
 }

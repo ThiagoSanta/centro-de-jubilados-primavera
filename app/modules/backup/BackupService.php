@@ -15,6 +15,24 @@ class BackupService
     // Ruta fija a mysqldump en XAMPP Windows
     private const MYSQLDUMP_PATH = 'C:\\xampp\\mysql\\bin\\mysqldump.exe';
 
+    // Ruta fija al cliente mysql en XAMPP Windows (reutilizable para operaciones de restauración)
+    public const MYSQL_PATH = 'C:\\xampp\\mysql\\bin\\mysql.exe';
+
+    /**
+     * Retorna las credenciales de conexión para clientes CLI (mysqldump y mysql).
+     *
+     * @return array{host: string, dbName: string, user: string, pass: string}
+     */
+    public static function getCliCredentials(): array
+    {
+        return [
+            'host'   => Config::get('DB_HOST', 'localhost'),
+            'dbName' => Config::get('DB_NAME'),
+            'user'   => Config::get('DB_USER'),
+            'pass'   => Config::get('DB_PASS', ''),
+        ];
+    }
+
     /**
      * Constructor del servicio de copias de seguridad.
      * Obtiene la instancia activa de la conexión a la base de datos.
@@ -25,14 +43,15 @@ class BackupService
     }
 
     /**
-     * Genera el dump SQL de la base de datos y lo retorna como string.
+     * Genera el dump SQL de la base de datos y lo retorna como string con cabecera identificatoria.
      * No guarda el archivo en disco permanentemente.
      *
-     * @param string $usuarioId
-     * @return string  Contenido SQL del dump
+     * @param string $usuarioId UUID del usuario operador que ejecuta la accion
+     * @param bool   $registrar Determina si se asienta el evento en backups_log (por defecto true)
+     * @return string  Contenido SQL del dump con cabecera
      * @throws AppException
      */
-    public function generarDump(string $usuarioId): string
+    public function generarDump(string $usuarioId, bool $registrar = true): string
     {
         if (!file_exists(self::MYSQLDUMP_PATH)) {
             throw new AppException(
@@ -41,10 +60,11 @@ class BackupService
             );
         }
 
-        $host   = Config::get('DB_HOST', 'localhost');
-        $dbName = Config::get('DB_NAME');
-        $user   = Config::get('DB_USER');
-        $pass   = Config::get('DB_PASS', '');
+        $creds  = self::getCliCredentials();
+        $host   = $creds['host'];
+        $dbName = $creds['dbName'];
+        $user   = $creds['user'];
+        $pass   = $creds['pass'];
 
         // Construir comando con escapeshellarg() para evitar inyección
         $cmd = sprintf(
@@ -84,9 +104,42 @@ class BackupService
             );
         }
 
-        $this->registrarLog($usuarioId);
+        if ($registrar) {
+            $this->registrarLog($usuarioId);
+        }
 
-        return $sql;
+        return $this->generarCabecera() . $sql;
+    }
+
+    /**
+     * Variante de generarDump que no asienta el registro en backups_log.
+     * Utilizada para copias de seguridad de resguardo previo a una restauracion,
+     * evitando actualizar la fecha y aviso del ultimo backup realizado administrativamente.
+     *
+     * @param string $usuarioId UUID del usuario operador o 'sistema'
+     * @return string Contenido SQL del dump con cabecera
+     * @throws AppException
+     */
+    public function generarDumpSinRegistro(string $usuarioId = 'sistema'): string
+    {
+        return $this->generarDump($usuarioId, false);
+    }
+
+    /**
+     * Genera la cabecera estándar de identificación para los backups del sistema.
+     * Permite validar en la restauración que el archivo pertenece a esta aplicación y base de datos.
+     *
+     * @return string Bloque de cabecera con comentarios SQL
+     */
+    private function generarCabecera(): string
+    {
+        $dbName   = Config::get('DB_NAME');
+        $fechaIso = (new \DateTimeImmutable())->format('c');
+
+        return "-- CJP-BACKUP-V1\n"
+            . "-- Sistema: Centro de Jubilados Primavera\n"
+            . "-- Base: {$dbName}\n"
+            . "-- Fecha: {$fechaIso}\n";
     }
 
     /**
@@ -119,6 +172,33 @@ class BackupService
             'usuario_nombre'    => trim(($row['nombre'] ?? '') . ' ' . ($row['apellido'] ?? '')),
             'dias_transcurridos' => $dias,
         ];
+    }
+
+    /**
+     * Retorna los últimos 20 backups registrados en orden cronológico descendente.
+     * Incluye fecha_hora y el nombre completo del usuario que realizó la acción.
+     *
+     * @return array Lista de registros de backup
+     */
+    public function getHistorialBackups(): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT b.id, b.fecha_hora, u.nombre, u.apellido
+             FROM backups_log b
+             LEFT JOIN usuarios u ON b.usuario_id = u.id
+             ORDER BY b.fecha_hora DESC
+             LIMIT 20'
+        );
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return array_map(function ($row) {
+            return [
+                'id'             => $row['id'] ?? null,
+                'fecha_hora'     => $row['fecha_hora'],
+                'usuario_nombre' => trim(($row['nombre'] ?? '') . ' ' . ($row['apellido'] ?? '')) ?: 'Sistema',
+            ];
+        }, $rows ?: []);
     }
 
     /**
