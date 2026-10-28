@@ -22,3 +22,11 @@ Thumbs.db
 .roo/
 
 .cursorrules
+
+# Archivos generados y documentos locales
+app/storage/
+storage/comprobantes/
+storage/planillas/
+storage/imports/
+docs/documentacion/
+docs/informe-*.md
