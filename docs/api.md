@@ -1,5 +1,6 @@
 # API Reference — Centro de Jubilados Primavera
 
+> **Última revisión:** 29/10/2026  
 > **Base URL:** `http://localhost/centro-de-jubilados-primavera/public` (el host varía según el entorno de red: `localhost` o la dirección IP local de la computadora con XAMPP, ej. `http://192.168.1.X/centro-de-jubilados-primavera/public`)  
 > **Formato:** JSON (UTF-8). Excepciones: comprobantes y planillas emiten binario `application/pdf`, y códigos QR emiten `image/png`.  
 > **Autenticación:** Sesión PHP basada en cookies (`PHPSESSID`), configuradas con `HttpOnly`, `SameSite=Lax`, `lifetime=0` (al cerrar navegador). El tiempo de expiración por inactividad es de 30 minutos para rol cobrador y 8 horas para rol administrador.  
@@ -7,11 +8,11 @@
 
 ---
 
-## Respuesta estándar
+## Respuesta estándar y gestión de errores
 
 Todas las respuestas JSON devuelven un formato estructurado y predecible:
 
-**Éxito:**
+### Éxito
 ```json
 {
   "success": true,
@@ -20,16 +21,73 @@ Todas las respuestas JSON devuelven un formato estructurado y predecible:
 }
 ```
 
-**Error:**
+### Errores
+
+El sistema utiliza dos mecanismos estandarizados e independientes para emitir respuestas de error en formato JSON:
+
+#### 1. Formato de validación directa y middleware (`ResponseHelper::error`)
+Se utiliza en capas de entrada (controladores y middleware de autenticación y autorización) para validaciones de parámetros requeridos, comprobaciones de formato, control de roles y guardas tempranas sin disparar excepciones.
+
+**Estructura:**
 ```json
 {
   "success": false,
-  "message": "Descripción del error",
+  "message": "Descripción explicativa del error",
+  "errors": null
+}
+```
+> **Nota:** La clave `"errors"` contiene `null` por defecto o un detalle estructurado si se proveen errores específicos de validación. Este formato no incluye `"correlation_id"` en el cuerpo JSON (aunque la respuesta HTTP siempre transporta el encabezado `X-Correlation-ID`).
+
+**Ejemplo real (error 403 por falta de permisos en `AuthMiddleware.php`):**
+```json
+{
+  "success": false,
+  "message": "Acceso denegado",
   "errors": null
 }
 ```
 
-> **Nota:** Ante excepciones no controladas a nivel global, la API incluye la cabecera HTTP `X-Correlation-ID` y el campo `"correlation_id"` en el cuerpo de error para trazabilidad en logs.
+**Ejemplo real (error 400 por campos obligatorios ausentes en `AuthController.php`):**
+```json
+{
+  "success": false,
+  "message": "El usuario y la contraseña son obligatorios.",
+  "errors": null
+}
+```
+
+#### 2. Formato de excepciones globales y fallos internos (`ExceptionHandler::handle`)
+Se activa automáticamente cuando ocurre una excepción no capturada dentro de los controladores que escala al manejador global registrado mediante `set_exception_handler`. Administra dos situaciones:
+- **Excepciones de negocio (`AppException`):** emiten el código HTTP específico definido en el dominio (400, 401, 403, 404, 409, 503) y el mensaje de la regla de negocio infringida.
+- **Excepciones de infraestructura o errores no controlados (`Throwable`, `\PDOException`, `\Error`):** registran la traza detallada en `storage/logs/errors.log` mediante `Logger::error()` y emiten HTTP 500 con un mensaje genérico seguro sin exponer detalles internos del servidor.
+
+**Estructura:**
+```json
+{
+  "success": false,
+  "message": "Descripción de la regla infringida o mensaje genérico de error",
+  "correlation_id": "3a52c389-98e8-469b-b461-33eb0c85c345"
+}
+```
+> **Nota:** Este formato **no** incluye la clave `"errors"`, e incluye obligatoriamente la clave `"correlation_id"` coincidente con el encabezado HTTP `X-Correlation-ID` para trazabilidad y correlación directa con los registros del log.
+
+**Ejemplo real (error 400 por violación de regla de cascada cronológica en `PagoService.php`):**
+```json
+{
+  "success": false,
+  "message": "Debe respetar el orden cronológico de las deudas (Cascada). No puede saltear períodos anteriores.",
+  "correlation_id": "d825c0a2-f8b1-46bb-9bf6-29a3e6fbe147"
+}
+```
+
+**Ejemplo real (error 500 interno del servidor o base de datos en `ExceptionHandler.php`):**
+```json
+{
+  "success": false,
+  "message": "Ocurrió un error interno en el servidor. Por favor, intente nuevamente o contacte a soporte.",
+  "correlation_id": "a1f4b23e-6789-4bc2-8901-52ab76cd1234"
+}
+```
 
 ---
 
@@ -114,7 +172,9 @@ Retorna métricas del sistema en tiempo real.
     "monto_adeudado_total": 45600.00,
     "pagos_del_mes": 73,
     "cobranzas_hoy": 5,
-    "notificaciones_sin_leer": 3
+    "notificaciones_sin_leer": 3,
+    "deuda_mes_generada": true,
+    "deuda_mes_periodo": "2026-10"
   }
 }
 ```
@@ -180,9 +240,9 @@ Inicia la importación asincrónica de socios desde un archivo CSV procesado en 
 ```json
 {
   "success": true,
-  "message": "Importación iniciada. Procesando en segundo plano.",
+  "message": "Importación iniciada en segundo plano.",
   "data": {
-    "id": 1,
+    "id": "e8d9c24b-3a17-48f2-8921-6a54b3c210de",
     "estado": "pendiente",
     "total_filas": 150,
     "archivo_original": "padron_socios.csv"
@@ -201,9 +261,9 @@ Consulta el estado y progreso en tiempo real de una importación CSV en ejecuci�
 ```json
 {
   "success": true,
-  "message": "OK",
+  "message": "Estado de importación obtenido con éxito.",
   "data": {
-    "id": 1,
+    "id": "e8d9c24b-3a17-48f2-8921-6a54b3c210de",
     "estado": "procesando",
     "total_filas": 150,
     "filas_procesadas": 75,
@@ -375,6 +435,17 @@ Registra un nuevo valor de cuota social con fecha de vigencia.
 { "monto": 1500.00, "fecha_vigencia_desde": "2025-07-01" }
 ```
 
+**Respuesta:**
+```json
+{
+  "success": true,
+  "message": "Cuota registrada correctamente",
+  "data": {
+    "id": "e4f3a210-98b7-4c21-a123-abcdef012345"
+  }
+}
+```
+
 ---
 
 ### `POST /api/deuda/generar`
@@ -390,6 +461,19 @@ Genera las deudas del período especificado para todos los socios activos.
 }
 ```
 > Si ya existen deudas generadas para el período y `confirmar_duplicado` es `false`, la API responde advirtiendo los socios que ya poseen cuota generada antes de proceder.
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "message": "Deuda mensual generada correctamente.",
+  "data": {
+    "generadas": 120,
+    "omitidas": 5,
+    "advertencias": []
+  }
+}
+```
 
 ---
 
@@ -480,10 +564,19 @@ Registra un cobro a un socio cancelando una o más cuotas adeudadas bajo regla e
 ```json
 {
   "success": true,
-  "message": "Pago registrado exitosamente.",
+  "message": "Pago registrado correctamente.",
   "data": {
-    "pago_id": "...",
-    "comprobante_url": "api/pagos/.../comprobante",
+    "pago": {
+      "id": "e7c2a1b9-3829-4d8b-9021-4f762391abcd",
+      "socio_id": "uuid",
+      "monto_total": 3000.00,
+      "metodo_pago": "efectivo",
+      "observacion": "",
+      "fecha_hora": "2026-10-29 10:00:00",
+      "estado": "registrado",
+      "cobrador_nombre": "Carlos Cobrador"
+    },
+    "comprobante_url": "storage/comprobantes/e7c2a1b9-3829-4d8b-9021-4f762391abcd.pdf",
     "whatsapp_url": "https://api.whatsapp.com/send?phone=..."
   }
 }
@@ -667,6 +760,19 @@ Agrega una observación a un socio. Responde con HTTP 201 Created.
 }
 ```
 
+**Respuesta exitosa (HTTP 201):**
+```json
+{
+  "success": true,
+  "message": "Observación registrada correctamente.",
+  "data": {
+    "id": "f8a12b3c-9401-4f22-8921-904321e0a8b9",
+    "socio_id": "uuid",
+    "contenido": "Nota o comentario sobre el socio (máximo 1000 caracteres)."
+  }
+}
+```
+
 ---
 
 ## Módulo: Usuarios (`/api/usuarios`)
@@ -695,6 +801,8 @@ Crea un nuevo usuario en el sistema. Responde con HTTP 201 Created. El rol no pu
 ```
 
 **Reglas:** contraseña mínimo 8 caracteres · username único · rol: `administrador` | `cobrador`
+
+**Errores:** 400 datos obligatorios faltantes o contraseña menor a 8 caracteres · 409 nombre de usuario ya en uso ("El nombre de usuario ya está en uso.")
 
 ---
 
@@ -749,16 +857,71 @@ Retorna información sobre la última copia de seguridad generada por el sistema
 ```json
 {
   "success": true,
-  "message": "OK",
+  "message": "Último backup encontrado.",
   "data": {
-    "fecha_hora": "2025-07-01 10:30:00",
-    "usuario_id": "uuid",
+    "fecha_hora": "2026-10-22 10:30:00",
     "usuario_nombre": "Administrador",
-    "dias_transcurridos": 2
+    "dias_transcurridos": 7
   }
 }
 ```
-> Si nunca se generó un backup en el sistema, `data` retorna `null`.
+> Si nunca se generó un backup en el sistema, `data` retorna `null` y el mensaje indica `"No hay backups registrados."`.
+
+---
+
+### `GET /api/backup/historial`
+Retorna los últimos 20 respaldos registrados en el sistema en orden cronológico descendente.
+
+**Requiere:** rol `administrador`
+
+**Respuesta:**
+```json
+{
+  "success": true,
+  "message": "Historial de backups obtenido correctamente.",
+  "data": [
+    {
+      "id": "e9b21043-4b67-4281-a987-123456789abc",
+      "fecha_hora": "2026-10-22 15:30:00",
+      "usuario_nombre": "Administrador"
+    }
+  ]
+}
+```
+
+---
+
+### `POST /api/backup/restaurar`
+Restaura la base de datos a partir de un archivo de volcado SQL previamente generado por el sistema.
+
+**Requiere:** rol `administrador`
+
+**Body:** `multipart/form-data` con:
+- `archivo`: Archivo binario con extensión `.sql`, tamaño máximo 20 MB (20.971.520 bytes), tipo MIME `text/plain` o `application/octet-stream`. Debe comenzar con la cabecera oficial `-- CJP-BACKUP-V1`, contener la directiva `-- Base:` coincidente con la base de datos actual del entorno, carecer de sentencias prohibidas (`DROP DATABASE`, `CREATE DATABASE`, `GRANT`, `REVOKE`, `CREATE USER`, `DROP USER`, `ALTER USER`, `LOAD DATA`, `SET GLOBAL`, `SET PASSWORD`, `SHUTDOWN`, `INSTALL PLUGIN`, `INTO OUTFILE`, `INTO DUMPFILE`, `LOAD_FILE`) y terminar con la marca de fin de volcado completado.
+- `confirmacion`: Cadena de texto obligatoria con el valor exacto `RESTAURAR`.
+
+**Mecanismos de seguridad y resguardo:**
+- **Bloqueo exclusivo de concurrencia:** Crea y bloquea con `flock` no bloqueante (`LOCK_EX | LOCK_NB`) el archivo `storage/backups/.restaurando` para garantizar que no puedan ejecutarse dos restauraciones concurrentes (HTTP 409).
+- **Resguardo previo obligatorio:** Antes de aplicar cambios sobre la base de datos, genera automáticamente una copia de seguridad `storage/backups/pre-restauracion-YYYY-MM-DD_HH-i-s.sql` (rotando para conservar los 5 más recientes). Si este respaldo preventivo falla, la operación se cancela sin modificar los datos.
+- **Transmisión por streaming seguro:** Conexión vía cliente CLI `mysql.exe` con archivo de opciones temporal `.cnf` para proteger credenciales y transmisión por streaming sin saturar la memoria PHP.
+- **Cierre de sesión automático:** Dado que la restauración sustituye la tabla de usuarios y datos de sesión, al finalizar con éxito se cierra de inmediato la sesión PHP del administrador (`AuthService::logout()`), revocando cookies y obligando a autenticarse de nuevo.
+
+**Respuesta exitosa (HTTP 200):**
+```json
+{
+  "success": true,
+  "message": "Base de datos restaurada. Por seguridad se cerro la sesion: vuelva a iniciar sesion.",
+  "data": null
+}
+```
+
+**Errores:**
+- `400 Bad Request`: Confirmación no enviada o distinta a `"RESTAURAR"` · archivo no seleccionado o error en la subida · extensión no es `.sql` · tamaño superior a 20 MB · tipo MIME no permitido · cabecera oficial `-- CJP-BACKUP-V1` ausente · directiva `-- Base:` no coincide con la base actual · archivo contiene sentencias SQL prohibidas o volcado incompleto.
+- `401 Unauthorized`: No autenticado o sesión expirada.
+- `403 Forbidden`: El usuario autenticado no posee rol `administrador`.
+- `409 Conflict`: Ya existe otra operación de restauración ejecutándose en el servidor (`"Ya hay una restauración en curso."`).
+- `500 Internal Server Error`: Fallo al generar el backup de resguardo previo o fallo durante la ejecución del proceso `mysql.exe`.
+- `503 Service Unavailable`: Cliente `mysql.exe` no encontrado en la ruta esperada del servidor.
 
 ---
 
