@@ -873,6 +873,26 @@ if ($ctx['deuda_id'] && $ctx['socio_id']) {
 }
 $r = apiRequest('GET', '/api/pagos', null, $adminCookie);
 assertStatus($ctx, 'GET /api/pagos (listar todos) -> 200', 'GET', '/api/pagos', 200, $r);
+
+// Pruebas de busqueda de pagos por nombre o DNI (parametro busqueda)
+$rBusqNombre = apiRequest('GET', '/api/pagos?busqueda=TEST_Juan', null, $adminCookie);
+assertStatus($ctx, 'GET /api/pagos?busqueda=TEST_Juan -> 200', 'GET', '/api/pagos?busqueda={nombre}', 200, $rBusqNombre);
+
+$rBusqDni = apiRequest('GET', '/api/pagos?busqueda=' . TEST_DNI, null, $adminCookie);
+assertStatus($ctx, 'GET /api/pagos?busqueda=' . TEST_DNI . ' -> 200', 'GET', '/api/pagos?busqueda={dni}', 200, $rBusqDni);
+
+$rBusqInexistente = apiRequest('GET', '/api/pagos?busqueda=Inexistente_XYZ_99999', null, $adminCookie);
+assertStatus($ctx, 'GET /api/pagos?busqueda=Inexistente -> 200', 'GET', '/api/pagos?busqueda={inexistente}', 200, $rBusqInexistente);
+$itemsInexistente = $rBusqInexistente['body']['data']['items'] ?? [];
+$ctx['tests']++;
+if (count($itemsInexistente) === 0) {
+    $ctx['passed']++;
+    echo "  Busqueda de pago inexistente retorna 0 registros              \033[32mOK\033[0m" . PHP_EOL;
+} else {
+    $ctx['failed']++;
+    $ctx['failures'][] = 'GET /api/pagos con busqueda inexistente devolvio items';
+    echo "  Busqueda de pago inexistente retorno items inesperados         \033[31mFALLO\033[0m" . PHP_EOL;
+}
 if ($ctx['socio_id']) {
     $r = apiRequest('GET', '/api/pagos/socio/' . $ctx['socio_id'], null, $adminCookie);
     assertStatus($ctx, 'GET /api/pagos/socio/{id} -> 200', 'GET', '/api/pagos/socio/{socioId}', 200, $r);
@@ -1044,6 +1064,22 @@ if ($notif1) {
     // 3. Archivar (idempotente)
     $r = apiRequest('POST', '/api/notificaciones/' . $notif1 . '/archivar', [], $adminCookie);
     assertStatus($ctx, 'POST /api/notificaciones/{id}/archivar -> 200', 'POST', '/api/notificaciones/{id}/archivar', 200, $r);
+
+    // 4. Desarchivar: revierte el estado a 'no_leida'
+    $r = apiRequest('POST', '/api/notificaciones/' . $notif1 . '/desarchivar', [], $adminCookie);
+    assertStatus($ctx, 'POST /api/notificaciones/{id}/desarchivar -> 200', 'POST', '/api/notificaciones/{id}/desarchivar', 200, $r);
+
+    // Intentar desarchivar cuando ya esta activa debe responder 400
+    $r = apiRequest('POST', '/api/notificaciones/' . $notif1 . '/desarchivar', [], $adminCookie);
+    assertStatus($ctx, 'POST /api/notificaciones/{id}/desarchivar ya activa -> 400', 'POST', '/api/notificaciones/{id}/desarchivar', 400, $r);
+
+    // Desarchivar con ID inexistente -> 404
+    $r = apiRequest('POST', '/api/notificaciones/00000000-0000-0000-0000-000000000000/desarchivar', [], $adminCookie);
+    assertStatus($ctx, 'POST /api/notificaciones/{id}/desarchivar inexistente -> 404', 'POST', '/api/notificaciones/{id}/desarchivar', 404, $r);
+
+    // Volver a archivar para mantener limpio el estado de la notificacion
+    $r = apiRequest('POST', '/api/notificaciones/' . $notif1 . '/archivar', [], $adminCookie);
+    assertStatus($ctx, 'POST /api/notificaciones/{id}/archivar (re-archivar) -> 200', 'POST', '/api/notificaciones/{id}/archivar', 200, $r);
 } else {
     echo "  ADVERTENCIA: No hay notificacion TEST_ disponible; saltando pruebas individuales." . PHP_EOL;
 }

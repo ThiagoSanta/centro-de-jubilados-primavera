@@ -45,10 +45,14 @@ class Database
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
+                // Sincroniza la sesion de MySQL con la hora oficial de Argentina (UTC-3)
+                // para que funciones SQL como NOW() o CURRENT_TIMESTAMP coincidan con date() en PHP
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET time_zone = '-03:00'",
             ];
 
             try {
                 self::$instance = new PDO($dsn, $username, $password, $options);
+                self::$instance->exec("SET time_zone = '-03:00'");
             } catch (PDOException $e) {
                 throw new RuntimeException("Error al conectar con la base de datos", (int)$e->getCode(), $e);
             }

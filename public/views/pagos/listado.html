@@ -215,8 +215,8 @@
 
             <div class="filters-container">
                 <div class="filter-group">
-                    <label class="form-label" for="filtroSocio">Socio ID (UUID)</label>
-                    <input type="text" id="filtroSocio" class="form-control" placeholder="ID del socio..." aria-label="Buscar por ID de socio">
+                    <label class="form-label" for="filtroBusqueda">Buscar socio (nombre o DNI)</label>
+                    <input type="text" id="filtroBusqueda" class="form-control" placeholder="Nombre o DNI del socio..." aria-label="Buscar socio por nombre o DNI">
                 </div>
                 <div class="filter-group">
                     <label class="form-label" for="filtroEstado">Estado</label>
@@ -293,9 +293,9 @@
         function aplicarFiltrosDesdeUrl() {
             const params = new URLSearchParams(window.location.search);
 
-            const socio = params.get('socio_id') || params.get('socio');
-            if (socio !== null) {
-                document.getElementById('filtroSocio').value = socio;
+            const busqueda = params.get('busqueda') || params.get('socio_id') || params.get('socio');
+            if (busqueda !== null) {
+                document.getElementById('filtroBusqueda').value = busqueda;
             }
 
             const fechaDesde = params.get('fecha_desde') || params.get('desde');
@@ -371,7 +371,7 @@
             }
             
             const params = new URLSearchParams();
-            if (document.getElementById('filtroSocio').value) params.append('socio_id', document.getElementById('filtroSocio').value);
+            if (document.getElementById('filtroBusqueda').value) params.append('busqueda', document.getElementById('filtroBusqueda').value.trim());
             if (document.getElementById('filtroEstado').value) params.append('estado', document.getElementById('filtroEstado').value);
             if (document.getElementById('filtroFechaDesde').value) params.append('fecha_desde', document.getElementById('filtroFechaDesde').value);
             if (document.getElementById('filtroFechaHasta').value) params.append('fecha_hasta', document.getElementById('filtroFechaHasta').value);
@@ -398,7 +398,7 @@
         // Restablece los campos de socio y fecha a vacio, el select de estado a 'todos',
         // reinicia la paginacion a la pagina 1 y recarga el listado de pagos una sola vez.
         function limpiarFiltros() {
-            document.getElementById('filtroSocio').value = '';
+            document.getElementById('filtroBusqueda').value = '';
             document.getElementById('filtroEstado').value = 'todos';
             document.getElementById('filtroFechaDesde').value = '';
             document.getElementById('filtroFechaHasta').value = '';

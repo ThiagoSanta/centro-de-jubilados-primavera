@@ -29,7 +29,17 @@ class NotificacionController {
     public function archivar(array $params): void {
         AuthMiddleware::requireAuth();
         $this->service->archivar($params['id']);
-        ResponseHelper::success(null, 'Notificación archivada correctamente.');
+        ResponseHelper::success(null, 'Notificacion archivada correctamente.');
+    }
+
+    /**
+     * Revierte el estado de una notificacion archivada a 'no_leida'.
+     * Cualquier usuario autenticado puede desarchivar (mismo nivel que archivar).
+     */
+    public function desarchivar(array $params): void {
+        AuthMiddleware::requireAuth();
+        $this->service->desarchivar($params['id']);
+        ResponseHelper::success(null, 'Notificacion desarchivada correctamente.');
     }
 
     public function revertir(array $params): void {

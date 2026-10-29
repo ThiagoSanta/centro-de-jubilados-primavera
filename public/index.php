@@ -1,5 +1,8 @@
 <?php
 
+// Unificacion de zona horaria a nivel de aplicacion: hora oficial de Argentina (UTC-3)
+date_default_timezone_set('America/Argentina/Buenos_Aires');
+
 $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
     || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443)
     || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
@@ -133,6 +136,9 @@ $router->get('/api/planillas/{id}', [PlanillaController::class, 'getOne']);
 $router->get('/api/notificaciones', [NotificacionController::class, 'getAll']);
 $router->post('/api/notificaciones/{id}/leida', [NotificacionController::class, 'marcarLeida']);
 $router->post('/api/notificaciones/{id}/archivar', [NotificacionController::class, 'archivar']);
+// Revierte el archivado: vuelve la notificacion al estado 'no_leida' para que
+// sea accionable nuevamente desde la bandeja activa.
+$router->post('/api/notificaciones/{id}/desarchivar', [NotificacionController::class, 'desarchivar']);
 $router->post('/api/notificaciones/{id}/revertir', [NotificacionController::class, 'revertir']);
 
 // Rutas de consulta del registro de auditoría

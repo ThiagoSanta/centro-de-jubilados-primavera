@@ -186,8 +186,12 @@
                 </div>
                 <div class="filter-chips">
                     <div class="filter-chip">
+                        <!-- Las opciones cubren todos los estados validos del ENUM de notificaciones:
+                             'no_leida' y 'leida' corresponden a la bandeja activa (accionable);
+                             'archivada' corresponde a la bandeja archivada. El valor vacio lista todas. -->
                         <select id="filtroEstado" aria-label="Filtrar por estado">
                             <option value="">Estado: Todos</option>
+                            <option value="pendientes">Pendientes</option>
                             <option value="no_leida">No leídas</option>
                             <option value="leida">Leídas</option>
                             <option value="archivada">Archivadas</option>
@@ -308,6 +312,7 @@
                         ${n.estado === 'no_leida' ? `<button type="button" class="btn btn--secondary btn--sm" onclick="accionLeida('${n.id}')">Marcar leída</button>` : ''}
                         ${mostrarRevertir ? `<button type="button" class="btn btn--danger btn--sm" onclick="abrirModalRevertir('${n.id}')">Revertir</button>` : ''}
                         ${n.estado !== 'archivada' ? `<button type="button" class="btn btn--secondary btn--sm" onclick="accionArchivar('${n.id}')">Archivar</button>` : ''}
+                        ${n.estado === 'archivada' ? `<button type="button" class="btn btn--secondary btn--sm" onclick="accionDesarchivar('${n.id}')">Desarchivar</button>` : ''}
                     </div>`;
                 container.appendChild(li);
             });
@@ -333,6 +338,14 @@
                 const data = await fetchJson(`${API_BASE}/notificaciones/${id}/archivar`, { method: 'POST', credentials: 'same-origin' });
                 if (data.success) fetchNotificaciones();
                 else showAlert('error', data.message || 'Error al archivar.');
+            } catch { showAlert('error', 'Error de red.'); }
+        }
+
+        async function accionDesarchivar(id) {
+            try {
+                const data = await fetchJson(`${API_BASE}/notificaciones/${id}/desarchivar`, { method: 'POST', credentials: 'same-origin' });
+                if (data.success) fetchNotificaciones();
+                else showAlert('error', data.message || 'Error al desarchivar.');
             } catch { showAlert('error', 'Error de red.'); }
         }
 

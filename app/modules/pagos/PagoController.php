@@ -55,7 +55,7 @@ class PagoController
         AuthMiddleware::requireAuth();
 
         $filtros = [
-            'socio_id'    => $_GET['socio_id'] ?? null,
+            'busqueda'    => $_GET['busqueda'] ?? ($_GET['socio_id'] ?? null),
             'estado'      => $_GET['estado'] ?? null,
             'fecha_desde' => $_GET['fecha_desde'] ?? null,
             'fecha_hasta' => $_GET['fecha_hasta'] ?? null

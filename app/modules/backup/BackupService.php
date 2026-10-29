@@ -106,6 +106,7 @@ class BackupService
 
         if ($registrar) {
             $this->registrarLog($usuarioId);
+            $this->registrarAuditoria($usuarioId);
         }
 
         return $this->generarCabecera() . $sql;
@@ -217,5 +218,30 @@ class BackupService
             'usuarioId' => $usuarioId,
             'fechaHora' => $now,
         ]);
+    }
+
+    /**
+     * Registra el evento de backup manual en la tabla de auditoria para trazabilidad.
+     */
+    private function registrarAuditoria(string $usuarioId): void
+    {
+        try {
+            $id = Uuid::uuid4()->toString();
+            $stmt = $this->db->prepare(
+                'INSERT INTO auditoria (id, usuario_id, accion, entidad_afectada, valor_anterior, valor_nuevo, fecha_hora, motivo) 
+                 VALUES (:id, :usuario_id, :accion, :entidad_afectada, :valor_anterior, :valor_nuevo, NOW(), :motivo)'
+            );
+            $stmt->execute([
+                'id'               => $id,
+                'usuario_id'       => ($usuarioId === 'sistema' || empty($usuarioId)) ? null : $usuarioId,
+                'accion'           => 'GENERACION_BACKUP',
+                'entidad_afectada' => 'base_de_datos',
+                'valor_anterior'   => null,
+                'valor_nuevo'      => null,
+                'motivo'           => 'Generación manual de copia de seguridad de la base de datos'
+            ]);
+        } catch (\Throwable $e) {
+            error_log('No se pudo registrar auditoría de backup: ' . $e->getMessage());
+        }
     }
 }

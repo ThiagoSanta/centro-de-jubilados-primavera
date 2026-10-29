@@ -525,7 +525,7 @@ Lista todos los pagos con filtros y paginación.
 
 **Requiere:** autenticación
 
-**Query params:** `socio_id`, `estado`, `fecha_desde`, `fecha_hasta`, `pagina`
+**Query params:** `busqueda` (búsqueda parcial por nombre/apellido o DNI de socio), `socio_id` (UUID para compatibilidad), `estado` (`todos` | `registrado` | `anulado`), `fecha_desde`, `fecha_hasta`, `pagina`
 
 **Respuesta:**
 ```json
@@ -686,6 +686,26 @@ Marca una notificación como leída.
 Archiva una notificación.
 
 **Requiere:** autenticación
+
+---
+
+### `POST /api/notificaciones/{id}/desarchivar`
+Revierte el archivado de una notificación, devolviéndola al estado `no_leida` para que vuelva a mostrarse en la bandeja activa.
+
+**Requiere:** autenticación
+
+**Respuesta exitosa (200):**
+```json
+{
+  "success": true,
+  "message": "Notificacion desarchivada correctamente.",
+  "data": null
+}
+```
+
+**Errores posibles:**
+- `400`: La notificación no está archivada.
+- `404`: Notificación no encontrada.
 
 ---
 

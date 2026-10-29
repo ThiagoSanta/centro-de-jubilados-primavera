@@ -80,7 +80,13 @@ class PagoRepository
         $where = [];
         $params = [];
         
-        if (!empty($filtros['socio_id'])) {
+        // Busqueda por nombre o DNI del socio con LIKE y parametros preparados
+        if (!empty($filtros['busqueda'])) {
+            $where[] = "(s.nombre_apellido LIKE :busqueda_nombre OR s.dni LIKE :busqueda_dni)";
+            $params['busqueda_nombre'] = '%' . trim($filtros['busqueda']) . '%';
+            $params['busqueda_dni'] = '%' . trim($filtros['busqueda']) . '%';
+        } elseif (!empty($filtros['socio_id'])) {
+            // Retrocompatibilidad con busqueda exacta por UUID si llegara a enviarse
             $where[] = "p.socio_id = :socio_id";
             $params['socio_id'] = $filtros['socio_id'];
         }
@@ -115,7 +121,10 @@ class PagoRepository
         $stmt->execute($params);
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        $sqlCount = "SELECT COUNT(*) FROM pagos p $whereClause";
+        $sqlCount = "SELECT COUNT(*) 
+                     FROM pagos p 
+                     JOIN socios s ON p.socio_id = s.id 
+                     $whereClause";
         $stmtCount = $this->db->prepare($sqlCount);
         $stmtCount->execute($params);
         $total = $stmtCount->fetchColumn();
@@ -132,22 +141,6 @@ class PagoRepository
         $sql = "UPDATE pagos SET estado = 'anulado' WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
-    }
-
-    public function createNotificacion(array $datos): void
-    {
-        $sql = "INSERT INTO notificaciones (id, tipo, mensaje, fecha, estado, referencia, fecha_expiracion_reversion) 
-                VALUES (:id, :tipo, :mensaje, :fecha, 'pendiente', :referencia, :fecha_expiracion_reversion)";
-                
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'id' => Uuid::uuid4()->toString(),
-            'tipo' => $datos['tipo'],
-            'mensaje' => $datos['mensaje'],
-            'fecha' => date('Y-m-d H:i:s'),
-            'referencia' => isset($datos['referencia']) ? json_encode($datos['referencia']) : null,
-            'fecha_expiracion_reversion' => $datos['fecha_expiracion_reversion'] ?? null
-        ]);
     }
 
     public function registerAuditEvent(string $entidad, string $entidadId, string $accion, ?string $usuarioId, array $detalles = []): void

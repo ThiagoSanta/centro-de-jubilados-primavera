@@ -56,6 +56,8 @@ class AuditoriaRepository
         $stmtCount->execute($params);
         $total = $stmtCount->fetchColumn();
 
+        // Orden estrictamente cronologico descendente por fecha_hora antes de paginar (LIMIT/OFFSET).
+        // El campo id almacena un UUID v4 no secuencial, por lo que nunca debe utilizarse para ordenar.
         $query .= " ORDER BY a.fecha_hora DESC LIMIT $limit OFFSET $offset";
         $stmt = $this->db->prepare($query);
         $stmt->execute($params);

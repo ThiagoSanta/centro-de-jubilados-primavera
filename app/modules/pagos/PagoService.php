@@ -238,6 +238,10 @@ class PagoService
         return $this->pagoRepository->findBySocio($socioId);
     }
 
+    /**
+     * Obtiene el listado de pagos paginado aplicando filtros opcionales de busqueda
+     * por nombre/DNI de socio, estado y rango de fechas.
+     */
     public function getPagos(array $filtros, int $pagina): array
     {
         return $this->pagoRepository->findAll($filtros, $pagina);

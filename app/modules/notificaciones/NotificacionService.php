@@ -35,6 +35,27 @@ class NotificacionService
         $this->repository->updateEstado($id, 'archivada');
     }
 
+    /**
+     * Devuelve una notificacion archivada al estado 'no_leida' para que vuelva
+     * a ser visible en la bandeja activa.
+     * Lanza AppException 404 si la notificacion no existe o no estaba archivada,
+     * de modo que el controller pueda responder con el codigo HTTP correcto.
+     */
+    public function desarchivar(string $id): void
+    {
+        // Verificamos primero que la notificacion exista para dar un 404 claro
+        // en lugar de un silencio cuando el id es incorrecto.
+        $notificacion = $this->repository->findById($id);
+        if (!$notificacion) {
+            throw new AppException("Notificacion no encontrada.", 404);
+        }
+        // desarchivar() solo actualiza si el estado actual es 'archivada';
+        // si no lo era, informamos al cliente para evitar confusion.
+        if (!$this->repository->desarchivar($id)) {
+            throw new AppException("La notificacion no esta archivada.", 400);
+        }
+    }
+
     public function revertir(string $id, string $usuarioId): void
     {
         $notificacion = $this->repository->findById($id);

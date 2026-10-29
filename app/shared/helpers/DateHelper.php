@@ -9,23 +9,24 @@ use InvalidArgumentException;
 class DateHelper
 {
     /**
-     * Obtiene la fecha y hora actual formateada en 'Y-m-d H:i:s'.
+     * Obtiene la fecha y hora actual en zona horaria de Argentina formateada en 'Y-m-d H:i:s'.
      *
      * @return string Fecha y hora actual
      */
     public static function now(): string
     {
-        return (new DateTimeImmutable())->format('Y-m-d H:i:s');
+        // Fuerza la zona de Argentina (UTC-3) para garantizar coherencia incluso si se invoca desde CLI
+        return (new DateTimeImmutable('now', new \DateTimeZone('America/Argentina/Buenos_Aires')))->format('Y-m-d H:i:s');
     }
 
     /**
-     * Obtiene la fecha actual formateada en 'Y-m-d'.
+     * Obtiene la fecha actual en zona horaria de Argentina formateada en 'Y-m-d'.
      *
      * @return string Fecha actual
      */
     public static function today(): string
     {
-        return (new DateTimeImmutable())->format('Y-m-d');
+        return (new DateTimeImmutable('now', new \DateTimeZone('America/Argentina/Buenos_Aires')))->format('Y-m-d');
     }
 
     /**

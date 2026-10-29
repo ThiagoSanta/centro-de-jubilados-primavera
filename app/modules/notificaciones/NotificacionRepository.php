@@ -20,8 +20,14 @@ class NotificacionRepository
         $params = [];
 
         if (!empty($filtros['estado'])) {
-            $query .= " AND estado = :estado";
-            $params[':estado'] = $filtros['estado'];
+            // El filtro 'pendientes' agrupa las notificaciones activas (no_leida y leida),
+            // mientras que los demas valores corresponden al valor exacto del ENUM.
+            if ($filtros['estado'] === 'pendientes') {
+                $query .= " AND estado IN ('no_leida', 'leida')";
+            } else {
+                $query .= " AND estado = :estado";
+                $params[':estado'] = $filtros['estado'];
+            }
         }
 
         $query .= " ORDER BY fecha DESC";
@@ -44,6 +50,22 @@ class NotificacionRepository
         $stmt->execute([':estado' => $estado, ':id' => $id]);
     }
 
+    /**
+     * Revierte el estado de una notificacion archivada a 'no_leida'.
+     * Solo aplica si la notificacion existe y esta en estado 'archivada'.
+     * Devuelve true si se afecto exactamente una fila, false si no existia o no estaba archivada.
+     */
+    public function desarchivar(string $id): bool
+    {
+        // Se filtra por estado 'archivada' para que la operacion sea idempotente:
+        // si ya estaba en otro estado, no se modifica nada y se retorna false.
+        $stmt = $this->db->prepare(
+            "UPDATE notificaciones SET estado = 'no_leida' WHERE id = :id AND estado = 'archivada'"
+        );
+        $stmt->execute([':id' => $id]);
+        return $stmt->rowCount() === 1;
+    }
+
     public function registerAuditEvent(string $usuarioId, string $accion, string $entidad, ?string $valorAnterior, ?string $valorNuevo, string $motivo): void
     {
         $query = "INSERT INTO auditoria (id, usuario_id, accion, entidad_afectada, valor_anterior, valor_nuevo, fecha_hora, motivo) 
@@ -61,8 +83,11 @@ class NotificacionRepository
 
     public function create(array $datos): void
     {
+        // El ENUM de notificaciones.estado solo acepta 'no_leida', 'leida' y 'archivada'.
+        // Se usa 'no_leida' como estado inicial para que la notificacion aparezca
+        // en el filtro de "No leidas" de la vista y genere el contador del dashboard.
         $sql = "INSERT INTO notificaciones (id, tipo, mensaje, fecha, estado, referencia, fecha_expiracion_reversion) 
-                VALUES (:id, :tipo, :mensaje, :fecha, 'pendiente', :referencia, :fecha_expiracion_reversion)";
+                VALUES (:id, :tipo, :mensaje, :fecha, 'no_leida', :referencia, :fecha_expiracion_reversion)";
                 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([

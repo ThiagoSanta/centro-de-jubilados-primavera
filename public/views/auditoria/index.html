@@ -167,6 +167,9 @@
                     <option value="deudas">Deudas</option>
                     <option value="planillas">Planillas</option>
                     <option value="observaciones">Observaciones</option>
+                    <option value="usuarios">Usuarios</option>
+                    <option value="base_de_datos">Base de datos</option>
+                    <option value="configuracion_cuota">Configuración de cuota</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -269,9 +272,11 @@
                 const valAnt = escapeHtml(item.valor_anterior || 'N/A');
                 const valNue = escapeHtml(item.valor_nuevo || 'N/A');
                 const motivo = escapeHtml(item.motivo || '');
+                // Formateo de fecha seguro para todos los navegadores en locale es-AR
+                const fechaFormateada = item.fecha_hora ? new Date(item.fecha_hora.replace(' ', 'T')).toLocaleString('es-AR') : '';
 
                 tr.innerHTML = `
-                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">${new Date(item.fecha_hora).toLocaleString()}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-500">${escapeHtml(fechaFormateada)}</td>
                     <td class="px-3 py-2 whitespace-nowrap">${uNombre} ${uApellido} <span class="text-xs text-gray-400 block">${uId}</span></td>
                     <td class="px-3 py-2 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">${accion}</span>
