@@ -987,6 +987,19 @@
                 document.getElementById('btnPagSiguiente').disabled = state.pagina >= totalPaginas;
             }
 
+            // Normaliza el documento de búsqueda o del socio:
+            // Si no es solo numérico (ej. pasaporte), conserva alfanumérico en mayúsculas quitando puntos, espacios y guiones.
+            // Para DNI numérico, conserva solo dígitos numéricos.
+            function normalizarDocBusqueda(valor) {
+                if (!valor) return '';
+                var limpio = String(valor).trim().replace(/[\s.-]/g, '');
+                var esSoloNumerico = /^\d+$/.test(limpio);
+                if (esSoloNumerico) {
+                    return limpio.replace(/\D/g, '');
+                }
+                return limpio.toUpperCase();
+            }
+
             // ── Búsqueda rápida por DNI ────────────────
             window.buscarSocioDni = function () {
                 var dniInput = document.getElementById('dni-input');
@@ -1021,9 +1034,9 @@
                             return;
                         }
 
-                        var numericSearch = dniClean.replace(/\D/g, '');
+                        var docBuscado = normalizarDocBusqueda(dniClean);
                         var socio = list.find(function (s) {
-                            return (s.dni || '').replace(/\D/g, '') === numericSearch;
+                            return normalizarDocBusqueda(s.dni) === docBuscado;
                         }) || list[0];
 
                         if (socio.estado === 'eliminado') {
@@ -1130,10 +1143,10 @@
                             return;
                         }
 
-                        // Coincidencia exacta de DNI si se ingresó solo números
-                        var numericSearch = termino.replace(/\D/g, '');
-                        var exacto = numericSearch ? list.find(function (s) {
-                            return (s.dni || '').replace(/\D/g, '') === numericSearch;
+                        // Coincidencia exacta de documento si coincide con DNI o pasaporte alfanumérico
+                        var docSearch = normalizarDocBusqueda(termino);
+                        var exacto = docSearch ? list.find(function (s) {
+                            return normalizarDocBusqueda(s.dni) === docSearch;
                         }) : null;
                         var resultados = exacto ? [exacto] : list.slice(0, 5);
 

@@ -19,7 +19,7 @@
                 <div class="sidebar__brand-title">Centro Primavera</div>
                 <div class="sidebar__brand-sub">Sistema de Gestión</div>
             </div>
-                    <nav class="sidebar__nav">
+            <nav class="sidebar__nav" id="sidebarNav">
             <a href="/centro-de-jubilados-primavera/public/views/dashboard/index.html" class="sidebar-nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
                 Dashboard
@@ -309,6 +309,7 @@
 
         var socioId = new URLSearchParams(window.location.search).get('id');
         var socio = null;
+        var currentUserRole = 'administrador'; // Se actualiza dinámicamente según /api/auth/me
         var zonasMap = {};
         var mapaMini = null;
         var mapaGeo = null;
@@ -413,8 +414,16 @@
             document.getElementById('socioNumero').textContent = 'N° ' + socio.numero_socio;
             document.getElementById('socioEstadoBadge').innerHTML = estadoBadge(socio.estado);
 
-            document.getElementById('btnSuspender').style.display = socio.estado === 'activo' ? 'inline-flex' : 'none';
-            document.getElementById('btnReactivar').style.display = socio.estado === 'suspendido' ? 'inline-flex' : 'none';
+            // Control de acciones según rol: el cobrador tiene acceso de solo lectura
+            var esAdmin = (currentUserRole === 'administrador');
+            document.getElementById('btnEditar').style.display = esAdmin ? 'inline-flex' : 'none';
+            document.getElementById('btnEliminar').style.display = esAdmin ? 'inline-flex' : 'none';
+            document.getElementById('btnSuspender').style.display = (esAdmin && socio.estado === 'activo') ? 'inline-flex' : 'none';
+            document.getElementById('btnReactivar').style.display = (esAdmin && socio.estado === 'suspendido') ? 'inline-flex' : 'none';
+            var btnCorregirGeo = document.getElementById('btnCorregirGeo');
+            if (btnCorregirGeo) {
+                btnCorregirGeo.style.display = esAdmin ? 'inline-flex' : 'none';
+            }
 
             var tipoDocMap = {
                 dni: 'DNI',
@@ -604,7 +613,7 @@
                         '<td>' + formatMoney(pago.monto) + '</td>' +
                         '<td>' + escapeHtml(pago.metodo || '—') + '</td>' +
                         '<td>' + estadoPago + '</td>' +
-                        '<td>' + (pago.estado !== 'anulado'
+                        '<td>' + (currentUserRole === 'administrador' && pago.estado !== 'anulado'
                             ? '<button type="button" class="btn btn--secondary btn--sm btn-anular-pago" data-id="' + escapeHtml(pago.id) + '">Anular</button>'
                             : '') + '</td>' +
                     '</tr>';
@@ -747,6 +756,72 @@
             });
         });
 
+        // Aplica restricciones visuales y de navegación según el rol del usuario autenticado
+        function aplicarPermisosRol(rol) {
+            currentUserRole = rol;
+            var esAdmin = (rol === 'administrador');
+
+            // En modo cobrador (solo lectura), ocultar formulario de carga de observaciones
+            var formObs = document.querySelector('.observacion-form');
+            if (formObs) {
+                formObs.style.display = esAdmin ? 'flex' : 'none';
+            }
+
+            // Ocultar botones de mutación para cobrador
+            document.getElementById('btnEditar').style.display = esAdmin ? 'inline-flex' : 'none';
+            document.getElementById('btnEliminar').style.display = esAdmin ? 'inline-flex' : 'none';
+            var btnCorregirGeo = document.getElementById('btnCorregirGeo');
+            if (btnCorregirGeo) {
+                btnCorregirGeo.style.display = esAdmin ? 'inline-flex' : 'none';
+            }
+
+            // Si es cobrador, adaptar navegación lateral y enlace de retorno hacia su panel
+            if (rol === 'cobrador') {
+                var brandSub = document.querySelector('.sidebar__brand-sub');
+                if (brandSub) brandSub.textContent = 'Panel del Cobrador';
+
+                var backLink = document.querySelector('.back-link');
+                if (backLink) {
+                    backLink.href = BASE_URL + '/views/cobrador/socios.html';
+                    var backText = backLink.querySelector('span');
+                    if (backText) backText.textContent = 'Volver a socios';
+                }
+
+                var nav = document.getElementById('sidebarNav');
+                if (nav) {
+                    var SIDEBAR_COBRADOR = [
+                        {
+                            href: BASE_URL + '/views/cobrador/index.html', label: 'Inicio',
+                            icon: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>'
+                        },
+                        {
+                            href: BASE_URL + '/views/cobrador/socios.html', label: 'Socios', active: true,
+                            icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'
+                        },
+                        {
+                            href: BASE_URL + '/views/pagos/cobro-sede.html', label: 'Terminal de cobro',
+                            icon: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'
+                        },
+                        {
+                            href: BASE_URL + '/views/cobrador/planillas.html', label: 'Mis planillas',
+                            icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>'
+                        },
+                        {
+                            href: BASE_URL + '/views/planillas/mapa.html', label: 'Mapa de ruteo',
+                            icon: '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/>'
+                        }
+                    ];
+                    nav.innerHTML = SIDEBAR_COBRADOR.map(function (item) {
+                        var cls = 'sidebar-nav-item' + (item.active ? ' sidebar-nav-item--active' : '');
+                        return '<a href="' + item.href + '" class="' + cls + '">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' + item.icon + '</svg>' +
+                            item.label +
+                            '</a>';
+                    }).join('');
+                }
+            }
+        }
+
         fetch(API_BASE + '/auth/me')
             .then(function (res) {
                 if (!res.ok) throw new Error('No autenticado');
@@ -758,12 +833,12 @@
                     return;
                 }
                 var user = res.data;
-                if (user.rol !== 'administrador') {
-                    window.location.replace(user.rol === 'cobrador'
-                        ? BASE_URL + '/views/cobrador/index.html'
-                        : BASE_URL + '/views/auth/login.html');
+                // Permitir acceso de lectura a administradores y cobradores
+                if (user.rol !== 'administrador' && user.rol !== 'cobrador') {
+                    window.location.replace(BASE_URL + '/views/auth/login.html');
                     return;
                 }
+                aplicarPermisosRol(user.rol);
                 init();
             })
             .catch(function () {

@@ -19,7 +19,8 @@ class ObservacionController {
     }
 
     public function agregar(array $params): void {
-        AuthMiddleware::requireAuth();
+        // Solo el administrador cuenta con permisos para cargar nuevas observaciones
+        AuthMiddleware::requireAuth('administrador');
         $usuarioId = $_SESSION['usuario_id'] ?? 'sistema';
         $data = json_decode(file_get_contents('php://input'), true);
 
