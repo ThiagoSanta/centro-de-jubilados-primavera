@@ -28,34 +28,25 @@ class DashboardController
         $stmt->execute();
         $sociosActivos = (int) $stmt->fetchColumn();
 
-        // Métrica 2: Cantidad de socios con condición de morosidad (2 o más períodos pendientes de pago)
+        // Métrica 2: Socios activos con al menos 1 cuota en estado 'pendiente'.
+        // Se usa COUNT DISTINCT para no duplicar socios con varias deudas.
+        // Solo se incluyen socios 'activo' para que la tarjeta y la lista del padrón muestren el mismo número.
         $stmt = $db->prepare(
             "SELECT COUNT(DISTINCT s.id)
              FROM socios s
              JOIN deudas d ON d.socio_id = s.id AND d.estado = 'pendiente'
-             WHERE s.estado = 'activo'
-             GROUP BY s.id
-             HAVING COUNT(d.id) >= 2"
+             WHERE s.estado = 'activo'"
         );
         $stmt->execute();
-        $sociosConDeuda = (int) $stmt->rowCount();
+        $sociosConDeuda = (int) $stmt->fetchColumn();
 
-        // Contar socios únicos morosos mediante subconsulta para evitar discrepancias de agrupación (HAVING)
-        $stmt2 = $db->prepare(
-            "SELECT COUNT(*) FROM (
-                SELECT s.id
-                FROM socios s
-                JOIN deudas d ON d.socio_id = s.id AND d.estado = 'pendiente'
-                WHERE s.estado = 'activo'
-                GROUP BY s.id
-                HAVING COUNT(d.id) >= 2
-             ) AS sub"
+        // Métrica 3: Suma el monto adeudado solo de socios activos para que coincida con el criterio de la tarjeta.
+        $stmt = $db->prepare(
+            "SELECT COALESCE(SUM(d.monto), 0)
+             FROM deudas d
+             JOIN socios s ON d.socio_id = s.id AND s.estado = 'activo'
+             WHERE d.estado = 'pendiente'"
         );
-        $stmt2->execute();
-        $sociosConDeuda = (int) $stmt2->fetchColumn();
-
-        // Métrica 3: Sumatoria del importe adeudado acumulado entre todas las cuotas pendientes
-        $stmt = $db->prepare("SELECT COALESCE(SUM(monto), 0) FROM deudas WHERE estado = 'pendiente'");
         $stmt->execute();
         $montoAdeudadoTotal = (float) $stmt->fetchColumn();
 

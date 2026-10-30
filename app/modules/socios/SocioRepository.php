@@ -82,15 +82,17 @@ class SocioRepository
             $params['modalidad_cobranza'] = $filtros['modalidad_cobranza'];
         }
 
-        // 4. Filtro: presencia de deudas pendientes (subconsulta booleana)
+        // 4. Filtro: presencia de deudas pendientes (subconsulta booleana).
+        // Definicion: socio "con deuda" = al menos 1 cuota en estado 'pendiente'.
+        // Se usa >= 1 para detectar cualquier mora, no solo morosos de 2+ cuotas.
         if (isset($filtros['con_deuda']) && $filtros['con_deuda'] !== '' && $filtros['con_deuda'] !== null) {
             $conDeuda = filter_var($filtros['con_deuda'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
             if ($conDeuda !== null) {
                 $subquery = "COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0)";
                 if ($conDeuda) {
-                    $conditions[] = "{$subquery} >= 2";
+                    $conditions[] = "{$subquery} >= 1";
                 } else {
-                    $conditions[] = "{$subquery} < 2";
+                    $conditions[] = "{$subquery} = 0";
                 }
             }
         }
@@ -116,9 +118,10 @@ class SocioRepository
         $total = (int)$countStmt->fetchColumn();
 
         // Obtener el lote de registros con ordenamiento y paginación
+        // con_deuda: al menos 1 cuota en estado 'pendiente' (umbral unificado >= 1)
         $sql = "SELECT s.*, 
                        z.nombre AS zona_nombre,
-                       (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 2) AS con_deuda
+                       (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 1) AS con_deuda
                 FROM socios s 
                 LEFT JOIN zonas z ON s.zona_id = z.id
                 {$whereClause} 
@@ -162,9 +165,10 @@ class SocioRepository
      */
     public function findById(string $id): ?array
     {
+        // con_deuda: al menos 1 cuota en estado 'pendiente' (umbral unificado >= 1)
         $sql = "SELECT s.*, 
                        z.nombre AS zona_nombre,
-                       (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 2) AS con_deuda
+                       (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 1) AS con_deuda
                 FROM socios s 
                 LEFT JOIN zonas z ON s.zona_id = z.id
                 WHERE s.id = :id 
@@ -195,9 +199,10 @@ class SocioRepository
     public function findByDni(string $dni): ?array
     {
         $dniClean = preg_replace('/[^0-9a-zA-Z]/', '', $dni);
+        // con_deuda: al menos 1 cuota en estado 'pendiente' (umbral unificado >= 1)
         $sql = "SELECT s.*, 
                        z.nombre AS zona_nombre,
-                       (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 2) AS con_deuda
+                       (COALESCE((SELECT COUNT(*) FROM deudas d WHERE d.socio_id = s.id AND d.estado = 'pendiente'), 0) >= 1) AS con_deuda
                 FROM socios s 
                 LEFT JOIN zonas z ON s.zona_id = z.id
                 WHERE s.dni = :dni OR REPLACE(REPLACE(REPLACE(s.dni, '.', ''), ' ', ''), '-', '') = :dniClean

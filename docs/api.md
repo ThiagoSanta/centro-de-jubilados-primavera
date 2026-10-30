@@ -179,6 +179,8 @@ Retorna métricas del sistema en tiempo real.
 }
 ```
 
+> **Nota:** `socios_con_deuda` cuenta únicamente socios en estado `activo` con al menos 1 cuota en estado `pendiente`. El monto `monto_adeudado_total` también está acotado a esos mismos socios activos.
+
 ---
 
 ## Módulo: Socios (`/api/socios`)
@@ -188,7 +190,7 @@ Lista socios con paginación y filtros.
 
 **Requiere:** autenticación
 
-**Query params:** `busqueda`, `estado`, `zona_id`, `modalidad_cobranza`, `con_deuda`, `pagina`, `limit`
+**Query params:** `busqueda`, `estado`, `zona_id`, `modalidad_cobranza`, `con_deuda` (`1` = al menos 1 cuota impaga; `0` = al día), `pagina`, `limit`
 
 **Respuesta:**
 ```json

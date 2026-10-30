@@ -808,6 +808,46 @@ if ($ctx['socio_id']) {
 echo "  deuda_id disponible: " . ($ctx['deuda_id'] ?? 'NO DISPONIBLE') . PHP_EOL;
 
 // ============================================================
+//  BLOQUE 8b — VERIFICACION UMBRAL CON_DEUDA (>= 1 cuota impaga)
+// ============================================================
+
+section('BLOQUE 8b: Con deuda con 1 cuota impaga');
+// Verifica que un socio con al menos 1 cuota pendiente ya aparece en el filtro con_deuda=1.
+// El socio TEST_ tiene al menos 1 deuda pendiente generada en el BLOQUE 8 (POST /api/deuda/anterior).
+if ($ctx['socio_id']) {
+    $rDeuda = apiRequest('GET', '/api/socios?con_deuda=1&limit=10000', null, $adminCookie);
+    assertStatus($ctx, 'GET /api/socios?con_deuda=1 -> 200', 'GET', '/api/socios?con_deuda=1', 200, $rDeuda);
+    $ids = array_column($rDeuda['body']['data']['data'] ?? [], 'id');
+    $ctx['tests']++;
+    if (in_array($ctx['socio_id'], $ids, true)) {
+        $ctx['passed']++;
+        echo "  Socio TEST_ aparece en con_deuda=1 con 1 cuota impaga     \033[32mOK\033[0m" . PHP_EOL;
+    } else {
+        $ctx['failed']++;
+        $ctx['failures'][] = 'GET /api/socios?con_deuda=1: socio TEST_ con 1 deuda no aparece';
+        echo "  Socio TEST_ NO aparece en con_deuda=1 con 1 cuota impaga  \033[31mFALLO\033[0m" . PHP_EOL;
+    }
+
+    // Verifica que la tarjeta del dashboard (socios_con_deuda) coincide con el padron activos con deuda.
+    // Ambos criterios deben estar unificados: socios activos con al menos 1 deuda pendiente.
+    $rMet    = apiRequest('GET', '/api/dashboard/metricas', null, $adminCookie);
+    $cardCount = (int)($rMet['body']['data']['socios_con_deuda'] ?? -1);
+    $rActivos  = apiRequest('GET', '/api/socios?con_deuda=1&estado=activo&limit=10000', null, $adminCookie);
+    $padronActivos = (int)($rActivos['body']['data']['total'] ?? -2);
+    $ctx['tests']++;
+    if ($cardCount === $padronActivos) {
+        $ctx['passed']++;
+        echo "  Dashboard socios_con_deuda ({$cardCount}) == padron activos con deuda ({$padronActivos}) \033[32mOK\033[0m" . PHP_EOL;
+    } else {
+        $ctx['failed']++;
+        $ctx['failures'][] = "Dashboard socios_con_deuda={$cardCount} != padron activos con_deuda={$padronActivos}";
+        echo "  Dashboard socios_con_deuda ({$cardCount}) != padron ({$padronActivos})  \033[31mFALLO\033[0m" . PHP_EOL;
+    }
+} else {
+    echo "  socio_id no disponible, se omite verificacion de con_deuda" . PHP_EOL;
+}
+
+// ============================================================
 //  BLOQUE 9 — OBSERVACIONES E HISTORIAL
 // ============================================================
 
