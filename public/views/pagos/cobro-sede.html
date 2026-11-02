@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Favicon SVG del sistema; mismo color primario que el sidebar (var(--color-primary)) -->
+    <link rel="icon" type="image/svg+xml" href="/centro-de-jubilados-primavera/public/assets/favicon.svg">
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
     <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <style>
@@ -244,14 +246,14 @@
             <nav class="sidebar__nav" id="sidebarNav">
                 <!-- items se insertan por JS -->
             </nav>
-            <div class="sidebar__footer" id="sidebarFooter" style="display:none;">
+            <div class="sidebar__footer" id="sidebarFooter">
                 <button onclick="logout()" class="sidebar-nav-item sidebar__footer-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                         <polyline points="16 17 21 12 16 7" />
                         <line x1="21" y1="12" x2="9" y2="12" />
                     </svg>
-                    Cerrar sesión
+                    Cerrar Sesión
                 </button>
             </div>
         </aside>
@@ -447,12 +449,12 @@
                     if (user.rol === 'cobrador') {
                         rolLabel.textContent = 'Panel del Cobrador';
                         nav.innerHTML = buildSidebarItems(SIDEBAR_COBRADOR);
-                        footer.style.display = '';
                     } else {
-                        // Rol no cobrador: se muestra la navegación de administrador sin botón de logout en el footer
                         rolLabel.textContent = 'Sistema de Gestión';
                         nav.innerHTML = buildSidebarItems(SIDEBAR_ADMIN);
-                        footer.style.display = 'none';
+                    }
+                    if (footer) {
+                        footer.style.display = '';
                     }
                 })
                 .catch(function () {
