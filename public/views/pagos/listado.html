@@ -10,12 +10,7 @@
     <!-- Favicon SVG del sistema; mismo color primario que el sidebar (var(--color-primary)) -->
     <link rel="icon" type="image/svg+xml" href="/centro-de-jubilados-primavera/public/assets/favicon.svg">
     <link rel="stylesheet" href="/centro-de-jubilados-primavera/public/assets/css/main.css">
-    <script src="/centro-de-jubilados-primavera/public/assets/js/app.js">
-        document.getElementById('modalAnular').addEventListener('click', function (e) {
-            if (e.target === this) cerrarModalAnular();
-        });
-
-    </script>
+    <script src="/centro-de-jubilados-primavera/public/assets/js/app.js"></script>
     <style>
         .filters-container {
             display: flex;
@@ -431,9 +426,20 @@
                 const metodoPago = escapeHtml(pago.metodo_pago);
                 const pagoId = encodeURIComponent(pago.id);
                 
-                let acciones = `<a href="${BASE_URL}/api/pagos/${pagoId}/comprobante" target="_blank" class="btn btn--secondary btn--sm" aria-label="Ver comprobante PDF del pago">PDF</a>`;
-                if (pago.estado === 'registrado') {
-                    acciones += ` <button type="button" class="btn btn--danger btn--sm" onclick="abrirModalAnular('${escapeHtml(pago.id)}')">Anular</button>`;
+                let acciones = '';
+                // Botón Comprobante por fila, disponible únicamente en pagos no anulados
+                if (pago.estado !== 'anulado') {
+                    acciones += `<a href="${BASE_URL}/api/pagos/${pagoId}/comprobante" download class="btn btn--secondary btn--sm" aria-label="Descargar comprobante PDF del pago" style="display:inline-flex;align-items:center;gap:4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;" aria-hidden="true">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Comprobante
+                    </a>`;
+                    if (pago.estado === 'registrado') {
+                        acciones += ` <button type="button" class="btn btn--danger btn--sm" onclick="abrirModalAnular('${escapeHtml(pago.id)}')">Anular</button>`;
+                    }
                 }
 
                 tr.innerHTML = `

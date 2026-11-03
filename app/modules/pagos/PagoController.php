@@ -86,19 +86,49 @@ class PagoController
 
     public function getComprobante(array $params): void
     {
+        // 1. Exigir sesión activa de usuario
         AuthMiddleware::requireAuth();
 
         $id = $params['id'] ?? null;
 
-        $filepath = __DIR__ . '/../../../storage/comprobantes/' . $id . '.pdf';
-
-        if (!file_exists($filepath)) {
+        // 2. Validación estricta del parámetro: nunca aceptar rutas ni caracteres de escape
+        if (empty($id) || !is_string($id) || !preg_match('/^[a-zA-Z0-9\-_]+$/', $id)) {
             ResponseHelper::error('Comprobante no encontrado.', 404);
             return;
         }
 
+        // 3. Verificar existencia del pago en la base de datos
+        try {
+            $pago = $this->pagoService->getPago($id);
+        } catch (\Throwable $e) {
+            ResponseHelper::error('Pago no encontrado.', 404);
+            return;
+        }
+
+        if (!$pago) {
+            ResponseHelper::error('Pago no encontrado.', 404);
+            return;
+        }
+
+        // 4. Control de acceso sin IDOR: cobrador solo puede descargar comprobantes de sus propios cobros
+        if (isset($_SESSION['rol']) && $_SESSION['rol'] === 'cobrador') {
+            if (($pago['usuario_id'] ?? null) !== ($_SESSION['usuario_id'] ?? null)) {
+                ResponseHelper::error('No tienes permiso para acceder a este comprobante.', 403);
+                return;
+            }
+        }
+
+        // 5. Obtener archivo o regenerarlo si falta físicamente en storage
+        $filepath = $this->pagoService->obtenerArchivoComprobante($id);
+
+        if (!$filepath || !file_exists($filepath)) {
+            ResponseHelper::error('Comprobante no encontrado.', 404);
+            return;
+        }
+
+        // 6. Servir el archivo PDF como descarga adjunta con nombre normalizado
         header('Content-Type: application/pdf');
-        header('Content-Disposition: inline; filename="comprobante_' . $id . '.pdf"');
+        header('Content-Disposition: attachment; filename="comprobante-' . $id . '.pdf"');
         header('Content-Length: ' . filesize($filepath));
         readfile($filepath);
         exit;

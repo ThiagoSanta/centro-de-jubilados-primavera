@@ -315,6 +315,15 @@
 
             <div class="result-actions" id="resultActions">
                 <a href="#" target="_blank" class="btn btn--secondary" id="linkComprobante">Ver Comprobante (PDF)</a>
+                <!-- Botón de descarga directa con atributo download e icono SVG estándar -->
+                <a href="#" download class="btn btn--secondary" id="btnDescargarComprobante" style="display:inline-flex;align-items:center;gap:0.4rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Descargar comprobante
+                </a>
                 <a href="#" target="_blank" class="btn-whatsapp" id="linkWhatsapp">Enviar por WhatsApp</a>
                 <!-- Boton de reinicio inmediato: cancela el temporizador y limpia la pantalla sin esperar -->
                 <button type="button" class="btn btn--secondary" id="btnNuevoCobro" onclick="reiniciarTerminal()">Nuevo cobro ahora</button>
@@ -833,7 +842,25 @@
                 // servidor (/api/pagos/{id}/comprobante). Sin el prefijo, el navegador
                 // resuelve contra la raiz del servidor y Apache devuelve 404.
                 // El mismo patron ya lo usa listado.html (L345): BASE_URL + '/api/pagos/...'.
-                document.getElementById('linkComprobante').href = BASE_URL + data.data.comprobante_url;
+                const comprobanteUrl = BASE_URL + data.data.comprobante_url;
+                document.getElementById('linkComprobante').href = comprobanteUrl;
+
+                const btnDescargar = document.getElementById('btnDescargarComprobante');
+                if (btnDescargar) {
+                    btnDescargar.href = comprobanteUrl;
+                    btnDescargar.onclick = function () {
+                        // Pausar la recarga automática para asegurar que la descarga del archivo se complete sin interrupciones
+                        if (_timerId !== null) {
+                            clearInterval(_timerId);
+                            _timerId = null;
+                        }
+                        const alerta = document.getElementById('alertaPrincipal');
+                        if (alerta) {
+                            alerta.textContent = 'Descargando comprobante. Puede iniciar un nuevo cobro cuando lo desee.';
+                        }
+                    };
+                }
+
                 document.getElementById('linkWhatsapp').href = data.data.whatsapp_url;
 
                 // Deshabilitar controles de cobro para evitar un doble registro

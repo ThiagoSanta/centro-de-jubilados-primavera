@@ -255,4 +255,38 @@ class PagoService
         }
         return $pago;
     }
+
+    /**
+     * Obtiene la ruta física del comprobante PDF en disco.
+     * Si el archivo no existe físicamente pero el pago está registrado, lo regenera automáticamente.
+     * Retorna la ruta completa al archivo o null si no existe el pago.
+     */
+    public function obtenerArchivoComprobante(string $pagoId): ?string
+    {
+        $dir = __DIR__ . '/../../../storage/comprobantes';
+        $filepath = $dir . '/' . $pagoId . '.pdf';
+
+        if (file_exists($filepath)) {
+            return $filepath;
+        }
+
+        // Si el archivo físico falta pero el pago existe en base de datos, regenerar el comprobante
+        $pago = $this->pagoRepository->findById($pagoId);
+        if (!$pago) {
+            return null;
+        }
+
+        $socio = $this->socioRepository->findById($pago['socio_id']) ?? [
+            'numero_socio' => $pago['numero_socio'] ?? '—',
+            'nombre_apellido' => $pago['socio_nombre'] ?? 'Socio'
+        ];
+        $deudas = $this->pagoRepository->getDeudasByPago($pagoId);
+        $cobrador = !empty($pago['cobrador_nombre'])
+            ? ($pago['cobrador_nombre'] . (!empty($pago['cobrador_apellido']) ? ' ' . $pago['cobrador_apellido'] : ''))
+            : 'Administrador';
+
+        $this->generarComprobante($pagoId, $socio, $deudas, $pago, $cobrador);
+
+        return file_exists($filepath) ? $filepath : null;
+    }
 }

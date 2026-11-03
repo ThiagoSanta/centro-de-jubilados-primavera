@@ -53,9 +53,11 @@ class PagoRepository
 
     public function findById(string $id): ?array
     {
-        $sql = "SELECT p.*, s.nombre_apellido as socio_nombre, s.numero_socio 
+        // Se unen los datos del socio y del operador responsable para comprobantes y auditoría
+        $sql = "SELECT p.*, s.nombre_apellido as socio_nombre, s.numero_socio, u.nombre as cobrador_nombre, u.apellido as cobrador_apellido 
                 FROM pagos p 
                 JOIN socios s ON p.socio_id = s.id 
+                LEFT JOIN usuarios u ON p.usuario_id = u.id 
                 WHERE p.id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['id' => $id]);
@@ -166,5 +168,16 @@ class PagoRepository
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['pago_id' => $pagoId]);
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    /**
+     * Obtiene los registros completos de deudas asociadas a un pago (para regenerar comprobantes).
+     */
+    public function getDeudasByPago(string $pagoId): array
+    {
+        $sql = "SELECT d.* FROM deudas d JOIN pago_deuda pd ON d.id = pd.deuda_id WHERE pd.pago_id = :pago_id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['pago_id' => $pagoId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

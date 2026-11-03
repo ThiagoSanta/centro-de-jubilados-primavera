@@ -90,11 +90,12 @@ function apiRequest(string $method, string $path, ?array $body = null, ?string $
     }
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-    $raw    = curl_exec($ch);
-    $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $raw         = curl_exec($ch);
+    $status      = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $contentType = (string)curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
     curl_close($ch);
     $parsed = json_decode((string)$raw, true);
-    return ['status' => $status, 'body' => $parsed ?? (string)$raw];
+    return ['status' => $status, 'body' => $parsed ?? (string)$raw, 'content_type' => $contentType];
 }
 
 /**
@@ -940,16 +941,26 @@ if ($ctx['socio_id']) {
 if ($ctx['pago_id']) {
     $r = apiRequest('GET', '/api/pagos/' . $ctx['pago_id'], null, $adminCookie);
     assertStatus($ctx, 'GET /api/pagos/{id} -> 200', 'GET', '/api/pagos/{id}', 200, $r);
+    // Pruebas del endpoint GET /api/pagos/{id}/comprobante
     $ctx['tests']++;
     $r = apiRequest('GET', '/api/pagos/' . $ctx['pago_id'] . '/comprobante', null, $adminCookie);
-    if (in_array($r['status'], [200, 404])) {
+    $isPdf = str_contains(strtolower($r['content_type'] ?? ''), 'application/pdf');
+    if ($r['status'] === 200 && $isPdf) {
         $ctx['passed']++;
-        echo "  GET /api/pagos/{id}/comprobante -> {$r['status']} (200 o 404 aceptado)  \033[32mOK\033[0m" . PHP_EOL;
+        echo "  GET /api/pagos/{id}/comprobante -> 200 (application/pdf)          \033[32mOK\033[0m" . PHP_EOL;
     } else {
         $ctx['failed']++;
-        $ctx['failures'][] = "GET /api/pagos/{id}/comprobante: esperado 200 o 404, recibido {$r['status']}";
-        echo "  GET /api/pagos/{id}/comprobante -> {$r['status']}                      \033[31mFALLO\033[0m" . PHP_EOL;
+        $ctx['failures'][] = "GET /api/pagos/{id}/comprobante: esperado 200 application/pdf, recibido {$r['status']} ({$r['content_type']})";
+        echo "  GET /api/pagos/{id}/comprobante -> {$r['status']} ({$r['content_type']})   \033[31mFALLO\033[0m" . PHP_EOL;
     }
+
+    // 401 sin sesion
+    $rSinAuth = apiRequest('GET', '/api/pagos/' . $ctx['pago_id'] . '/comprobante');
+    assertStatus($ctx, 'GET /api/pagos/{id}/comprobante sin auth -> 401', 'GET', '/api/pagos/{id}/comprobante', 401, $rSinAuth);
+
+    // 404 con ID inexistente
+    $rInexistente = apiRequest('GET', '/api/pagos/TEST_id_inexistente_9999/comprobante', null, $adminCookie);
+    assertStatus($ctx, 'GET /api/pagos/{id}/comprobante id inexistente -> 404', 'GET', '/api/pagos/{id}/comprobante', 404, $rInexistente);
     $r = apiRequest('POST', '/api/pagos/' . $ctx['pago_id'] . '/anular', [
         'motivo' => 'TEST_ anulacion de prueba automatizada',
     ], $adminCookie);
@@ -1464,6 +1475,14 @@ try {
     if ($cobradorId) {
         $pdo->prepare("DELETE pd FROM pago_deuda pd INNER JOIN pagos p ON pd.pago_id = p.id WHERE p.usuario_id = ?")->execute([$cobradorId]);
         $pdo->prepare("DELETE FROM pagos WHERE usuario_id = ?")->execute([$cobradorId]);
+    }
+
+    // 5.c. Limpiar archivo PDF de comprobante TEST_ si se generó en disco
+    if (!empty($ctx['pago_id'])) {
+        $pdfTest = __DIR__ . '/../storage/comprobantes/' . $ctx['pago_id'] . '.pdf';
+        if (file_exists($pdfTest)) {
+            @unlink($pdfTest);
+        }
     }
 
     // 6. Eliminar usuario cobrador TEST_

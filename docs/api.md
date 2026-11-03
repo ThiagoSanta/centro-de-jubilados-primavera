@@ -594,9 +594,20 @@ Retorna el detalle completo de un pago y los períodos de deuda cancelados.
 ---
 
 ### `GET /api/pagos/{id}/comprobante`
-Descarga o visualiza el comprobante en formato PDF (`Content-Type: application/pdf`).
+Descarga el comprobante de pago en formato PDF como archivo adjunto (`Content-Disposition: attachment; filename="comprobante-{id}.pdf"`). Si el archivo no existe en el almacenamiento físico pero el pago se encuentra registrado, el sistema regenera el documento PDF automáticamente a partir de los datos del socio y las deudas asociadas.
 
-**Requiere:** autenticación
+**Requiere:** autenticación activa.
+- Rol `administrador`: acceso irrestricto a comprobantes de cualquier pago.
+- Rol `cobrador`: acceso restringido exclusivamente a comprobantes de pagos registrados por él mismo (prevención de IDOR).
+
+**Parámetros de ruta:**
+- `id` (UUID): Identificador único del pago. No se aceptan rutas ni nombres de archivo desde el cliente.
+
+**Respuestas:**
+- `200 OK`: Archivo binario con encabezados `Content-Type: application/pdf` y `Content-Disposition: attachment; filename="comprobante-{id}.pdf"`.
+- `401 Unauthorized`: Sesión no iniciada.
+- `403 Forbidden`: Usuario cobrador intentando acceder a un comprobante ajeno.
+- `404 Not Found`: Pago inexistente o no disponible.
 
 ---
 
