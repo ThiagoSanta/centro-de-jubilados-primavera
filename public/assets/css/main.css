@@ -153,20 +153,99 @@ a {
 }
 
 .sidebar__brand {
-    padding: 1.25rem 1rem;
+    padding: 0.875rem 0.75rem 0.875rem 1rem;
     border-bottom: 1px solid var(--color-sidebar-border);
+    min-height: 68px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar__brand-full {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+.sidebar__brand-info {
+    flex: 1;
+    min-width: 0;
 }
 
 .sidebar__brand-title {
-    font-size: var(--font-size-md);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: var(--letter-spacing-tight);
+    font-size: 0.84rem;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #ffffff;
+    letter-spacing: -0.01em;
 }
 
 .sidebar__brand-sub {
     font-size: var(--font-size-2xs);
     color: rgba(255, 255, 255, 0.5);
-    margin-top: 0.125rem;
+    margin-top: 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Boton toggle colapsar en cabecera */
+.sidebar__toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    color: var(--color-sidebar-text-muted);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+    margin-top: -2px;
+}
+
+.sidebar__toggle-btn:hover {
+    background: var(--color-sidebar-item-hover);
+    color: var(--color-content);
+}
+
+.sidebar__toggle-btn svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+/* Isotipo CJP en estado colapsado (oculto en expandido) */
+.sidebar__brand-compact {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #28325A 0%, #1E2548 100%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    user-select: none;
+}
+
+.sidebar__brand-compact:hover {
+    background: linear-gradient(135deg, #323D6D 0%, #252D57 100%);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.04);
 }
 
 .sidebar__nav {
@@ -1350,34 +1429,17 @@ a {
     width: 56px;
 }
 
-.sidebar--collapsed .sidebar__brand-title,
-.sidebar--collapsed .sidebar__brand-sub {
+.sidebar--collapsed .sidebar__brand {
+    padding: 0.875rem 0;
+    justify-content: center;
+}
+
+.sidebar--collapsed .sidebar__brand-full {
     display: none !important;
 }
 
-.sidebar--collapsed .sidebar__brand {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1.1rem 0;
-    min-height: 58px;
-    box-sizing: border-box;
-}
-
-/* Monograma "CP" en el cabezal del sidebar colapsado */
-.sidebar--collapsed .sidebar__brand::after {
-    content: "CP";
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    background: var(--color-accent);
-    color: #ffffff;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    border-radius: var(--radius);
-    letter-spacing: -0.02em;
+.sidebar--collapsed .sidebar__brand-compact {
+    display: flex !important;
 }
 
 /* Ocultar el texto de los nav items y centrar iconos */
@@ -1407,11 +1469,6 @@ a {
 
 .sidebar--collapsed .sidebar__footer {
     padding: 0.75rem 0.25rem;
-}
-
-/* Rotar la flecha cuando esta colapsado */
-.sidebar--collapsed .sidebar__toggle-btn svg {
-    transform: rotate(180deg);
 }
 
 @media (max-width: 768px) {

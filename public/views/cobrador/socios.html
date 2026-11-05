@@ -570,9 +570,19 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
-                <div class="sidebar__brand-title">Centro Primavera</div>
-                <div class="sidebar__brand-sub">Panel del Cobrador</div>
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men˙" aria-label="Expandir men˙">
+                <span>CJP</span>
             </div>
+            <div class="sidebar__brand-full">
+                <div class="sidebar__brand-info">
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
+                    <div class="sidebar__brand-sub">Panel del Cobrador</div>
+                </div>
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men˙" title="Colapsar men˙">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+            </div>
+        </div>
             <nav class="sidebar__nav">
                 <a href="/centro-de-jubilados-primavera/public/views/cobrador/index.html" class="sidebar-nav-item">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -628,9 +638,6 @@
                     Cerrar sesi√≥n
                 </button>
             </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men˙" title="Colapsar men˙">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
 </aside>
 
         <!-- Contenido principal: b√∫squeda por DNI y tabla de socios del cobrador -->
