@@ -317,3 +317,69 @@ function initFocusTrap(overlayEl) {
     }
   };
 }
+
+
+/* -- Sidebar colapsable (escritorio) ------------------------------------------ */
+
+function toggleSidebar() {
+  var sidebar = document.querySelector('.sidebar');
+  if (!sidebar) return;
+
+  var isCollapsed = sidebar.classList.toggle('sidebar--collapsed');
+  try {
+    localStorage.setItem('cjp_sidebar_collapsed', isCollapsed ? '1' : '0');
+  } catch (err) {}
+
+  var toggleBtn = document.getElementById('sidebarToggleBtn');
+  if (toggleBtn) {
+    var label = isCollapsed ? 'Expandir menu' : 'Colapsar menu';
+    toggleBtn.setAttribute('aria-label', label);
+    toggleBtn.setAttribute('title', label);
+  }
+}
+
+// Inicializacion automatica del estado del sidebar al cargar la pagina
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    if (localStorage.getItem('cjp_sidebar_collapsed') === '1') {
+      var sidebar = document.querySelector('.sidebar');
+      if (sidebar) {
+        sidebar.classList.add('no-transition');
+        sidebar.classList.add('sidebar--collapsed');
+
+        var toggleBtn = document.getElementById('sidebarToggleBtn');
+        if (toggleBtn) {
+          toggleBtn.setAttribute('aria-label', 'Expandir menu');
+          toggleBtn.setAttribute('title', 'Expandir menu');
+        }
+
+        // Reactivar transicion suave tras el renderizado inicial
+        requestAnimationFrame(function () {
+          setTimeout(function () {
+            sidebar.classList.remove('no-transition');
+          }, 50);
+        });
+      }
+    }
+  } catch (err) {}
+
+  // Delegacion para tooltips automaticos en cualquier item dinamico o existente
+  document.addEventListener('mouseover', function (e) {
+    var item = e.target.closest('.sidebar-nav-item');
+    if (item && !item.getAttribute('title')) {
+      var text = item.textContent.trim();
+      if (text) item.setAttribute('title', text);
+    }
+  });
+
+  // Agregar tooltip con el nombre de la seccion a cada item para cuando esta colapsado
+  var navItems = document.querySelectorAll('.sidebar-nav-item');
+  navItems.forEach(function (item) {
+    if (!item.getAttribute('title')) {
+      var text = item.textContent.trim();
+      if (text) {
+        item.setAttribute('title', text);
+      }
+    }
+  });
+});
