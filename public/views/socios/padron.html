@@ -233,7 +233,7 @@
         <form id="formNuevoSocio" class="drawer__body">
             <div class="form-group">
                 <label for="nombre_apellido">Nombre y apellido *</label>
-                <input type="text" id="nombre_apellido" name="nombre_apellido" class="form-control" required pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$" title="Solo letras y espacios, sin números" oninput="this.value = this.value.replace(/[0-9]/g, '')">
+                <input type="text" id="nombre_apellido" name="nombre_apellido" class="form-control" required maxlength="200" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$" title="Solo letras y espacios, sin números ni símbolos" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '')">
             </div>
             <div style="display: flex; gap: 0.75rem;">
                 <div class="form-group" style="flex: 1;">
@@ -247,7 +247,7 @@
                 </div>
                 <div class="form-group" style="flex: 2;">
                     <label for="dni">Número de Doc. *</label>
-                    <input type="text" id="dni" name="dni" class="form-control" placeholder="Ej: 30123456" required inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <input type="text" id="dni" name="dni" class="form-control" placeholder="Ej: 30123456" required inputmode="numeric" maxlength="10" pattern="^[0-9]{6,10}$" title="Solo números (entre 6 y 10 dígitos)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
             </div>
             <div class="form-group">
@@ -256,15 +256,15 @@
             </div>
             <div class="form-group">
                 <label for="telefono">Teléfono *</label>
-                <input type="tel" id="telefono" name="telefono" class="form-control" required oninput="this.value = this.value.replace(/[^0-9\+\s\-\(\)]/g, '')">
+                <input type="tel" id="telefono" name="telefono" class="form-control" required inputmode="numeric" maxlength="20" pattern="^[0-9]{6,20}$" title="Solo números (entre 6 y 20 dígitos)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             </div>
             <div class="form-group">
                 <label for="mutual">Mutual</label>
-                <input type="text" id="mutual" name="mutual" class="form-control">
+                <input type="text" id="mutual" name="mutual" class="form-control" maxlength="100" placeholder="Nombre de la mutual (opcional)" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.\-]/g, '')">
             </div>
             <div class="form-group">
                 <label for="direccion">Dirección *</label>
-                <input type="text" id="direccion" name="direccion" class="form-control" required>
+                <input type="text" id="direccion" name="direccion" class="form-control" required maxlength="200" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.,\-\/º°]/g, '')">
             </div>
             <div class="form-group">
                 <label>Modalidad de cobranza *</label>
@@ -290,7 +290,7 @@
                 <p class="modal__message" id="modalMessage"></p>
                 <div class="form-group" id="modalMotivoGroup" style="display:none;">
                     <label for="modalMotivo">Motivo *</label>
-                    <textarea id="modalMotivo" class="form-control form-control--textarea" rows="3" placeholder="Ingrese el motivo..."></textarea>
+                    <textarea id="modalMotivo" class="form-control form-control--textarea" rows="3" maxlength="500" placeholder="Ingrese el motivo..." oninput="this.value = this.value.replace(/[<>]/g, '')"></textarea>
                 </div>
             </div>
             <div class="modal__footer">

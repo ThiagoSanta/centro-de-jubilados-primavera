@@ -138,7 +138,7 @@
                                     <div class="card__body">
                                         <div id="listaObservaciones"></div>
                                         <div class="observacion-form">
-                                            <input type="text" id="inputObservacion" class="form-control" placeholder="Escriba una observación..." aria-label="Escriba una observación" maxlength="1000" oninput="this.value=this.value.replace(/<[^>]*>/g,'')">
+                                            <input type="text" id="inputObservacion" class="form-control" placeholder="Escriba una observación..." aria-label="Escriba una observación" maxlength="1000" oninput="this.value=this.value.replace(/[<>]/g,'')">
                                             <button type="button" class="btn btn--primary btn--sm" id="btnAgregarObs">Agregar observación</button>
                                         </div>
                                     </div>
@@ -196,7 +196,7 @@
             <form id="formEditar" class="modal__body">
                 <div class="form-group">
                     <label for="editNombre">Nombre y apellido</label>
-                    <input type="text" id="editNombre" class="form-control" required pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$" title="Solo letras y espacios, sin números" oninput="this.value = this.value.replace(/[0-9]/g, '')">
+                    <input type="text" id="editNombre" class="form-control" required maxlength="200" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$" title="Solo letras y espacios, sin números ni símbolos" oninput="this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s'-]/g, '')">
                 </div>
                 <div class="form-group">
                     <label for="editTipoDoc">Tipo de documento</label>
@@ -209,15 +209,15 @@
                 </div>
                 <div class="form-group">
                     <label for="editTelefono">Teléfono</label>
-                    <input type="tel" id="editTelefono" class="form-control" required oninput="this.value = this.value.replace(/[^0-9\+\s\-\(\)]/g, '')">
+                    <input type="tel" id="editTelefono" class="form-control" required inputmode="numeric" maxlength="20" pattern="^[0-9]{6,20}$" title="Solo números (entre 6 y 20 dígitos)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
                 <div class="form-group">
                     <label for="editMutual">Mutual</label>
-                    <input type="text" id="editMutual" class="form-control" maxlength="100" placeholder="Nombre de la mutual (opcional)">
+                    <input type="text" id="editMutual" class="form-control" maxlength="100" placeholder="Nombre de la mutual (opcional)" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.\-]/g, '')">
                 </div>
                 <div class="form-group">
                     <label for="editDireccion">Dirección</label>
-                    <input type="text" id="editDireccion" class="form-control" required maxlength="200">
+                    <input type="text" id="editDireccion" class="form-control" required maxlength="200" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.,\-\/º°]/g, '')">
                 </div>
                 <div class="form-group">
                     <label>Modalidad de cobranza</label>
@@ -244,7 +244,7 @@
                 <p class="modal__message">Esta acción dará de baja al socio. Ingrese el motivo para continuar.</p>
                 <div class="form-group">
                     <label for="eliminarMotivo">Motivo *</label>
-                    <textarea id="eliminarMotivo" class="form-control form-control--textarea" rows="3" maxlength="500" placeholder="Describa el motivo de la baja..."></textarea>
+                    <textarea id="eliminarMotivo" class="form-control form-control--textarea" rows="3" maxlength="500" placeholder="Describa el motivo de la baja..." oninput="this.value=this.value.replace(/[<>]/g,'')"></textarea>
                 </div>
             </div>
             <div class="modal__footer">
