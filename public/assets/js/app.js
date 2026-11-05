@@ -165,6 +165,78 @@ document.addEventListener('keydown', function (e) {
 });
 
 /**
+ * Atajo global de usabilidad (Enter):
+ * Permite confirmar acciones o aplicar búsquedas/filtros presionando la tecla Enter.
+ * - En inputs dentro de modales o drawers: activa el botón principal de confirmación.
+ * - En cajas de búsqueda o filtros: activa el botón de búsqueda o filtrado.
+ * - En textareas: respeta saltos de línea con Enter simple; permite confirmar con Ctrl+Enter.
+ */
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Enter') return;
+
+  const target = e.target;
+  if (!target) return;
+
+  // 1. Textarea: Enter simple inserta salto de línea normal. Solo confirma con Ctrl+Enter o Cmd+Enter.
+  if (target.tagName === 'TEXTAREA') {
+    if (!e.ctrlKey && !e.metaKey) return;
+  }
+
+  // 2. Si el foco está directamente en un botón o link interactivo, permitir comportamiento nativo.
+  if (target.tagName === 'BUTTON' || target.tagName === 'A') return;
+
+  // 3. Solo actuar si el foco está en un elemento de entrada o selección.
+  const isInput = target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA';
+  if (!isInput) return;
+
+  // 4. Caso A: Dentro de un modal o drawer activo
+  const modal = target.closest('.modal, .modal-dialog, [role="dialog"], .drawer');
+  if (modal) {
+    const confirmBtn = modal.querySelector(
+      '.modal__footer .btn--primary, .modal__footer .btn--danger, ' +
+      '.modal-footer .btn--primary, .modal-footer .btn--danger, ' +
+      '.drawer__footer .btn--primary, button[type="submit"]:not([disabled])'
+    ) || modal.querySelector('button.btn--primary:not([disabled]), button.btn--danger:not([disabled])');
+
+    if (confirmBtn && !confirmBtn.disabled) {
+      e.preventDefault();
+      confirmBtn.click();
+      return;
+    }
+  }
+
+  // 5. Caso B: Dentro de una caja de búsqueda, filtros o formulario inline
+  const container = target.closest(
+    '.search-container, .search-box, .mobile-search-box, .observacion-form, ' +
+    '.filters-container, .toolbar, .form-inline'
+  );
+  if (container) {
+    const actionBtn = container.querySelector(
+      'button.btn--primary:not([disabled]), button[id^="btnBuscar"]:not([disabled]), ' +
+      'button[id^="btn-search"]:not([disabled]), #btnAgregarObs:not([disabled]), ' +
+      'button[type="submit"]:not([disabled])'
+    );
+    if (actionBtn && !actionBtn.disabled) {
+      e.preventDefault();
+      actionBtn.click();
+      return;
+    }
+  }
+
+  // 6. Caso C: Dentro de un formulario estándar
+  const form = target.form || target.closest('form');
+  if (form) {
+    const submitBtn = form.querySelector('button[type="submit"]:not([disabled]), button.btn--primary:not([disabled])')
+      || (form.id ? document.querySelector(`button[form="${form.id}"]:not([disabled])`) : null);
+    if (submitBtn && !submitBtn.disabled) {
+      e.preventDefault();
+      submitBtn.click();
+      return;
+    }
+  }
+});
+
+/**
  * Focus Trap — WCAG 2.1, criterio 2.1.2
  *
  * Confina el foco de teclado dentro de un modal mientras está abierto.
