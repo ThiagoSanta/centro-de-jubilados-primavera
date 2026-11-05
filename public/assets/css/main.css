@@ -155,7 +155,7 @@ a {
 .sidebar__brand {
     padding: 0.875rem 0.75rem 0.875rem 1rem;
     border-bottom: 1px solid var(--color-sidebar-border);
-    min-height: 68px;
+    min-height: 72px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -174,12 +174,20 @@ a {
     min-width: 0;
 }
 
-.sidebar__brand-title {
-    font-size: 0.84rem;
-    font-weight: 600;
-    line-height: 1.25;
-    color: #ffffff;
+.sidebar__brand-prefix {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.82);
+    line-height: 1.2;
     letter-spacing: -0.01em;
+}
+
+.sidebar__brand-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.22;
+    color: #ffffff;
+    letter-spacing: -0.02em;
 }
 
 .sidebar__brand-sub {
@@ -197,7 +205,9 @@ a {
     align-items: center;
     justify-content: center;
     width: 28px;
+    min-width: 28px;
     height: 28px;
+    min-height: 28px;
     padding: 0;
     background: transparent;
     border: none;
@@ -206,7 +216,7 @@ a {
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
     flex-shrink: 0;
-    margin-top: -2px;
+    margin-top: 2px;
 }
 
 .sidebar__toggle-btn:hover {
@@ -217,7 +227,6 @@ a {
 .sidebar__toggle-btn svg {
     width: 16px;
     height: 16px;
-    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 }
 
@@ -233,19 +242,40 @@ a {
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 8px;
     color: #ffffff;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     transition: background 0.15s, border-color 0.15s, transform 0.15s;
     user-select: none;
+    position: relative;
+}
+
+.brand-compact-text {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    display: block;
+    line-height: 1;
+}
+
+.brand-compact-icon {
+    display: none;
+    width: 18px;
+    height: 18px;
+    color: #ffffff;
 }
 
 .sidebar__brand-compact:hover {
     background: linear-gradient(135deg, #323D6D 0%, #252D57 100%);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: scale(1.04);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: scale(1.05);
+}
+
+.sidebar__brand-compact:hover .brand-compact-text {
+    display: none;
+}
+
+.sidebar__brand-compact:hover .brand-compact-icon {
+    display: block;
 }
 
 .sidebar__nav {
@@ -1392,33 +1422,6 @@ a {
 }
 
 /* Botón ◀/▶ para colapsar/expandir */
-.sidebar__toggle-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    padding: 0.6rem 0;
-    background: transparent;
-    border: none;
-    border-top: 1px solid var(--color-sidebar-border);
-    color: var(--color-sidebar-text-muted);
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-    flex-shrink: 0;
-}
-
-.sidebar__toggle-btn:hover {
-    background: var(--color-sidebar-item-hover);
-    color: var(--color-content);
-}
-
-.sidebar__toggle-btn svg {
-    width: 18px;
-    height: 18px;
-    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-shrink: 0;
-}
-
 /* Estado colapsado */
 .no-transition,
 .no-transition * {

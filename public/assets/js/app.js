@@ -363,6 +363,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   } catch (err) {}
 
+  // Accesibilidad por teclado para expandir con Enter/Espacio en el logo CJP
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && document.activeElement && document.activeElement.classList.contains('sidebar__brand-compact')) {
+      e.preventDefault();
+      toggleSidebar();
+    }
+  });
+
   // Delegacion para tooltips automaticos en cualquier item dinamico o existente
   document.addEventListener('mouseover', function (e) {
     var item = e.target.closest('.sidebar-nav-item');
