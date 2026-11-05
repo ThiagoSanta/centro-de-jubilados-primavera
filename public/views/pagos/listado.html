@@ -269,7 +269,7 @@
             <p>Está a punto de anular el pago. Las deudas asociadas volverán a estado "pendiente" y se generará una notificación para el socio (con 7 días para posible reversión).</p>
             <div class="form-group">
                 <label class="form-label" for="motivoAnulacion">Motivo de la anulación (Obligatorio)</label>
-                <textarea id="motivoAnulacion" class="form-control" rows="3" required></textarea>
+                <textarea id="motivoAnulacion" class="form-control" rows="3" required maxlength="500" placeholder="Describa el motivo de la anulación..."></textarea>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn--secondary" onclick="cerrarModalAnular()">Cancelar</button>

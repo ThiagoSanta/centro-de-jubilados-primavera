@@ -653,7 +653,9 @@
                     <input type="text" id="dni-input-mobile"
                         placeholder="DNI o nombre del socio..."
                         inputmode="numeric" autocomplete="off"
-                        aria-label="Buscar socio por DNI o nombre">
+                        aria-label="Buscar socio por DNI o nombre"
+                        maxlength="10"
+                        oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                     <button class="btn btn--primary" onclick="buscarSocioDniMobile()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"/>
@@ -668,7 +670,9 @@
             <!-- Búsqueda rápida por DNI -->
             <div class="search-box">
                 <input type="text" id="dni-input" placeholder="Búsqueda rápida por DNI exacto..."
-                    aria-label="Búsqueda por DNI">
+                    aria-label="Búsqueda por DNI"
+                    inputmode="numeric" maxlength="10"
+                    oninput="this.value=this.value.replace(/[^0-9]/g,'')">
                 <button class="btn btn--primary" id="btn-search" onclick="buscarSocioDni()">
                     <svg viewBox="0 0 24 24">
                         <circle cx="11" cy="11" r="8" />
