@@ -6,6 +6,7 @@ use Exception;
 use CJP\Shared\Exceptions\AppException;
 use DateTime;
 use CJP\Config\Database;
+use CJP\Shared\Helpers\ValidationHelper;
 
 class DeudaService
 {
@@ -135,7 +136,8 @@ class DeudaService
 
     public function exonerarDeuda(string $deudaId, string $motivo, string $usuarioId): void
     {
-        if (empty(trim($motivo))) {
+        $motivoLimpio = ValidationHelper::validarTextoPlano($motivo, 500, 'motivo de exoneración');
+        if (empty($motivoLimpio)) {
             throw new AppException("El motivo de exoneración es obligatorio.", 400);
         }
 
@@ -179,14 +181,11 @@ class DeudaService
 
     public function registrarCuota(array $datos, string $usuarioId): array
     {
-        if (!isset($datos['monto']) || (float)$datos['monto'] <= 0) {
-            throw new AppException("El monto debe ser mayor a 0.", 400);
-        }
+        $monto = ValidationHelper::validarMonto($datos['monto'] ?? 0, 'monto');
+        $fechaVigencia = ValidationHelper::validarFecha($datos['fecha_vigencia_desde'] ?? '', 'fecha de vigencia');
 
-        if (!isset($datos['fecha_vigencia_desde']) || !strtotime($datos['fecha_vigencia_desde'])) {
-            throw new AppException("La fecha de vigencia es inválida.", 400);
-        }
-
+        $datos['monto'] = $monto;
+        $datos['fecha_vigencia_desde'] = $fechaVigencia;
         $datos['usuario_id'] = $usuarioId;
         $id = $this->cuotaRepository->create($datos);
 

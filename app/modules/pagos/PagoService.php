@@ -10,6 +10,7 @@ use CJP\Modules\Deuda\DeudaRepository;
 use CJP\Modules\Socios\SocioRepository;
 use CJP\Modules\Notificaciones\NotificacionService;
 use CJP\Shared\Services\WhatsAppService;
+use CJP\Shared\Helpers\ValidationHelper;
 use FPDF;
 
 class PagoService
@@ -42,7 +43,11 @@ class PagoService
         $socioId = $datos['socio_id'] ?? '';
         $deudaIds = $datos['deuda_ids'] ?? [];
         $metodoPago = $datos['metodo_pago'] ?? 'efectivo';
-        $observacion = $datos['observacion'] ?? '';
+        $observacion = ValidationHelper::validarTextoPlano($datos['observacion'] ?? null, 1000, 'observación') ?? '';
+
+        if (!in_array($metodoPago, ['efectivo', 'transferencia'], true)) {
+            throw new AppException("Método de pago inválido (debe ser efectivo o transferencia).", 422);
+        }
 
         if (empty($deudaIds)) {
             throw new AppException("Debe seleccionar al menos una deuda para pagar.", 400);

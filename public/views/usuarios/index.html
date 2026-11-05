@@ -176,15 +176,15 @@
         <div class="modal__body">
             <div class="form-group">
                 <label for="nuevoNombre">Nombre</label>
-                <input type="text" id="nuevoNombre" class="form-control" placeholder="Nombre" autocomplete="off">
+                <input type="text" id="nuevoNombre" class="form-control" placeholder="Nombre" autocomplete="off" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$" title="Solo letras y espacios, sin números" oninput="this.value = this.value.replace(/[0-9]/g, '')">
             </div>
             <div class="form-group">
                 <label for="nuevoApellido">Apellido</label>
-                <input type="text" id="nuevoApellido" class="form-control" placeholder="Apellido" autocomplete="off">
+                <input type="text" id="nuevoApellido" class="form-control" placeholder="Apellido" autocomplete="off" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$" title="Solo letras y espacios, sin números" oninput="this.value = this.value.replace(/[0-9]/g, '')">
             </div>
             <div class="form-group">
                 <label for="nuevoUsuario">Nombre de usuario</label>
-                <input type="text" id="nuevoUsuario" class="form-control" placeholder="usuario" autocomplete="off">
+                <input type="text" id="nuevoUsuario" class="form-control" placeholder="usuario" autocomplete="off" pattern="^[a-z0-9._]+$" title="Letras minúsculas, números, punto y guion bajo" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9._]/g, '')">
             </div>
             <div class="form-group">
                 <label for="nuevoPassword">Contraseña</label>
@@ -218,11 +218,11 @@
             <input type="hidden" id="editarId">
             <div class="form-group">
                 <label for="editarNombre">Nombre</label>
-                <input type="text" id="editarNombre" class="form-control" autocomplete="off">
+                <input type="text" id="editarNombre" class="form-control" autocomplete="off" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$" title="Solo letras y espacios, sin números" oninput="this.value = this.value.replace(/[0-9]/g, '')">
             </div>
             <div class="form-group">
                 <label for="editarApellido">Apellido</label>
-                <input type="text" id="editarApellido" class="form-control" autocomplete="off">
+                <input type="text" id="editarApellido" class="form-control" autocomplete="off" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'-]+$" title="Solo letras y espacios, sin números" oninput="this.value = this.value.replace(/[0-9]/g, '')">
             </div>
             <div class="form-group">
                 <span class="form-label">Nombre de usuario</span>

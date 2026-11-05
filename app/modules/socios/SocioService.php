@@ -8,6 +8,7 @@ use DateTime;
 use CJP\Config\Config;
 use CJP\Shared\Helpers\DateHelper;
 use CJP\Modules\Zonas\ZonaService;
+use CJP\Shared\Helpers\ValidationHelper;
 use Ramsey\Uuid\Uuid;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Writer\PngWriter;
@@ -123,35 +124,27 @@ class SocioService
         $payload = [];
         $valAnterior = [];
 
-        // 1. Validar reglas de formato para campos modificados (teléfono, email, fechas)
+        // 1. Validar reglas de formato para campos modificados (nombre, teléfono, fechas)
         if (isset($datos['nombre_apellido'])) {
-            $val = trim($datos['nombre_apellido']);
-            if (empty($val)) {
-                throw new AppException("El nombre y apellido son obligatorios.", 400);
-            }
+            $val = ValidationHelper::validarNombreApellido($datos['nombre_apellido'], 'nombre y apellido');
             $payload['nombre_apellido'] = $val;
             $valAnterior['nombre_apellido'] = $socio['nombre_apellido'];
         }
 
         if (isset($datos['fecha_nacimiento'])) {
-            if (!$this->validarFecha($datos['fecha_nacimiento'])) {
-                throw new AppException("Formato de fecha de nacimiento incorrecto (debe ser YYYY-MM-DD).", 400);
-            }
-            $payload['fecha_nacimiento'] = $datos['fecha_nacimiento'];
+            $val = ValidationHelper::validarFecha($datos['fecha_nacimiento'], 'fecha de nacimiento');
+            $payload['fecha_nacimiento'] = $val;
             $valAnterior['fecha_nacimiento'] = $socio['fecha_nacimiento'];
         }
 
         if (isset($datos['telefono'])) {
-            $val = trim($datos['telefono']);
-            if (empty($val)) {
-                throw new AppException("El teléfono es obligatorio.", 400);
-            }
+            $val = ValidationHelper::validarTelefono($datos['telefono']);
             $payload['telefono'] = $val;
             $valAnterior['telefono'] = $socio['telefono'];
         }
 
         if (isset($datos['mutual'])) {
-            $payload['mutual'] = !empty($datos['mutual']) ? trim($datos['mutual']) : null;
+            $payload['mutual'] = !empty($datos['mutual']) ? ValidationHelper::validarTextoPlano($datos['mutual'], 100, 'mutual') : null;
             $valAnterior['mutual'] = $socio['mutual'];
         }
 
@@ -1000,25 +993,23 @@ class SocioService
      */
     private function validarDatosSocio(array &$datos): void
     {
-        if (empty($datos['nombre_apellido'])) {
-            throw new AppException("El nombre y apellido son obligatorios.", 400);
-        }
+        $datos['nombre_apellido'] = ValidationHelper::validarNombreApellido($datos['nombre_apellido'] ?? '', 'nombre y apellido');
 
         $tipoDoc = !empty($datos['tipo_documento']) ? $datos['tipo_documento'] : 'dni';
         $dniNormalizado = $this->normalizarYValidarDocumento($tipoDoc, $datos['dni'] ?? '');
         $datos['tipo_documento'] = $tipoDoc;
         $datos['dni'] = $dniNormalizado;
 
-        if (empty($datos['fecha_nacimiento']) || !$this->validarFecha($datos['fecha_nacimiento'])) {
-            throw new AppException("Formato de fecha de nacimiento incorrecto (debe ser YYYY-MM-DD).", 400);
-        }
-
-        if (empty($datos['telefono'])) {
-            throw new AppException("El teléfono es obligatorio.", 400);
-        }
+        $datos['fecha_nacimiento'] = ValidationHelper::validarFecha($datos['fecha_nacimiento'] ?? '', 'fecha de nacimiento');
+        $datos['telefono'] = ValidationHelper::validarTelefono($datos['telefono'] ?? '');
 
         if (empty($datos['direccion'])) {
             throw new AppException("La dirección es obligatoria.", 400);
+        }
+        $datos['direccion'] = ValidationHelper::validarTextoPlano($datos['direccion'], 255, 'dirección');
+
+        if (!empty($datos['mutual'])) {
+            $datos['mutual'] = ValidationHelper::validarTextoPlano($datos['mutual'], 100, 'mutual');
         }
 
         if (empty($datos['modalidad_cobranza'])) {

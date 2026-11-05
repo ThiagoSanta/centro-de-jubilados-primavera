@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ruleset name="CJP_Standards">
+    <description>Estándar PSR-12 para Centro de Jubilados Primavera</description>
+    <file>app</file>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <rule ref="PSR12"/>
+</ruleset>

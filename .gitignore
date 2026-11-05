@@ -8,9 +8,11 @@
 /storage/backups/*
 !/storage/backups/.gitkeep
 
+.phpunit.cache/
 .env
 
-*.env
+*.phpunit.cache/
+.env
 
 .DS_Store
 

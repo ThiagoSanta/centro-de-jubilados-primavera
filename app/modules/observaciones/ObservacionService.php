@@ -3,6 +3,7 @@ namespace CJP\Modules\Observaciones;
 
 use Exception;
 use CJP\Shared\Exceptions\AppException;
+use CJP\Shared\Helpers\ValidationHelper;
 
 class ObservacionService {
     private ObservacionRepository $repository;
@@ -16,17 +17,15 @@ class ObservacionService {
     }
 
     public function agregar(string $socioId, string $contenido, string $usuarioId): array {
-        if (empty(trim($contenido))) {
+        $limpio = ValidationHelper::validarTextoPlano($contenido, 1000, 'observación');
+        if (empty($limpio)) {
             throw new AppException("El contenido de la observación no puede estar vacío.", 400);
-        }
-        if (strlen($contenido) > 1000) {
-            throw new AppException("El contenido no puede superar los 1000 caracteres.", 400);
         }
 
         $id = $this->repository->create([
             'socio_id' => $socioId,
             'usuario_id' => $usuarioId,
-            'contenido' => $contenido
+            'contenido' => $limpio
         ]);
 
         $this->repository->registerAuditEvent($usuarioId, 'crear_observacion', 'observaciones', null, json_encode(['id' => $id, 'socio_id' => $socioId, 'contenido' => $contenido]), 'Nueva observación agregada');

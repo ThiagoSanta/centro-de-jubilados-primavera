@@ -4,6 +4,7 @@ namespace CJP\Modules\Usuarios;
 
 use Exception;
 use CJP\Shared\Exceptions\AppException;
+use CJP\Shared\Helpers\ValidationHelper;
 
 class UsuarioService
 {
@@ -58,27 +59,11 @@ class UsuarioService
      */
     public function crear(array $datos, string $usuarioId): array
     {
-        $nombre    = trim($datos['nombre'] ?? '');
-        $apellido  = trim($datos['apellido'] ?? '');
-        $username  = trim($datos['usuario'] ?? '');
-        $password  = $datos['contrasena'] ?? '';
+        $nombre    = ValidationHelper::validarNombreApellido($datos['nombre'] ?? '', 'nombre');
+        $apellido  = ValidationHelper::validarNombreApellido($datos['apellido'] ?? '', 'apellido');
+        $username  = ValidationHelper::validarUsuario($datos['usuario'] ?? '');
+        $password  = ValidationHelper::validarPassword($datos['contrasena'] ?? '', 8);
         $rol       = $datos['rol'] ?? '';
-
-        if (empty($nombre)) {
-            throw new AppException('El nombre es obligatorio.', 400);
-        }
-
-        if (empty($apellido)) {
-            throw new AppException('El apellido es obligatorio.', 400);
-        }
-
-        if (empty($username)) {
-            throw new AppException('El nombre de usuario es obligatorio.', 400);
-        }
-
-        if (empty($password) || strlen($password) < 8) {
-            throw new AppException('La contraseña debe tener al menos 8 caracteres.', 400);
-        }
 
         if (!in_array($rol, ['administrador', 'cobrador'], true)) {
             throw new AppException('El rol debe ser "administrador" o "cobrador".', 400);
@@ -131,13 +116,14 @@ class UsuarioService
         }
 
         // No permitir cambiar rol ni username — se ignoran silenciosamente
-        $permitidos = ['nombre', 'apellido'];
         $actualizar = [];
 
-        foreach ($permitidos as $campo) {
-            if (isset($datos[$campo]) && trim($datos[$campo]) !== '') {
-                $actualizar[$campo] = trim($datos[$campo]);
-            }
+        if (isset($datos['nombre'])) {
+            $actualizar['nombre'] = ValidationHelper::validarNombreApellido($datos['nombre'], 'nombre');
+        }
+
+        if (isset($datos['apellido'])) {
+            $actualizar['apellido'] = ValidationHelper::validarNombreApellido($datos['apellido'], 'apellido');
         }
 
         if (empty($actualizar)) {
