@@ -1,0 +1,4 @@
+nombre_apellido;dni;fecha_nacimiento;telefono;mutual;direccion;modalidad_cobranza
+Juan Carlos Pérez;24567891;1955-04-12;3414567890;PAMI;San Martín 1250;cobranza_domiciliaria
+María Elena Gómez;27891234;1958-09-23;3415678901;IAPOS;Mitre 850;cobranza_en_sede
+Roberto Carlos Rossi;21345678;1952-11-30;3416789012;;Belgrano 420;cobranza_domiciliaria

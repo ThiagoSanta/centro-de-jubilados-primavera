@@ -96,6 +96,7 @@ $router->post('/api/socios/importar',            [SocioController::class, 'impor
 $router->get('/api/socios/importar/activa',      [SocioController::class, 'getImportacionActiva']);
 $router->get('/api/socios/importar/{id}/estado', [SocioController::class, 'getEstadoImportacion']);
 $router->get('/api/socios/inconsistencias',      [SocioController::class, 'getInconsistencias']);
+$router->get('/api/socios/exportar',             [SocioController::class, 'exportarCSV']);
 $router->get('/api/socios',                 [SocioController::class, 'index']);
 $router->post('/api/socios', [SocioController::class, 'create']);
 $router->get('/api/socios/{id}', [SocioController::class, 'show']);

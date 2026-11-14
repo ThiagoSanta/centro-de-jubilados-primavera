@@ -7,18 +7,22 @@ use CJP\Shared\Exceptions\AppException;
 use DateTime;
 use CJP\Config\Database;
 use CJP\Shared\Helpers\ValidationHelper;
+use CJP\Modules\Notificaciones\NotificacionService;
 
 class DeudaService
 {
     private DeudaRepository $deudaRepository;
     private ConfiguracionCuotaRepository $cuotaRepository;
+    private NotificacionService $notificacionService;
 
     public function __construct(
         ?DeudaRepository $deudaRepository = null,
-        ?ConfiguracionCuotaRepository $cuotaRepository = null
+        ?ConfiguracionCuotaRepository $cuotaRepository = null,
+        ?NotificacionService $notificacionService = null
     ) {
         $this->deudaRepository = $deudaRepository ?? new DeudaRepository();
         $this->cuotaRepository = $cuotaRepository ?? new ConfiguracionCuotaRepository();
+        $this->notificacionService = $notificacionService ?? new NotificacionService();
     }
 
     public function generarDeudaMensual(string $periodo, bool $confirmarDuplicado, string $usuarioId): array
@@ -26,6 +30,13 @@ class DeudaService
         // 1. Asegurar que el período cumpla estrictamente con el formato estándar 'AAAA-MM'
         if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periodo)) {
             throw new AppException("Formato de período inválido. Debe ser AAAA-MM.", 400);
+        }
+
+        // Validar que el año del período no supere el año actual + 1
+        $anioperiodo = (int)substr($periodo, 0, 4);
+        $anioMaxPermitido = (int)date('Y') + 1;
+        if ($anioperiodo < 2020 || $anioperiodo > $anioMaxPermitido) {
+            throw new AppException("El período indicado ({$periodo}) está fuera del rango permitido (2020 - {$anioMaxPermitido}).", 422);
         }
 
         // 2. Recuperar el importe y la configuración de la cuota social vigente en el sistema
@@ -55,12 +66,20 @@ class DeudaService
                 $deudaExistente = $this->deudaRepository->findBySocioAndPeriodo($socioId, $periodo);
 
                 if ($deudaExistente) {
+                    // Las cuotas ya pagadas no se pueden duplicar ni alterar
+                    if ($deudaExistente['estado'] === 'pagada') {
+                        $omitidas++;
+                        continue;
+                    }
+
                     if (!$confirmarDuplicado) {
                         $advertencias[] = $socioId;
                         $omitidas++;
                     } else {
-                        // Reactivar la deuda existente marcándola como 'pendiente' en caso de haber sido modificada previamente
+                        // Reactivar si estaba exonerada o actualizar monto si estaba pendiente
                         $this->deudaRepository->updateEstado($deudaExistente['id'], 'pendiente');
+                        $stmtUpdate = $db->prepare("UPDATE deudas SET fecha_exoneracion = NULL, monto = :monto WHERE id = :id");
+                        $stmtUpdate->execute(['monto' => $monto, 'id' => $deudaExistente['id']]);
                         $generadas++;
                     }
                 } else {
@@ -74,15 +93,17 @@ class DeudaService
                 }
             }
 
-            // 6. Asentar en la bitácora de auditoría la generación masiva de cuotas del período
-            $this->deudaRepository->registerAuditEvent(
-                'GENERACION_DEUDA_MENSUAL',
-                'deudas',
-                null,
-                $periodo,
-                $usuarioId,
-                null
-            );
+            // 6. Asentar en la bitácora de auditoría solo si realmente se generaron o reactivaron deudas
+            if ($generadas > 0) {
+                $this->deudaRepository->registerAuditEvent(
+                    'GENERACION_DEUDA_MENSUAL',
+                    'deudas',
+                    null,
+                    $periodo,
+                    $usuarioId,
+                    "Generadas: {$generadas}, Omitidas: {$omitidas}"
+                );
+            }
 
             $db->commit();
         } catch (Exception $e) {
@@ -109,13 +130,8 @@ class DeudaService
             throw new AppException("El socio no existe o no está activo.", 404);
         }
 
-        // 2. Validar que el socio no cuente ya con un saldo histórico migrado ('deuda_anterior')
-        $deudaAnterior = $this->deudaRepository->findBySocioAndPeriodo($socioId, 'deuda_anterior');
-        if ($deudaAnterior) {
-            throw new AppException("El socio ya tiene una deuda anterior registrada.", 409);
-        }
-
-        // 3. Crear el registro de deuda histórica con el monto y motivo suministrados
+        // 2. Se permiten múltiples registros de deuda_anterior por socio (sin restricción)
+        // 3. Crear el registro de deuda histórica con el monto suministrado
         $this->deudaRepository->create([
             'socio_id' => $socioId,
             'periodo' => 'deuda_anterior',
@@ -165,8 +181,26 @@ class DeudaService
             $deuda['estado'],
             'exonerada',
             $usuarioId,
-            $motivo
+            $motivoLimpio
         );
+
+        // 4. Registrar notificación de acción con ventana de 7 días
+        $stmtSocio = $db->prepare("SELECT nombre_apellido, dni, numero_socio FROM socios WHERE id = :id");
+        $stmtSocio->execute(['id' => $deuda['socio_id']]);
+        $socio = $stmtSocio->fetch();
+        $socioNombre = $socio ? trim($socio['nombre_apellido'] ?? '') : 'Socio';
+        if (empty($socioNombre) && $socio && isset($socio['numero_socio'])) {
+            $socioNombre = 'Socio N° ' . $socio['numero_socio'];
+        }
+        $periodoFmt = $deuda['periodo'] === 'deuda_anterior' ? 'Deuda Anterior' : $deuda['periodo'];
+        $expiracion = date('Y-m-d H:i:s', strtotime('+7 days'));
+
+        $this->notificacionService->crear([
+            'tipo' => 'exoneracion_deuda',
+            'mensaje' => "Deuda de {$socioNombre} ({$periodoFmt}) por $ {$deuda['monto']} exonerada/anulada. Motivo: {$motivoLimpio}",
+            'referencia' => ['entidad' => 'deudas', 'id' => $deudaId],
+            'fecha_expiracion_reversion' => $expiracion
+        ]);
     }
 
     public function getDeudaSocio(string $socioId): array

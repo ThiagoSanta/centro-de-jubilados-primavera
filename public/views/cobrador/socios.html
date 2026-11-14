@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -193,7 +193,7 @@
             /* 0.8125rem = --font-size-sm; 600 = --font-weight-semibold */
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
-            transition: all 0.2s ease;
+            transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
             text-decoration: none;
             cursor: pointer;
             font-family: inherit;
@@ -214,16 +214,7 @@
             stroke-width: 2.2;
         }
 
-        /* ── Animaciones ───────────────────── */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
+        /* ── Animaciones: ver main.css ──────────────────── */
 
         @keyframes slideUp {
             from {
@@ -294,29 +285,6 @@
                 font-weight: var(--font-weight-bold);
             }
 
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                z-index: 1100;
-                transform: translateX(-100%);
-                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                box-shadow: var(--shadow-lg);
-            }
-
-            .sidebar.sidebar--open {
-                transform: translateX(0);
-            }
-
-            .sidebar-overlay {
-                display: block;
-            }
-
-            .sidebar-overlay.sidebar-overlay--visible {
-                opacity: 1;
-                pointer-events: auto;
-            }
 
             .content {
                 padding: 1rem;
@@ -570,17 +538,15 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub">Panel del Cobrador</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>

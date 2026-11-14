@@ -506,6 +506,74 @@ class SocioController
     }
 
     /**
+     * GET /api/socios/exportar — Exporta el padrón de socios a un archivo CSV.
+     *
+     * @param array $params
+     * @return void
+     */
+    public function exportarCSV(array $params = []): void
+    {
+        AuthMiddleware::requireAuth();
+
+        $filtros = [
+            'estado'             => $_GET['estado'] ?? null,
+            'zona_id'            => $_GET['zona_id'] ?? null,
+            'modalidad_cobranza' => $_GET['modalidad_cobranza'] ?? null,
+            'con_deuda'          => isset($_GET['con_deuda']) ? $_GET['con_deuda'] : null,
+            'busqueda'           => $_GET['busqueda'] ?? null,
+        ];
+
+        $socios = $this->socioService->listarParaExportar($filtros);
+
+        $filename = 'padron_socios_' . date('Ymd_His') . '.csv';
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        // BOM UTF-8 para apertura directa y limpia en Microsoft Excel
+        fputs($out, "\xEF\xBB\xBF");
+
+        // Cabecera CSV compatible con exportación e importación
+        fputcsv($out, [
+            'numero_socio',
+            'nombre_apellido',
+            'dni',
+            'tipo_documento',
+            'fecha_nacimiento',
+            'telefono',
+            'mutual',
+            'direccion',
+            'modalidad_cobranza',
+            'zona',
+            'estado',
+            'con_deuda'
+        ], ';');
+
+        foreach ($socios as $socio) {
+            fputcsv($out, [
+                $socio['numero_socio'] ?? '',
+                $socio['nombre_apellido'] ?? '',
+                $socio['dni'] ?? '',
+                $socio['tipo_documento'] ?? 'dni',
+                $socio['fecha_nacimiento'] ?? '',
+                $socio['telefono'] ?? '',
+                $socio['mutual'] ?? '',
+                $socio['direccion'] ?? '',
+                $socio['modalidad_cobranza'] ?? '',
+                $socio['zona_nombre'] ?? '',
+                $socio['estado'] ?? '',
+                !empty($socio['con_deuda']) ? 'SI' : 'NO'
+            ], ';');
+        }
+
+        fclose($out);
+        exit;
+    }
+
+    /**
      * GET /api/socios/{id}/qr — Sirve la imagen PNG del código QR del socio o la regenera bajo demanda si no existe en storage.
      *
      * @param array $params

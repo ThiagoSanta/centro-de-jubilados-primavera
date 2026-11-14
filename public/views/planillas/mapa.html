@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -158,29 +158,6 @@
                 font-weight: var(--font-weight-bold);
             }
 
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                z-index: 1100;
-                transform: translateX(-100%);
-                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                box-shadow: var(--shadow-lg);
-            }
-
-            .sidebar.sidebar--open {
-                transform: translateX(0);
-            }
-
-            .sidebar-overlay {
-                display: block;
-            }
-
-            .sidebar-overlay.sidebar-overlay--visible {
-                opacity: 1;
-                pointer-events: auto;
-            }
 
             .map-header {
                 padding: 0.75rem 1rem;
@@ -223,17 +200,15 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir menú" aria-label="Expandir menú">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir menï¿½" aria-label="Expandir menï¿½">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub">Sistema de Gestión</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar menú" title="Colapsar menú">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar menï¿½" title="Colapsar menï¿½">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>
@@ -253,8 +228,8 @@
         <div class="map-container">
             <header class="map-header">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h1>Mapa General de Socios</h1>
-                    <div style="display: flex; gap: 0.5rem;">
+                    <h1 id="mapaTitulo">Mapa General de Socios</h1>
+                    <div style="display: flex; gap: 0.5rem;" id="adminPlanillaActions">
                         <a href="/centro-de-jubilados-primavera/public/views/planillas/generar.html" class="btn btn--secondary btn--sm">Generar Planilla</a>
                         <a href="/centro-de-jubilados-primavera/public/views/planillas/historico.html" class="btn btn--secondary btn--sm">HistÃ³rico</a>
                     </div>
@@ -364,14 +339,25 @@
         function renderSidebar(rol) {
             var items = (rol === 'cobrador') ? SIDEBAR_COBRADOR : SIDEBAR_ADMIN;
             var nav = document.getElementById('sidebarNav');
-            if (!nav) return;
-            nav.innerHTML = items.map(function (item) {
-                var cls = 'sidebar-nav-item' + (item.active ? ' sidebar-nav-item--active' : '');
-                return '<a href="' + item.href + '" class="' + cls + '">' +
-                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + item.icon + '</svg>' +
-                    item.label +
-                    '</a>';
-            }).join('');
+            if (nav) {
+                nav.innerHTML = items.map(function (item) {
+                    var cls = 'sidebar-nav-item' + (item.active ? ' sidebar-nav-item--active' : '');
+                    return '<a href="' + item.href + '" class="' + cls + '">' +
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + item.icon + '</svg>' +
+                        item.label +
+                        '</a>';
+                }).join('');
+            }
+
+            var adminActions = document.getElementById('adminPlanillaActions');
+            var mapaTitulo = document.getElementById('mapaTitulo');
+            if (rol === 'cobrador') {
+                if (adminActions) adminActions.style.display = 'none';
+                if (mapaTitulo) mapaTitulo.textContent = 'Mapa de Ruteo';
+            } else {
+                if (adminActions) adminActions.style.display = 'flex';
+                if (mapaTitulo) mapaTitulo.textContent = 'Mapa General de Socios';
+            }
         }
 
         let map;

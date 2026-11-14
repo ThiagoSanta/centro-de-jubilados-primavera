@@ -47,6 +47,7 @@ class DeudaRepository
                 WHERE socio_id = :socioId AND estado = 'pendiente' 
                 ORDER BY 
                     CASE WHEN periodo = 'deuda_anterior' THEN 0 ELSE 1 END ASC, 
+                    fecha_generacion ASC,
                     periodo ASC";
         
         $stmt = $this->db->prepare($sql);

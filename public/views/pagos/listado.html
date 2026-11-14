@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -146,17 +146,15 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir menú" aria-label="Expandir menú">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir menï¿½" aria-label="Expandir menï¿½">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub">Sistema de Gestión</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar menú" title="Colapsar menú">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar menï¿½" title="Colapsar menï¿½">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>
@@ -379,11 +377,27 @@
                 tbody.style.opacity = '0.5';
             }
             
+            const fDesde = document.getElementById('filtroFechaDesde').value;
+            const fHasta = document.getElementById('filtroFechaHasta').value;
+
+            if (fDesde && typeof validarFechaCoherente === 'function') {
+                const c1 = validarFechaCoherente(fDesde, { minAnio: 2020, noFutura: true });
+                if (!c1.valida) { mostrarAlerta(c1.error, 'error'); return; }
+            }
+            if (fHasta && typeof validarFechaCoherente === 'function') {
+                const c2 = validarFechaCoherente(fHasta, { minAnio: 2020, noFutura: true });
+                if (!c2.valida) { mostrarAlerta(c2.error, 'error'); return; }
+            }
+            if (fDesde && fHasta && fDesde > fHasta) {
+                mostrarAlerta('La fecha desde no puede ser posterior a la fecha hasta.', 'error');
+                return;
+            }
+
             const params = new URLSearchParams();
             if (document.getElementById('filtroBusqueda').value) params.append('busqueda', document.getElementById('filtroBusqueda').value.trim());
             if (document.getElementById('filtroEstado').value) params.append('estado', document.getElementById('filtroEstado').value);
-            if (document.getElementById('filtroFechaDesde').value) params.append('fecha_desde', document.getElementById('filtroFechaDesde').value);
-            if (document.getElementById('filtroFechaHasta').value) params.append('fecha_hasta', document.getElementById('filtroFechaHasta').value);
+            if (fDesde) params.append('fecha_desde', fDesde);
+            if (fHasta) params.append('fecha_hasta', fHasta);
             params.append('pagina', pagina);
 
             try {
@@ -489,13 +503,18 @@
             pagoAAnular = id;
             document.getElementById('motivoAnulacion').value = '';
             const modalEl = document.getElementById('modalAnular');
+            modalEl.classList.add('modal-overlay--open');
             modalEl.style.display = 'flex';
+            modalEl.style.opacity = '1';
             _modalAnularTrap = initFocusTrap(modalEl);
         }
 
         function cerrarModalAnular() {
             if (_modalAnularTrap) { _modalAnularTrap.destroy(); _modalAnularTrap = null; }
-            document.getElementById('modalAnular').style.display = 'none';
+            const modalEl = document.getElementById('modalAnular');
+            modalEl.classList.remove('modal-overlay--open');
+            modalEl.style.display = 'none';
+            modalEl.style.opacity = '';
             pagoAAnular = null;
         }
 
@@ -546,14 +565,14 @@
         function mostrarAlerta(mensaje, tipo) {
             const container = document.getElementById('alertContainer');
             const alert = document.createElement('div');
-            // AsignaciÃ³n de clases del sistema para coherencia visual con main.css
             alert.className = tipo === 'success' ? 'alert alert--success' : 'alert alert--error';
             alert.textContent = mensaje;
-            
             container.innerHTML = '';
             container.appendChild(alert);
-            
-            setTimeout(() => { alert.remove(); }, 5000);
+            setTimeout(() => {
+                alert.classList.add('alert--closing');
+                setTimeout(() => alert.remove(), 220);
+            }, 5000);
         }
     
         document.getElementById('modalAnular').addEventListener('click', function (e) {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -18,17 +18,15 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub">Sistema de Gesti�n</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>
@@ -135,6 +133,7 @@
                                 <button type="button" class="tab tab--active" data-tab="datos" role="tab">Datos</button>
                                 <button type="button" class="tab" data-tab="observaciones" role="tab">Observaciones</button>
                                 <button type="button" class="tab" data-tab="pagos" role="tab">Pagos</button>
+                                <button type="button" class="tab" data-tab="deudas" role="tab" id="tabDeudas">Deudas</button>
                             </div>
 
                             <div class="tab-panel tab-panel--active" id="panelDatos">
@@ -181,6 +180,37 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="tab-panel" id="panelDeudas">
+                                <div class="card">
+                                    <div class="card__header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                                        <span>Historial y estado de deudas</span>
+                                        <button type="button" class="btn btn--secondary btn--sm" id="btnCargarDeudaAnterior">
+                                            + Cargar deuda anterior
+                                        </button>
+                                    </div>
+                                    <div class="card__body" style="padding:0;">
+                                        <div class="table-wrapper" style="border:none;">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Período</th>
+                                                        <th>Monto</th>
+                                                        <th>Estado</th>
+                                                        <th>Vencimiento</th>
+                                                        <th id="thAccionesDeuda">Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tablaDeudas"></tbody>
+                                            </table>
+                                        </div>
+                                        <div id="deudasEmpty" class="empty-state" style="display:none;padding:2rem;">
+                                            <div class="empty-state__title">Sin deudas registradas</div>
+                                            <div class="empty-state__text">El socio se encuentra al día. No tiene deudas en el sistema.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -191,6 +221,15 @@
                             <div class="card__body deuda-card">
                                 <div class="deuda-card__label">Total adeudado</div>
                                 <div class="deuda-card__amount" id="deudaAmount"></div>
+                                <div id="deudaDetalleMonto" style="font-size:var(--font-size-sm); color:var(--color-text-muted); margin-top:0.35rem;"></div>
+                                <div id="deudaAccionesContainer" style="margin-top:1rem; width:100%; display:flex; flex-direction:column; gap:0.5rem;">
+                                    <a href="#" class="btn btn--primary btn--sm" id="btnCobrarTerminal" style="width:100%; text-decoration:none; display:none; text-align:center; justify-content:center; box-sizing:border-box;">
+                                        Cobrar en terminal
+                                    </a>
+                                    <button type="button" class="btn btn--secondary btn--sm" id="btnVerDeudas" style="width:100%; text-align:center; justify-content:center;">
+                                        Ver detalle de cuotas
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -229,7 +268,7 @@
                 </div>
                 <div class="form-group">
                     <label for="editDireccion">Dirección</label>
-                    <input type="text" id="editDireccion" class="form-control" required maxlength="200" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.,\-\/º°]/g, '')">
+                    <input type="text" id="editDireccion" class="form-control" required maxlength="200" pattern="^[A-Za-z0-9ÁÉÍÓÚáéíóúÑñÜü\s\.,\-\/º°#]+$" title="Solo letras, números, espacios y signos habituales de calle/altura" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.,\-\/º°#]/g, '')">
                 </div>
                 <div class="form-group">
                     <label>Modalidad de cobranza</label>
@@ -311,14 +350,15 @@
         }
         function closeModal(id) {
             if (_perfilTrap) { _perfilTrap.destroy(); _perfilTrap = null; }
-            if (id) {
-                var el = document.getElementById(id);
-                if (el) el.classList.remove('modal-overlay--open');
-            } else {
-                document.querySelectorAll('.modal-overlay.modal-overlay--open, .modal-overlay--open').forEach(function (el) {
-                    el.classList.remove('modal-overlay--open');
-                });
-            }
+            var targets = id
+                ? [document.getElementById(id)].filter(Boolean)
+                : Array.from(document.querySelectorAll('.modal-overlay.modal-overlay--open, .modal-overlay--open'));
+            targets.forEach(function (el) {
+                el.classList.add('modal-overlay--closing');
+                setTimeout(function () {
+                    el.classList.remove('modal-overlay--open', 'modal-overlay--closing');
+                }, 220);
+            });
         }
 
         var socioId = new URLSearchParams(window.location.search).get('id');
@@ -369,8 +409,15 @@
 
         function showAlert(message, type) {
             var container = document.getElementById('alertContainer');
-            container.innerHTML = '<div class="alert alert--' + (type || 'error') + '">' + escapeHtml(message) + '</div>';
-            setTimeout(function () { container.innerHTML = ''; }, 5000);
+            var div = document.createElement('div');
+            div.className = 'alert alert--' + (type || 'error');
+            div.innerHTML = escapeHtml(message);
+            container.innerHTML = '';
+            container.appendChild(div);
+            setTimeout(function () {
+                div.classList.add('alert--closing');
+                setTimeout(function () { div.remove(); }, 220);
+            }, 5000);
         }
 
         function escapeHtml(str) {
@@ -418,6 +465,7 @@
                 initMapaMini();
                 cargarObservaciones();
                 cargarPagos();
+                cargarDeudas();
             }).catch(function (err) {
                 document.getElementById('loadingState').innerHTML = '<div class="alert alert--error">' + escapeHtml(err.message) + '</div>';
             });
@@ -465,12 +513,30 @@
                 (socio.motivo_baja ? '<dt>Motivo baja</dt><dd>' + escapeHtml(socio.motivo_baja) + '</dd>' : '');
 
             var deudaEl = document.getElementById('deudaAmount');
+            var btnCobrarTerminal = document.getElementById('btnCobrarTerminal');
+            var btnVerDeudas = document.getElementById('btnVerDeudas');
+
             if (socio.con_deuda) {
                 deudaEl.textContent = 'Con deuda';
                 deudaEl.className = 'deuda-card__amount deuda-card__amount--deuda';
+                if (btnCobrarTerminal) {
+                    btnCobrarTerminal.href = BASE_URL + '/views/pagos/cobro-sede.html?dni=' + encodeURIComponent(socio.dni || '');
+                    btnCobrarTerminal.style.display = 'inline-flex';
+                }
+                if (btnVerDeudas) {
+                    btnVerDeudas.textContent = (currentUserRole === 'cobrador') ? 'Ver detalle de cuotas' : 'Ver / Gestionar deudas';
+                    btnVerDeudas.style.display = 'inline-flex';
+                }
             } else {
                 deudaEl.textContent = 'Al día';
                 deudaEl.className = 'deuda-card__amount deuda-card__amount--ok';
+                if (btnCobrarTerminal) {
+                    btnCobrarTerminal.style.display = 'none';
+                }
+                if (btnVerDeudas) {
+                    btnVerDeudas.textContent = (currentUserRole === 'cobrador') ? 'Ver historial de cuotas' : 'Ver / Gestionar deudas';
+                    btnVerDeudas.style.display = 'inline-flex';
+                }
             }
         }
 
@@ -622,10 +688,19 @@
                         ? '<span class="badge badge--eliminado">Anulado</span>'
                         : '<span class="badge badge--activo">Confirmado</span>';
 
+                    var fechaPago = pago.fecha_hora || pago.fecha;
+                    var montoPago = (pago.monto_total !== undefined && pago.monto_total !== null) ? pago.monto_total : pago.monto;
+                    var metodoPago = pago.metodo_pago || pago.metodo || '';
+                    if (metodoPago) {
+                        metodoPago = metodoPago.charAt(0).toUpperCase() + metodoPago.slice(1).toLowerCase();
+                    } else {
+                        metodoPago = '—';
+                    }
+
                     return '<tr>' +
-                        '<td>' + formatDate(pago.fecha) + '</td>' +
-                        '<td>' + formatMoney(pago.monto) + '</td>' +
-                        '<td>' + escapeHtml(pago.metodo || '—') + '</td>' +
+                        '<td>' + formatDate(fechaPago) + '</td>' +
+                        '<td>' + formatMoney(montoPago) + '</td>' +
+                        '<td>' + escapeHtml(metodoPago) + '</td>' +
                         '<td>' + estadoPago + '</td>' +
                         '<td>' + (currentUserRole === 'administrador' && pago.estado !== 'anulado'
                             ? '<button type="button" class="btn btn--secondary btn--sm btn-anular-pago" data-id="' + escapeHtml(pago.id) + '">Anular</button>'
@@ -635,18 +710,207 @@
 
                 tbody.querySelectorAll('.btn-anular-pago').forEach(function (btn) {
                     btn.addEventListener('click', function () {
-                        if (!confirm('¿Confirma anular este pago?')) return;
+                        var motivo = prompt('¿Confirma anular este pago?\n\nIngrese el motivo de la anulación (obligatorio):');
+                        if (!motivo || !motivo.trim()) return;
+
                         fetch(BASE_URL + '/api/pagos/' + btn.dataset.id + '/anular', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                            body: JSON.stringify({ motivo: motivo.trim() })
                         }).then(function (res) { return res.json(); })
                         .then(function (data) {
-                            if (!data.success) throw new Error(data.message);
-                            showAlert('Pago anulado.', 'success');
+                            if (!data.success) throw new Error(data.message || 'No se pudo anular el pago.');
+                            showAlert('Pago anulado correctamente.', 'success');
                             cargarPagos();
+                            cargarDeudas();
+                            apiFetch(BASE_URL + '/api/socios/' + socioId).then(function (r) {
+                                socio = r.data;
+                                renderPerfil();
+                            });
                         }).catch(function (err) { showAlert(err.message); });
                     });
                 });
+            });
+        }
+
+        /* --- Deudas del socio: consulta, carga de deuda anterior y anulación/exoneración --- */
+        function cargarDeudas() {
+            apiFetchOptional(BASE_URL + '/api/deuda/socio/' + socioId).then(function (data) {
+                var tbody = document.getElementById('tablaDeudas');
+                var empty = document.getElementById('deudasEmpty');
+                var deudas = data || [];
+
+                var totalPendiente = 0;
+                var cantPendientes = 0;
+                deudas.forEach(function (d) {
+                    if (d.estado === 'pendiente') {
+                        totalPendiente += parseFloat(d.monto) || 0;
+                        cantPendientes++;
+                    }
+                });
+
+                var esAdmin = (currentUserRole === 'administrador');
+                var thAcciones = document.getElementById('thAccionesDeuda');
+                if (thAcciones) thAcciones.style.display = esAdmin ? '' : 'none';
+
+                var btnCargarDeuda = document.getElementById('btnCargarDeudaAnterior');
+                if (btnCargarDeuda) btnCargarDeuda.style.display = esAdmin ? 'inline-block' : 'none';
+
+                var deudaEl = document.getElementById('deudaAmount');
+                var detalleMonto = document.getElementById('deudaDetalleMonto');
+                var btnCobrarTerminal = document.getElementById('btnCobrarTerminal');
+                var btnVerDeudas = document.getElementById('btnVerDeudas');
+
+                var tieneDeuda = (cantPendientes > 0) || (socio && socio.con_deuda);
+
+                if (tieneDeuda) {
+                    deudaEl.textContent = 'Con deuda';
+                    deudaEl.className = 'deuda-card__amount deuda-card__amount--deuda';
+                    if (detalleMonto) {
+                        detalleMonto.textContent = cantPendientes > 0
+                            ? (cantPendientes + ' período(s) — Total: ' + formatMoney(totalPendiente))
+                            : 'Cuotas pendientes';
+                    }
+                    if (btnCobrarTerminal) {
+                        btnCobrarTerminal.href = BASE_URL + '/views/pagos/cobro-sede.html?dni=' + encodeURIComponent((socio && socio.dni) || '');
+                        btnCobrarTerminal.style.display = 'inline-flex';
+                    }
+                    if (btnVerDeudas) {
+                        btnVerDeudas.textContent = (currentUserRole === 'cobrador') ? 'Ver detalle de cuotas' : 'Ver / Gestionar deudas';
+                        btnVerDeudas.style.display = 'inline-flex';
+                    }
+                } else {
+                    deudaEl.textContent = 'Al día';
+                    deudaEl.className = 'deuda-card__amount deuda-card__amount--ok';
+                    if (detalleMonto) detalleMonto.textContent = 'Sin cuotas adeudadas';
+                    if (btnCobrarTerminal) {
+                        btnCobrarTerminal.style.display = 'none';
+                    }
+                    if (btnVerDeudas) {
+                        btnVerDeudas.textContent = (currentUserRole === 'cobrador') ? 'Ver historial de cuotas' : 'Ver / Gestionar deudas';
+                        btnVerDeudas.style.display = 'inline-flex';
+                    }
+                }
+
+                if (!tbody) return;
+
+                if (deudas.length === 0) {
+                    tbody.innerHTML = '';
+                    if (empty) empty.style.display = 'flex';
+                    return;
+                }
+
+                if (empty) empty.style.display = 'none';
+
+                function formatVencimientoDeuda(item) {
+                    if (item.periodo === 'deuda_anterior') return '—';
+                    if (item.fecha_vencimiento) return formatDate(item.fecha_vencimiento);
+                    if (item.periodo && item.periodo.includes('-')) {
+                        var parts = item.periodo.split('-');
+                        if (parts.length === 2) {
+                            return '10/' + parts[1] + '/' + parts[0];
+                        }
+                    }
+                    if (item.fecha_generacion) return formatDate(item.fecha_generacion);
+                    return '—';
+                }
+
+                tbody.innerHTML = deudas.map(function (d) {
+                    var periodoFmt = d.periodo === 'deuda_anterior' ? 'Deuda Anterior' : d.periodo;
+                    var badgeCls = 'badge--activo';
+                    var labelEstado = 'Pendiente';
+                    if (d.estado === 'pagada') {
+                        badgeCls = 'badge--resuelto';
+                        labelEstado = 'Pagada';
+                    } else if (d.estado === 'exonerada') {
+                        badgeCls = 'badge--eliminado';
+                        labelEstado = 'Exonerada';
+                    } else if (d.estado === 'pendiente') {
+                        badgeCls = 'badge--pendiente';
+                        labelEstado = 'Pendiente';
+                    }
+
+                    var badgeHtml = '<span class="badge ' + badgeCls + '">' + labelEstado + '</span>';
+                    var accionHtml = '';
+
+                    if (esAdmin && d.estado === 'pendiente') {
+                        accionHtml = '<button type="button" class="btn btn--danger btn--sm btn-anular-deuda" data-id="' + escapeHtml(d.id) + '" data-periodo="' + escapeHtml(periodoFmt) + '">Anular / Exonerar</button>';
+                    }
+
+                    var accionCol = esAdmin ? ('<td>' + accionHtml + '</td>') : '';
+
+                    return '<tr>' +
+                        '<td><strong>' + escapeHtml(periodoFmt) + '</strong></td>' +
+                        '<td>' + formatMoney(d.monto) + '</td>' +
+                        '<td>' + badgeHtml + '</td>' +
+                        '<td>' + formatVencimientoDeuda(d) + '</td>' +
+                        accionCol +
+                    '</tr>';
+                }).join('');
+
+                tbody.querySelectorAll('.btn-anular-deuda').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var periodo = btn.dataset.periodo;
+                        var motivo = prompt('¿Confirma anular/exonerar la deuda del período ' + periodo + '?\n\nIngrese el motivo reglamentario (obligatorio):');
+                        if (!motivo || !motivo.trim()) return;
+
+                        fetch(BASE_URL + '/api/deuda/' + btn.dataset.id + '/exonerar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                            body: JSON.stringify({ motivo: motivo.trim() })
+                        }).then(function (res) { return res.json(); })
+                        .then(function (resData) {
+                            if (!resData.success) throw new Error(resData.message || 'No se pudo anular la deuda.');
+                            showAlert('Deuda anulada/exonerada correctamente.', 'success');
+                            cargarDeudas();
+                            apiFetch(BASE_URL + '/api/socios/' + socioId).then(function (r) {
+                                socio = r.data;
+                                renderPerfil();
+                            });
+                        }).catch(function (err) { showAlert(err.message); });
+                    });
+                });
+            });
+        }
+
+        // Acceso rápido desde Estado de cuenta hacia la pestaña Deudas con scroll suave
+        var btnVerDeudas = document.getElementById('btnVerDeudas');
+        if (btnVerDeudas) {
+            btnVerDeudas.addEventListener('click', function () {
+                var tabDeudas = document.getElementById('tabDeudas');
+                if (tabDeudas) tabDeudas.click();
+                var panelDeudas = document.getElementById('panelDeudas');
+                if (panelDeudas) {
+                    panelDeudas.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        }
+
+        // Cargar deuda anterior
+        var btnCargarDeuda = document.getElementById('btnCargarDeudaAnterior');
+        if (btnCargarDeuda) {
+            btnCargarDeuda.addEventListener('click', function () {
+                var montoStr = prompt('Ingrese el monto de la deuda anterior ($):');
+                if (!montoStr) return;
+                var monto = parseFloat(montoStr.replace(',', '.'));
+                if (isNaN(monto) || monto <= 0) {
+                    showAlert('El monto debe ser un número válido mayor a 0.');
+                    return;
+                }
+                fetch(BASE_URL + '/api/deuda/anterior', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify({ socio_id: socioId, monto: monto })
+                }).then(function (res) { return res.json(); })
+                .then(function (resData) {
+                    if (!resData.success) throw new Error(resData.message || 'No se pudo registrar la deuda anterior.');
+                    showAlert('Deuda anterior registrada con éxito.', 'success');
+                    cargarDeudas();
+                    apiFetch(BASE_URL + '/api/socios/' + socioId).then(function (r) {
+                        socio = r.data;
+                        renderPerfil();
+                    });
+                }).catch(function (err) { showAlert(err.message); });
             });
         }
 
@@ -787,6 +1051,14 @@
             var btnCorregirGeo = document.getElementById('btnCorregirGeo');
             if (btnCorregirGeo) {
                 btnCorregirGeo.style.display = esAdmin ? 'inline-flex' : 'none';
+            }
+            var btnCargarDeudaAnterior = document.getElementById('btnCargarDeudaAnterior');
+            if (btnCargarDeudaAnterior) {
+                btnCargarDeudaAnterior.style.display = esAdmin ? 'inline-block' : 'none';
+            }
+            var thAccionesDeuda = document.getElementById('thAccionesDeuda');
+            if (thAccionesDeuda) {
+                thAccionesDeuda.style.display = esAdmin ? '' : 'none';
             }
 
             // Si es cobrador, adaptar navegación lateral y enlace de retorno hacia su panel

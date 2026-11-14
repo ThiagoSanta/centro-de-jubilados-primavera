@@ -117,8 +117,13 @@ document.addEventListener('keydown', function (e) {
         closeModal(overlay.id);
       } else if (typeof cerrarModal === 'function') {
         cerrarModal();
+      } else {
+        // Animación de cierre unificada
+        overlay.classList.add('modal-overlay--closing');
+        setTimeout(function () {
+          overlay.classList.remove('modal-overlay--open', 'modal-overlay--closing');
+        }, 220);
       }
-      overlay.classList.remove('modal-overlay--open');
     });
     return;
   }
@@ -389,5 +394,145 @@ document.addEventListener('DOMContentLoaded', function () {
         item.setAttribute('title', text);
       }
     }
+  });
+});
+
+/* -- Validación estricta y coherente de campos de fecha (Día 1-31, Mes 1-12, Año al día) -- */
+
+/**
+ * Valida que una fecha sea coherente con el calendario real:
+ * - Día: 1 a 31 (respetando días máximos de cada mes y años bisiestos)
+ * - Mes: 1 a 12 (nunca mayor a 12 ni menor a 1)
+ * - Año: al día / no futuro para nacimientos, razonable para vigencias
+ *
+ * @param {string} valor Fecha en formato AAAA-MM-DD o AAAA-MM
+ * @param {object} opciones { esNacimiento: boolean, noFutura: boolean, minAnio: number, maxAnio: number }
+ * @returns { { valida: boolean, error?: string } }
+ */
+function validarFechaCoherente(valor, opciones) {
+  opciones = opciones || {};
+  if (!valor || typeof valor !== 'string') {
+    return { valida: false, error: 'La fecha es obligatoria.' };
+  }
+
+  var partes = valor.trim().split('-');
+  if (partes.length < 2) {
+    return { valida: false, error: 'Formato de fecha inválido (use AAAA-MM o AAAA-MM-DD).' };
+  }
+
+  var anio = parseInt(partes[0], 10);
+  var mes = parseInt(partes[1], 10);
+  var dia = partes.length >= 3 && partes[2] ? parseInt(partes[2], 10) : null;
+  var hoy = new Date();
+  var anioActual = hoy.getFullYear();
+
+  // 1. Validar Mes (1 a 12)
+  if (isNaN(mes) || mes < 1 || mes > 12) {
+    return { valida: false, error: 'Mes inválido (' + partes[1] + '). Debe estar entre 1 y 12.' };
+  }
+
+  // 2. Validar Día (1 a 31) si se ingresó fecha completa
+  if (dia !== null) {
+    if (isNaN(dia) || dia < 1 || dia > 31) {
+      return { valida: false, error: 'Día inválido (' + partes[2] + '). Debe estar entre 1 y 31.' };
+    }
+    // Días reales del mes según año (incluye bisiesto para febrero)
+    var esBisiesto = (anio % 4 === 0 && anio % 100 !== 0) || (anio % 400 === 0);
+    var diasEnMes = [31, esBisiesto ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    var maxDias = diasEnMes[mes - 1];
+    if (dia > maxDias) {
+      return { valida: false, error: 'El mes ' + mes + ' solo tiene hasta ' + maxDias + ' días.' };
+    }
+  }
+
+  // 3. Validar Año
+  var minAnio = opciones.minAnio || (opciones.esNacimiento ? (anioActual - 120) : 2020);
+  var maxAnio = opciones.maxAnio || (opciones.esNacimiento ? anioActual : anioActual + 1);
+
+  if (isNaN(anio) || anio < minAnio || anio > maxAnio) {
+    if (opciones.esNacimiento && anio > anioActual) {
+      return { valida: false, error: 'El año de nacimiento no puede ser superior al actual (' + anioActual + ').' };
+    }
+    if (opciones.esNacimiento && anio < minAnio) {
+      return { valida: false, error: 'La fecha de nacimiento supera la edad máxima permitida de 120 años (año mínimo: ' + minAnio + ').' };
+    }
+    return { valida: false, error: 'El año debe estar entre ' + minAnio + ' y ' + maxAnio + '.' };
+  }
+
+  // 4. Si es fecha de nacimiento o filtro histórico, no puede ser una fecha futura
+  if (opciones.noFutura && dia !== null) {
+    var fechaObj = new Date(anio, mes - 1, dia);
+    var hoySinHora = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    if (fechaObj > hoySinHora) {
+      return { valida: false, error: 'La fecha no puede ser posterior al día de hoy.' };
+    }
+  }
+
+  return { valida: true };
+}
+
+// Inicialización automática de límites y validación interactiva en todos los inputs date y month
+document.addEventListener('DOMContentLoaded', function () {
+  var hoy = new Date();
+  var anioActual = hoy.getFullYear();
+  var mesActual = String(hoy.getMonth() + 1).padStart(2, '0');
+  var diaActual = String(hoy.getDate()).padStart(2, '0');
+  var fechaHoyStr = anioActual + '-' + mesActual + '-' + diaActual;
+  var anioMinimoNacimiento = anioActual - 120;
+
+  // Configurar inputs de fecha (type="date")
+  document.querySelectorAll('input[type="date"]').forEach(function (input) {
+    var id = (input.id || '').toLowerCase();
+    var name = (input.name || '').toLowerCase();
+    var esNacimiento = id.indexOf('nacimiento') !== -1 || name.indexOf('nacimiento') !== -1;
+    var esFiltro = id.indexOf('filtro') !== -1 || id.indexOf('filter') !== -1 || id.indexOf('desde') !== -1 || id.indexOf('hasta') !== -1;
+
+    if (esNacimiento) {
+      input.setAttribute('min', anioMinimoNacimiento + '-01-01');
+      input.setAttribute('max', fechaHoyStr);
+    } else if (esFiltro) {
+      input.setAttribute('min', '2020-01-01');
+      input.setAttribute('max', fechaHoyStr);
+    } else {
+      input.setAttribute('min', '2020-01-01');
+      input.setAttribute('max', (anioActual + 1) + '-12-31');
+    }
+
+    var validarInput = function () {
+      if (!input.value) { input.setCustomValidity(''); return; }
+      var res = validarFechaCoherente(input.value, {
+        esNacimiento: esNacimiento,
+        noFutura: esNacimiento || esFiltro,
+        minAnio: esNacimiento ? anioMinimoNacimiento : 2020,
+        maxAnio: esNacimiento ? anioActual : anioActual + 1
+      });
+      if (!res.valida) {
+        input.setCustomValidity(res.error);
+      } else {
+        input.setCustomValidity('');
+      }
+    };
+
+    input.addEventListener('input', validarInput);
+    input.addEventListener('change', validarInput);
+  });
+
+  // Configurar inputs de período (type="month")
+  document.querySelectorAll('input[type="month"]').forEach(function (input) {
+    input.setAttribute('min', '2020-01');
+    input.setAttribute('max', (anioActual + 1) + '-12');
+
+    var validarMonth = function () {
+      if (!input.value) { input.setCustomValidity(''); return; }
+      var res = validarFechaCoherente(input.value, { minAnio: 2020, maxAnio: anioActual + 1 });
+      if (!res.valida) {
+        input.setCustomValidity(res.error);
+      } else {
+        input.setCustomValidity('');
+      }
+    };
+
+    input.addEventListener('input', validarMonth);
+    input.addEventListener('change', validarMonth);
   });
 });

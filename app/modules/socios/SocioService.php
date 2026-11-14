@@ -198,10 +198,7 @@ class SocioService
 
         // 3. Detectar si el domicilio postal fue modificado para re-geolocalizarlo
         if (isset($datos['direccion']) && trim($datos['direccion']) !== $socio['direccion']) {
-            $newAddress = trim($datos['direccion']);
-            if (empty($newAddress)) {
-                throw new AppException("La dirección es obligatoria.", 400);
-            }
+            $newAddress = ValidationHelper::validarDireccion($datos['direccion'], 'dirección');
 
             $payload['direccion'] = $newAddress;
             $valAnterior['direccion'] = $socio['direccion'];
@@ -540,9 +537,15 @@ class SocioService
     {
         $errors = [];
 
-        // 1. Validar la presencia ineludible de campos obligatorios
+        // 1. Validar la presencia ineludible y formatos de campos obligatorios
         if (empty($rowData['nombre_apellido'])) {
             $errors[] = "nombre_apellido es obligatorio";
+        } else {
+            try {
+                ValidationHelper::validarNombreApellido($rowData['nombre_apellido'], 'nombre y apellido');
+            } catch (AppException $e) {
+                $errors[] = $e->getMessage();
+            }
         }
 
         $tipoDoc = !empty($rowData['tipo_documento']) ? trim($rowData['tipo_documento']) : 'dni';
@@ -559,15 +562,36 @@ class SocioService
             }
         }
 
-        if (empty($rowData['fecha_nacimiento']) || !$this->validarFecha($rowData['fecha_nacimiento'])) {
-            $errors[] = "fecha_nacimiento inválida (esperado YYYY-MM-DD)";
+        if (empty($rowData['fecha_nacimiento'])) {
+            $errors[] = "fecha_nacimiento es obligatoria";
+        } else {
+            try {
+                ValidationHelper::validarFecha($rowData['fecha_nacimiento'], 'fecha de nacimiento', ['esNacimiento' => true]);
+            } catch (AppException $e) {
+                $errors[] = $e->getMessage();
+            }
         }
+
         if (empty($rowData['telefono'])) {
             $errors[] = "telefono es obligatorio";
+        } else {
+            try {
+                ValidationHelper::validarTelefono($rowData['telefono']);
+            } catch (AppException $e) {
+                $errors[] = $e->getMessage();
+            }
         }
+
         if (empty($rowData['direccion'])) {
             $errors[] = "direccion es obligatorio";
+        } else {
+            try {
+                ValidationHelper::validarDireccion($rowData['direccion'], 'dirección');
+            } catch (AppException $e) {
+                $errors[] = $e->getMessage();
+            }
         }
+
         if (
             empty($rowData['modalidad_cobranza']) ||
             ($rowData['modalidad_cobranza'] !== 'cobranza_domiciliaria' && $rowData['modalidad_cobranza'] !== 'cobranza_en_sede')
@@ -890,6 +914,19 @@ class SocioService
     }
 
     /**
+     * Obtiene todos los socios que coinciden con los filtros para exportación a CSV.
+     *
+     * @param array $filtros Filtros de búsqueda (estado, zona_id, etc.)
+     * @return array Lista de registros de socios
+     */
+    public function listarParaExportar(array $filtros): array
+    {
+        $filtros['limit'] = 10000;
+        $res = $this->repository->findAll($filtros, 1);
+        return $res['data'] ?? [];
+    }
+
+    /**
      * Obtiene la información detallada de un socio lanzando una excepción si no existe.
      *
      * @param string $id UUID del socio
@@ -1003,10 +1040,7 @@ class SocioService
         $datos['fecha_nacimiento'] = ValidationHelper::validarFecha($datos['fecha_nacimiento'] ?? '', 'fecha de nacimiento');
         $datos['telefono'] = ValidationHelper::validarTelefono($datos['telefono'] ?? '');
 
-        if (empty($datos['direccion'])) {
-            throw new AppException("La dirección es obligatoria.", 400);
-        }
-        $datos['direccion'] = ValidationHelper::validarTextoPlano($datos['direccion'], 255, 'dirección');
+        $datos['direccion'] = ValidationHelper::validarDireccion($datos['direccion'] ?? '', 'dirección');
 
         if (!empty($datos['mutual'])) {
             $datos['mutual'] = ValidationHelper::validarTextoPlano($datos['mutual'], 100, 'mutual');

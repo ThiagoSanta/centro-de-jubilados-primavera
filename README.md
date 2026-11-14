@@ -14,7 +14,8 @@ Sistema web de gestión integral desarrollado para el Centro de Jubilados Primav
 6. [Resumen de Módulos y Funcionalidades](#6-resumen-de-módulos-y-funcionalidades)
 7. [Suite de Pruebas Automatizadas](#7-suite-de-pruebas-automatizadas)
 8. [Estructura del Proyecto](#8-estructura-del-proyecto)
-9. [Documentación de la API](#9-documentación-de-la-api)
+9. [Diagrama de Relaciones de la Base de Datos](#9-diagrama-de-relaciones-de-la-base-de-datos)
+10. [Documentación de la API](#10-documentación-de-la-api)
 
 ---
 
@@ -247,12 +248,11 @@ centro-de-jubilados-primavera/
 │   └── shared/                  # Router, AuthMiddleware, ExceptionHandler, Helpers (ResponseHelper, DateHelper)
 ├── database/
 │   ├── migrations/              # Migraciones incrementales históricas (004, 005, 006)
-│   ├── seeds/                   # 003_usuario_admin.sql (semilla de usuario administrador)
+│   ├── seeds/                   # Semillas (003_usuario_admin.sql, reset_a_sistema_nuevo.sql)
 │   └── schema.sql               # Esquema DDL completo y consolidado de las 15 tablas del sistema
 ├── docs/
 │   ├── api.md                   # Referencia técnica exhaustiva de la API REST (60 endpoints)
-│   ├── informe-api.md           # Informe de auditoría de la API y discrepancias
-│   └── informe-readme.md        # Informe de auditoría del README y estado del sistema
+│   └── diagrama_er.jpg          # Diagrama visual de relaciones de base de datos (ER)
 ├── public/
 │   ├── assets/
 │   │   ├── css/main.css         # Hoja de estilos global de la aplicación
@@ -281,7 +281,15 @@ centro-de-jubilados-primavera/
 
 ---
 
-## 9. Documentación de la API
+## 9. Diagrama de Relaciones de la Base de Datos
+
+El siguiente diagrama ilustra el modelo relacional completo del sistema (15 tablas), con sus claves foráneas y cardinalidades entre entidades.
+
+![Diagrama ER — Centro de Jubilados Primavera](docs/diagrama_er.jpg)
+
+---
+
+## 10. Documentación de la API
 
 La especificación técnica completa de la API REST se encuentra documentada en detalle en:
 

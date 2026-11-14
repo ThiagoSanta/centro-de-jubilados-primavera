@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -67,17 +67,15 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub">Sistema de Gesti�n</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>
@@ -139,8 +137,15 @@
                     <h1 class="content__title">Padrón de Socios</h1>
                     <p class="content__subtitle">Gestión y consulta del padrón de socios del centro</p>
                 </div>
-                <div style="display:flex;gap:0.5rem;">
-                    <a href="/centro-de-jubilados-primavera/public/views/socios/importar.html" class="btn btn--secondary">Importar CSV</a>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+                    <button type="button" class="btn btn--secondary" id="btnExportarCSV" title="Exportar socios a CSV">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Exportar CSV
+                    </button>
+                    <a href="/centro-de-jubilados-primavera/public/views/socios/importar.html" class="btn btn--secondary" title="Importar socios desde archivo CSV">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Importar CSV
+                    </a>
                     <button type="button" class="btn btn--primary" id="btnNuevoSocio">Nuevo socio</button>
                 </div>
             </div>
@@ -259,7 +264,7 @@
                 </div>
                 <div class="form-group" style="flex: 2;">
                     <label for="dni">Número de Doc. *</label>
-                    <input type="text" id="dni" name="dni" class="form-control" placeholder="Ej: 30123456" required inputmode="numeric" maxlength="10" pattern="^[0-9]{6,10}$" title="Solo números (entre 6 y 10 dígitos)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                    <input type="text" id="dni" name="dni" class="form-control" placeholder="Ej: 30123456" required inputmode="numeric" maxlength="8" pattern="^[0-9]{6,8}$" title="Solo números (entre 6 y 8 dígitos)" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
             </div>
             <div class="form-group">
@@ -276,7 +281,7 @@
             </div>
             <div class="form-group">
                 <label for="direccion">Dirección *</label>
-                <input type="text" id="direccion" name="direccion" class="form-control" required maxlength="200" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.,\-\/º°]/g, '')">
+                <input type="text" id="direccion" name="direccion" class="form-control" required maxlength="200" pattern="^[A-Za-z0-9ÁÉÍÓÚáéíóúÑñÜü\s\.,\-\/º°#]+$" title="Solo letras, números, espacios y signos habituales de calle/altura" oninput="this.value = this.value.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s\.,\-\/º°#]/g, '')">
             </div>
             <div class="form-group">
                 <label>Modalidad de cobranza *</label>
@@ -351,8 +356,15 @@
 
         function showAlert(message, type) {
             var container = document.getElementById('alertContainer');
-            container.innerHTML = '<div class="alert alert--' + (type || 'error') + '">' + escapeHtml(message) + '</div>';
-            setTimeout(function () { container.innerHTML = ''; }, 5000);
+            var div = document.createElement('div');
+            div.className = 'alert alert--' + (type || 'error');
+            div.innerHTML = escapeHtml(message);
+            container.innerHTML = '';
+            container.appendChild(div);
+            setTimeout(function () {
+                div.classList.add('alert--closing');
+                setTimeout(function () { div.remove(); }, 220);
+            }, 5000);
         }
 
         function escapeHtml(str) {
@@ -614,7 +626,11 @@
 
         function cerrarModal() {
             if (state.modalTrap) { state.modalTrap.destroy(); state.modalTrap = null; }
-            document.getElementById('modalOverlay').classList.remove('modal-overlay--open');
+            var overlay = document.getElementById('modalOverlay');
+            overlay.classList.add('modal-overlay--closing');
+            setTimeout(function () {
+                overlay.classList.remove('modal-overlay--open', 'modal-overlay--closing');
+            }, 220);
             state.modalCallback = null;
         }
 
@@ -668,6 +684,28 @@
         document.getElementById('btnCancelarDrawer').addEventListener('click', cerrarDrawer);
         document.getElementById('drawerOverlay').addEventListener('click', cerrarDrawer);
 
+        var selectTipoDoc = document.getElementById('tipo_documento');
+        var inputDoc = document.getElementById('dni');
+        if (selectTipoDoc && inputDoc) {
+            selectTipoDoc.addEventListener('change', function () {
+                if (this.value === 'pasaporte') {
+                    inputDoc.maxLength = 12;
+                    inputDoc.pattern = "^[A-Za-z0-9]{6,12}$";
+                    inputDoc.title = "Entre 6 y 12 caracteres alfanuméricos";
+                    inputDoc.placeholder = "Ej: ABC123456";
+                    inputDoc.removeAttribute('inputmode');
+                    inputDoc.oninput = function () { this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); };
+                } else {
+                    inputDoc.maxLength = 8;
+                    inputDoc.pattern = "^[0-9]{6,8}$";
+                    inputDoc.title = "Solo números (entre 6 y 8 dígitos)";
+                    inputDoc.placeholder = "Ej: 30123456";
+                    inputDoc.setAttribute('inputmode', 'numeric');
+                    inputDoc.oninput = function () { this.value = this.value.replace(/[^0-9]/g, ''); };
+                }
+            });
+        }
+
         document.getElementById('formNuevoSocio').addEventListener('submit', function (e) {
             e.preventDefault();
             var btn = document.getElementById('btnGuardarSocio');
@@ -685,6 +723,16 @@
                 direccion: form.direccion.value.trim(),
                 modalidad_cobranza: modalidad ? modalidad.value : 'cobranza_domiciliaria'
             };
+
+            var checkFecha = typeof validarFechaCoherente === 'function'
+                ? validarFechaCoherente(payload.fecha_nacimiento, { esNacimiento: true, noFutura: true })
+                : { valida: true };
+            if (!checkFecha.valida) {
+                showAlert(checkFecha.error, 'error');
+                btn.disabled = false;
+                form.fecha_nacimiento.focus();
+                return;
+            }
 
             apiFetch(BASE_URL + '/api/socios', { method: 'POST', body: JSON.stringify(payload) })
                 .then(function () {
@@ -724,6 +772,27 @@
             });
         });
 
+        /* --- Exportar socios a CSV --- */
+        var btnExportarCSV = document.getElementById('btnExportarCSV');
+        if (btnExportarCSV) {
+            btnExportarCSV.addEventListener('click', function () {
+                var params = new URLSearchParams();
+                var estado = document.getElementById('filtroEstado').value;
+                var zona = document.getElementById('filtroZona').value;
+                var mod = document.getElementById('filtroModalidad').value;
+                var deuda = document.getElementById('filtroDeuda').value;
+                var busqueda = document.getElementById('inputBusqueda').value.trim();
+
+                if (estado) params.set('estado', estado);
+                if (zona) params.set('zona_id', zona);
+                if (mod) params.set('modalidad_cobranza', mod);
+                if (deuda !== '') params.set('con_deuda', deuda);
+                if (busqueda) params.set('busqueda', busqueda);
+
+                window.location.href = BASE_URL + '/api/socios/exportar?' + params.toString();
+            });
+        }
+
         /* --- Limpiar filtros y reiniciar listado --- */
         // Restablece el campo de busqueda y los 4 selects a su valor vacio,
         // cancela temporizadores pendientes de debounce para evitar dobles peticiones,
@@ -744,6 +813,7 @@
 
         // Expone la funcion globalmente para eventuales pruebas o llamadas externas
         window.limpiarFiltros = limpiarFiltros;
+        window.addEventListener('hashchange', function () { if (window.location.hash === '#nuevo') abrirDrawer(); });
 
         var btnLimpiar = document.getElementById('btnLimpiarFiltros');
         if (btnLimpiar) {
@@ -831,6 +901,9 @@
                 aplicarFiltrosDesdeUrl();
                 Promise.all([cargarZonas(), cargarSocios()]).then(function () {
                     renderTabla();
+                    if (window.location.hash === '#nuevo' || new URLSearchParams(window.location.search).get('nuevo') === '1') {
+                        abrirDrawer();
+                    }
                 });
             })
             .catch(function () {

@@ -38,7 +38,7 @@ class DeudaController
 
         $data = json_decode(file_get_contents('php://input'), true);
         $socioId = $data['socio_id'] ?? '';
-        $monto = isset($data['monto']) ? (float)$data['monto'] : 0.0;
+        $monto = \CJP\Shared\Helpers\ValidationHelper::validarMonto($data['monto'] ?? 0, 'monto');
         $usuarioId = $_SESSION['usuario_id'] ?? null;
 
         if (!$usuarioId) {

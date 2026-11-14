@@ -102,6 +102,10 @@ class NotificacionService
                 $stmtDeudas->execute([':fecha_pago' => $pago['fecha_hora'], ':pago_id' => $entidadId]);
 
                 $this->repository->registerAuditEvent($usuarioId, 'reversion_anulacion', 'pagos', json_encode(['estado' => 'anulado']), json_encode(['estado' => 'registrado']), 'Reversión desde notificaciones');
+            } elseif ($entidad === 'deudas') {
+                $stmt = $db->prepare("UPDATE deudas SET estado = 'pendiente', fecha_exoneracion = NULL WHERE id = :id");
+                $stmt->execute([':id' => $entidadId]);
+                $this->repository->registerAuditEvent($usuarioId, 'reversion_exoneracion', 'deudas', json_encode(['estado' => 'exonerada']), json_encode(['estado' => 'pendiente']), 'Reversión desde notificaciones');
             } else {
                 throw new AppException("Entidad no soportada para reversión.", 400);
             }

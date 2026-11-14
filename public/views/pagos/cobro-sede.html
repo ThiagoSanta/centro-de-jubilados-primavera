@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -86,6 +86,13 @@
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            transition: opacity var(--transition-base, 0.2s ease);
+        }
+
+        .modal-overlay.modal-overlay--open,
+        .modal-overlay[style*="display: flex"] {
+            opacity: 1 !important;
         }
 
         .modal {
@@ -195,29 +202,6 @@
                 font-weight: var(--font-weight-bold);
             }
 
-            .sidebar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100vh;
-                z-index: 1100;
-                transform: translateX(-100%);
-                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                box-shadow: var(--shadow-lg);
-            }
-
-            .sidebar.sidebar--open {
-                transform: translateX(0);
-            }
-
-            .sidebar-overlay {
-                display: block;
-            }
-
-            .sidebar-overlay.sidebar-overlay--visible {
-                opacity: 1;
-                pointer-events: auto;
-            }
 
             .content {
                 padding: 1rem;
@@ -240,17 +224,15 @@
         <!-- Barra lateral (se rellena dinÃ¡micamente segÃºn el rol del usuario autenticado) -->
         <aside class="sidebar" id="appSidebar">
             <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir menú" aria-label="Expandir menú">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir menï¿½" aria-label="Expandir menï¿½">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub" id="sidebarRolLabel">Sistema de Gestión</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar menú" title="Colapsar menú">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar menï¿½" title="Colapsar menï¿½">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>
@@ -503,7 +485,7 @@
                     var rolLabel = document.getElementById('sidebarRolLabel');
 
                     if (user.rol === 'cobrador') {
-                        rolLabel.textContent = 'Panel del Cobrador';
+                        if (rolLabel) rolLabel.textContent = 'Panel del Cobrador';
                         nav.innerHTML = buildSidebarItems(SIDEBAR_COBRADOR);
                     }
                     if (footer) {
@@ -705,14 +687,21 @@
                 item.onclick = () => seleccionarSocio(s);
                 container.appendChild(item);
             });
-            document.getElementById('modalSeleccionSocio').style.display = 'flex';
-            _trapSeleccionSocio = initFocusTrap(document.getElementById('modalSeleccionSocio'));
+            const modalSel = document.getElementById('modalSeleccionSocio');
+            modalSel.classList.add('modal-overlay--open');
+            modalSel.style.display = 'flex';
+            modalSel.style.opacity = '1';
+            _trapSeleccionSocio = initFocusTrap(modalSel);
         }
 
         function cerrarModalSeleccionSocio() {
             if (_trapSeleccionSocio) { _trapSeleccionSocio.destroy(); _trapSeleccionSocio = null; }
             const modal = document.getElementById('modalSeleccionSocio');
-            if (modal) modal.style.display = 'none';
+            if (modal) {
+                modal.classList.remove('modal-overlay--open');
+                modal.style.display = 'none';
+                modal.style.opacity = '';
+            }
         }
 
         function mostrarSocio(socio) {
@@ -841,13 +830,21 @@
             const periodos = deudasSeleccionadas.map(d => d.periodo === 'deuda_anterior' ? 'Deuda Anterior' : formatPeriodo(d.periodo)).join(', ');
             document.getElementById('modalPeriodos').textContent = periodos;
 
-            document.getElementById('modalConfirmacion').style.display = 'flex';
-            _trapConfirmacion = initFocusTrap(document.getElementById('modalConfirmacion'));
+            const modalConf = document.getElementById('modalConfirmacion');
+            modalConf.classList.add('modal-overlay--open');
+            modalConf.style.display = 'flex';
+            modalConf.style.opacity = '1';
+            _trapConfirmacion = initFocusTrap(modalConf);
         }
 
         function cerrarModal() {
             if (_trapConfirmacion) { _trapConfirmacion.destroy(); _trapConfirmacion = null; }
-            document.getElementById('modalConfirmacion').style.display = 'none';
+            const modal = document.getElementById('modalConfirmacion');
+            if (modal) {
+                modal.classList.remove('modal-overlay--open');
+                modal.style.display = 'none';
+                modal.style.opacity = '';
+            }
         }
 
         async function registrarPago() {
@@ -913,10 +910,11 @@
                 document.getElementById('inputDni').disabled = true;
                 document.getElementById('filtroZona').disabled = true;
 
-                // Iniciar cuenta regresiva y mostrar alerta persistente con texto dinamico.
-                iniciarCuentaRegresiva(10);
+                // Iniciar cuenta regresiva y mostrar alerta persistente con texto dinamico (30 segundos).
+                iniciarCuentaRegresiva(30);
 
             } catch (err) {
+                cerrarModal();
                 // Si el error es de red o timeout, no podemos saber si el pago se procesÃ³
                 // en el servidor antes de perder conexiÃ³n â†’ advertir antes de reintentar
                 if (esErrorDeRed(err)) {
@@ -953,7 +951,10 @@
             // Los errores se auto-eliminan a los 5 segundos.
             // Las alertas de exito son persistentes: la cuenta regresiva las controla.
             if (tipo !== 'success') {
-                setTimeout(() => { alerta.remove(); }, 5000);
+                setTimeout(() => {
+                    alerta.classList.add('alert--closing');
+                    setTimeout(() => alerta.remove(), 220);
+                }, 5000);
             }
         }
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
@@ -97,17 +97,15 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub">Sistema de Gesti�n</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>
@@ -254,7 +252,10 @@
             div.textContent = mensaje;
             container.innerHTML = '';
             container.appendChild(div);
-            setTimeout(() => div.remove(), 4000);
+            setTimeout(() => {
+                div.classList.add('alert--closing');
+                setTimeout(() => div.remove(), 220);
+            }, 5000);
         }
 
         // ── Cargar notificaciones ──────────────────────────────────────────────
@@ -309,7 +310,7 @@
                 const mostrarRevertir = n.estado !== 'archivada' && !expirada;
 
                 const li = document.createElement('li');
-                li.className = `notif-item notif-item--${n.estado}`;
+                li.className = 'notif-item notif-item--' + n.estado;
 
                 li.innerHTML = `
                     <div class="notif-item__left">
@@ -371,7 +372,11 @@
 
         function cerrarModal() {
             notificacionPendiente = null;
-            document.getElementById('modalOverlay').classList.remove('modal-overlay--open');
+            var overlay = document.getElementById('modalOverlay');
+            overlay.classList.add('modal-overlay--closing');
+            setTimeout(function () {
+                overlay.classList.remove('modal-overlay--open', 'modal-overlay--closing');
+            }, 220);
         }
 
         document.getElementById('btnCancelarRevertir').addEventListener('click', cerrarModal);

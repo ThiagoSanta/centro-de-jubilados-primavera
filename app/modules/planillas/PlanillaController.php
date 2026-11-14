@@ -81,11 +81,20 @@ class PlanillaController
             }
         }
 
-        if (empty($planilla['pdf_generado'])) {
-            throw new AppException("Esta planilla no tiene PDF generado.", 400);
+        $filePath = null;
+        if (!empty($planilla['pdf_generado'])) {
+            $checkPath = __DIR__ . '/../../../' . $planilla['pdf_generado'];
+            if (file_exists($checkPath)) {
+                $filePath = $checkPath;
+            }
         }
-        $filePath = __DIR__ . '/../../../' . $planilla['pdf_generado'];
-        if (!file_exists($filePath)) {
+
+        // Si el archivo físico no existe o la planilla no tenía ruta, regenerar al vuelo
+        if (!$filePath) {
+            $filePath = $this->planillaService->regenerarPDF($params['id']);
+        }
+
+        if (!$filePath || !file_exists($filePath)) {
             throw new AppException("El archivo PDF no se encuentra en el servidor.", 404);
         }
 

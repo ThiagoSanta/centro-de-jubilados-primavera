@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ï»¿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -72,17 +72,15 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir menú" aria-label="Expandir menú">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir menï¿½" aria-label="Expandir menï¿½">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub">Sistema de Gestión</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar menú" title="Colapsar menú">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar menï¿½" title="Colapsar menï¿½">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>
@@ -329,8 +327,15 @@
 
     function showAlert(msg, type) {
         var c = document.getElementById('alertContainer');
-        c.innerHTML = '<div class="alert alert--' + type + '">' + escHtml(msg) + '</div>';
-        setTimeout(function () { c.innerHTML = ''; }, 5000);
+        var div = document.createElement('div');
+        div.className = 'alert alert--' + type;
+        div.innerHTML = escHtml(msg);
+        c.innerHTML = '';
+        c.appendChild(div);
+        setTimeout(function () {
+            div.classList.add('alert--closing');
+            setTimeout(function () { div.remove(); }, 220);
+        }, 5000);
     }
 
     function showModalAlert(containerId, msg, type) {
@@ -347,7 +352,12 @@
 
     function closeModal(id) {
         if (_usuariosTrap) { _usuariosTrap.destroy(); _usuariosTrap = null; }
-        document.getElementById(id).classList.remove('modal-overlay--open');
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.classList.add('modal-overlay--closing');
+        setTimeout(function () {
+            el.classList.remove('modal-overlay--open', 'modal-overlay--closing');
+        }, 220);
     }
 
     function openModal(id) {
@@ -360,7 +370,10 @@
         overlay.addEventListener('click', function (e) {
             if (e.target === overlay) {
                 if (_usuariosTrap) { _usuariosTrap.destroy(); _usuariosTrap = null; }
-                overlay.classList.remove('modal-overlay--open');
+                overlay.classList.add('modal-overlay--closing');
+                setTimeout(function () {
+                    overlay.classList.remove('modal-overlay--open', 'modal-overlay--closing');
+                }, 220);
             }
         });
     });

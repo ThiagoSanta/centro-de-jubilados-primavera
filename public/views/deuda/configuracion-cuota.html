@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -122,6 +122,15 @@
             align-items: center;
             justify-content: center;
             padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity var(--transition-normal);
+        }
+        .modal-overlay.modal-overlay--open,
+        .modal-overlay[style*="display: flex"] {
+            display: flex !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
         }
         .modal {
             background: var(--color-content);
@@ -153,17 +162,15 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar__brand">
-            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
+            <div class="sidebar__brand-compact" onclick="toggleSidebar()" role="button" tabindex="0" title="Expandir men�" aria-label="Expandir men�">
                 <span class="brand-compact-text">CJP</span>
                 <svg class="brand-compact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
             <div class="sidebar__brand-full">
                 <div class="sidebar__brand-info">
-                    <div class="sidebar__brand-prefix">Centro de Jubilados</div>
-                    <div class="sidebar__brand-title">Primavera</div>
-                    <div class="sidebar__brand-sub">Sistema de Gesti�n</div>
+                    <div class="sidebar__brand-title">Centro de Jubilados Primavera</div>
                 </div>
-                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
+                <button id="sidebarToggleBtn" class="sidebar__toggle-btn" onclick="toggleSidebar()" aria-label="Colapsar men�" title="Colapsar men�">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
                 </button>
             </div>
@@ -327,8 +334,11 @@
                     <form id="formGenerar">
                         <div class="form-group">
                             <label class="form-label" for="inputPeriodo">Período (Mes y Año)</label>
-                            <input type="month" id="inputPeriodo" class="form-control" required>
+                            <input type="month" id="inputPeriodo" class="form-control" required
+                                   min="2020-01" max="2027-12">
+                            <div id="errorPeriodo" style="display: none; color: var(--color-estado-eliminado); font-size: var(--font-size-sm); margin-top: 0.35rem; font-weight: 600;"></div>
                         </div>
+                        <div id="alertaGenerar" style="display: none; margin-bottom: 1rem;"></div>
                         <button type="submit" class="btn btn--primary" style="width: 100%;">Generar deuda mensual</button>
                         <p id="msgSinCuota" style="display: none; color: var(--color-estado-eliminado); font-size: var(--font-size-sm); margin: 0.75rem 0 0;">Debe configurar el valor de la cuota antes de poder generar deudas.</p>
                     </form>
@@ -409,7 +419,56 @@
         let _modalAdvTrap = null;
 
         /* --- Inicialización y autenticación --- */
+        function mostrarAlertaGenerar(mensaje, tipo) {
+            const alertaEl = document.getElementById('alertaGenerar');
+            if (alertaEl) {
+                alertaEl.className = tipo === 'success' ? 'alert alert--success' : 'alert alert--error';
+                alertaEl.textContent = mensaje;
+                alertaEl.style.display = 'block';
+                if (tipo === 'success') {
+                    setTimeout(() => { alertaEl.style.display = 'none'; }, 6000);
+                }
+            }
+            mostrarAlerta(mensaje, tipo);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Límite dinámico del picker: mínimo 2020-01, máximo año actual + 1
+            const inputPeriodo = document.getElementById('inputPeriodo');
+            const errorPeriodo = document.getElementById('errorPeriodo');
+            const maxAnioPermitido = new Date().getFullYear() + 1;
+
+            if (inputPeriodo) {
+                inputPeriodo.min = '2020-01';
+                inputPeriodo.max = maxAnioPermitido + '-12';
+
+                function validarTiempoRealPeriodo() {
+                    const val = inputPeriodo.value;
+                    if (!val) {
+                        if (errorPeriodo) { errorPeriodo.style.display = 'none'; errorPeriodo.textContent = ''; }
+                        inputPeriodo.style.borderColor = '';
+                        return true;
+                    }
+                    const partes = val.split('-');
+                    const anio = parseInt(partes[0], 10);
+                    if (isNaN(anio) || anio < 2020 || anio > maxAnioPermitido) {
+                        if (errorPeriodo) {
+                            errorPeriodo.textContent = `Año no permitido (${partes[0]}). Debe estar entre 2020 y ${maxAnioPermitido}.`;
+                            errorPeriodo.style.display = 'block';
+                        }
+                        inputPeriodo.style.borderColor = 'var(--color-estado-eliminado)';
+                        return false;
+                    } else {
+                        if (errorPeriodo) { errorPeriodo.style.display = 'none'; errorPeriodo.textContent = ''; }
+                        inputPeriodo.style.borderColor = '';
+                        return true;
+                    }
+                }
+
+                inputPeriodo.addEventListener('input', validarTiempoRealPeriodo);
+                inputPeriodo.addEventListener('change', validarTiempoRealPeriodo);
+            }
+
             fetch(API_BASE + '/auth/me')
                 .then(res => {
                     if (!res.ok) throw new Error('No autenticado');
@@ -436,6 +495,15 @@
                         const monto = document.getElementById('inputMonto').value;
                         const fecha = document.getElementById('inputFechaVigencia').value;
 
+                        if (typeof validarFechaCoherente === 'function') {
+                            const checkFecha = validarFechaCoherente(fecha, { minAnio: 2020, maxAnio: new Date().getFullYear() + 1 });
+                            if (!checkFecha.valida) {
+                                mostrarAlerta(checkFecha.error, 'error');
+                                document.getElementById('inputFechaVigencia').focus();
+                                return;
+                            }
+                        }
+
                         try {
                             const res = await fetch(`${BASE_URL}/api/cuota`, {
                                 method: 'POST',
@@ -461,6 +529,36 @@
                     document.getElementById('formGenerar').addEventListener('submit', async (e) => {
                         e.preventDefault();
                         periodoActual = document.getElementById('inputPeriodo').value;
+
+                        const alertaEl = document.getElementById('alertaGenerar');
+                        if (alertaEl) alertaEl.style.display = 'none';
+
+                        const partes = (periodoActual || '').split('-');
+                        const anio = parseInt(partes[0], 10);
+                        const hoy = new Date();
+                        const maxAnio = hoy.getFullYear() + 1;
+
+                        if (!periodoActual || isNaN(anio) || anio < 2020 || anio > maxAnio) {
+                            const msg = `Año no permitido (${partes[0] || 'vacío'}). Debe estar entre 2020 y ${maxAnio}.`;
+                            mostrarAlertaGenerar(msg, 'error');
+                            if (errorPeriodo) {
+                                errorPeriodo.textContent = `⚠️ ${msg}`;
+                                errorPeriodo.style.display = 'block';
+                            }
+                            inputPeriodo.style.borderColor = 'var(--color-estado-eliminado)';
+                            inputPeriodo.focus();
+                            return;
+                        }
+
+                        if (typeof validarFechaCoherente === 'function') {
+                            const checkPeriodo = validarFechaCoherente(periodoActual, { minAnio: 2020, maxAnio: maxAnio });
+                            if (!checkPeriodo.valida) {
+                                mostrarAlertaGenerar(checkPeriodo.error, 'error');
+                                inputPeriodo.focus();
+                                return;
+                            }
+                        }
+
                         await procesarGeneracion(false);
                     });
 
@@ -550,20 +648,29 @@
                         // Advertir al usuario si se detectan deudas previas en el período seleccionado
                         document.getElementById('cantDuplicados').textContent = result.advertencias.length;
                         const modalAdvEl = document.getElementById('modalAdvertencia');
+                        modalAdvEl.classList.add('modal-overlay--open');
                         modalAdvEl.style.display = 'flex';
+                        modalAdvEl.style.opacity = '1';
                         _modalAdvTrap = initFocusTrap(modalAdvEl);
                     } else {
                         // Resumen exitoso de la generación
                         document.getElementById('resultadosCard').style.display = 'block';
                         document.getElementById('resGeneradas').textContent = `Deudas generadas: ${result.generadas}`;
                         document.getElementById('resOmitidas').textContent = `Deudas omitidas (ya existían): ${result.omitidas}`;
-                        mostrarAlerta('Proceso completado.', 'success');
+                        mostrarAlertaGenerar(`Proceso completado para el período ${periodoActual}: ${result.generadas} generadas, ${result.omitidas} omitidas.`, 'success');
+                        // Limpiar el campo y resetear la variable interna
+                        document.getElementById('formGenerar').reset();
+                        periodoActual = '';
+                        const errP = document.getElementById('errorPeriodo');
+                        if (errP) errP.style.display = 'none';
+                        const inP = document.getElementById('inputPeriodo');
+                        if (inP) inP.style.borderColor = '';
                     }
                 } else {
-                    mostrarAlerta(data.message || 'Error al generar deuda.', 'error');
+                    mostrarAlertaGenerar(data.message || 'Error al generar deuda.', 'error');
                 }
             } catch (err) {
-                mostrarAlerta(clasificarErrorRed(err), 'error');
+                mostrarAlertaGenerar(clasificarErrorRed(err), 'error');
             } finally {
                 if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = 'Generar deuda mensual'; }
                 if (btnDuplicados) btnDuplicados.disabled = false;
@@ -573,14 +680,22 @@
         function cerrarModalAdvertencia() {
             if (_modalAdvTrap) { _modalAdvTrap.destroy(); _modalAdvTrap = null; }
             const m = document.getElementById('modalAdvertencia');
-            if (m) m.style.display = 'none';
+            if (m) {
+                m.classList.remove('modal-overlay--open');
+                m.style.display = 'none';
+                m.style.opacity = '';
+            }
         }
 
         function cerrarModalRestaurar() {
             if (_estaRestaurando) return; // Prevenir cierre accidental mientras se procesa la restauracion
             if (_modalRestaurTrap) { _modalRestaurTrap.destroy(); _modalRestaurTrap = null; }
             const m = document.getElementById('modalRestaurar');
-            if (m) m.style.display = 'none';
+            if (m) {
+                m.classList.remove('modal-overlay--open');
+                m.style.display = 'none';
+                m.style.opacity = '';
+            }
             const inputConf = document.getElementById('inputConfirmacionRestaurar');
             if (inputConf) inputConf.value = '';
             const btnConf = document.getElementById('btnConfirmarRestaurarModal');
@@ -669,7 +784,9 @@
             document.getElementById('btnConfirmarRestaurarModal').disabled = true;
 
             const modalEl = document.getElementById('modalRestaurar');
+            modalEl.classList.add('modal-overlay--open');
             modalEl.style.display = 'flex';
+            modalEl.style.opacity = '1';
             _modalRestaurTrap = initFocusTrap(modalEl);
         }
 
@@ -785,15 +902,15 @@
         function mostrarAlerta(mensaje, tipo, autoCerrar = true) {
             const container = document.getElementById('alertContainer');
             const alert = document.createElement('div');
-            // Asignación de clases del sistema para coherencia visual con main.css
             alert.className = tipo === 'success' ? 'alert alert--success' : 'alert alert--error';
             alert.textContent = mensaje;
-            
             container.innerHTML = '';
             container.appendChild(alert);
-            
             if (autoCerrar) {
-                setTimeout(() => { alert.remove(); }, 5000);
+                setTimeout(() => {
+                    alert.classList.add('alert--closing');
+                    setTimeout(() => alert.remove(), 220);
+                }, 5000);
             }
         }
 

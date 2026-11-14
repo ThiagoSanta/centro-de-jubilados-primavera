@@ -124,7 +124,48 @@ class PlanillaService
         return $this->planillaRepo->findById($planillaId);
     }
 
-    private function generarPDF(string $planillaId, array $sociosOrdenados, array $zona, array $cobrador): string
+    public function regenerarPDF(string $planillaId): string
+    {
+        $planilla = $this->planillaRepo->findById($planillaId);
+        if (!$planilla) {
+            throw new AppException("Planilla no encontrada", 404);
+        }
+
+        $zona = ['nombre' => $planilla['zona_nombre'] ?? 'Sin zona'];
+        $cobrador = [
+            'nombre' => $planilla['cobrador_nombre'] ?? 'Cobrador',
+            'apellido' => $planilla['cobrador_apellido'] ?? ''
+        ];
+
+        $sociosOrdenados = [];
+        $socios = $planilla['socios'] ?? [];
+        foreach ($socios as $socio) {
+            $deudaTotal = 0.0;
+            if (!empty($socio['deuda_snapshot'])) {
+                $decoded = json_decode($socio['deuda_snapshot'], true);
+                if (is_array($decoded)) {
+                    foreach ($decoded as $d) {
+                        $deudaTotal += (float)($d['monto'] ?? 0);
+                    }
+                } elseif (is_numeric($socio['deuda_snapshot'])) {
+                    $deudaTotal = (float)$socio['deuda_snapshot'];
+                }
+            }
+            $socio['deuda_total'] = $deudaTotal;
+            $sociosOrdenados[] = $socio;
+        }
+
+        $fechaTxt = !empty($planilla['fecha_generacion'])
+            ? date('d/m/Y', strtotime($planilla['fecha_generacion']))
+            : date('d/m/Y');
+
+        $rutaPdf = $this->generarPDF($planillaId, $sociosOrdenados, $zona, $cobrador, $fechaTxt);
+        $this->planillaRepo->updatePdf($planillaId, $rutaPdf);
+
+        return __DIR__ . '/../../../' . $rutaPdf;
+    }
+
+    private function generarPDF(string $planillaId, array $sociosOrdenados, array $zona, array $cobrador, ?string $fechaFormateada = null): string
     {
         require_once __DIR__ . '/../../../vendor/setasign/fpdf/fpdf.php';
         
@@ -151,7 +192,8 @@ class PlanillaService
         $pdf->Cell(160, 10, utf8_decode('Planilla de Cobranza Domiciliaria'), 0, 1, 'L');
         
         $pdf->SetFont('Arial', '', 12);
-        $pdf->Cell(0, 8, utf8_decode('Fecha: ' . date('d/m/Y')), 0, 1);
+        $fechaMostrar = $fechaFormateada ?? date('d/m/Y');
+        $pdf->Cell(0, 8, utf8_decode('Fecha: ' . $fechaMostrar), 0, 1);
         $pdf->Cell(0, 8, utf8_decode('Zona: ' . $zona['nombre']), 0, 1);
         $pdf->Cell(0, 8, utf8_decode('Cobrador: ' . $cobrador['nombre'] . ' ' . $cobrador['apellido']), 0, 1);
         $pdf->Ln(5);
